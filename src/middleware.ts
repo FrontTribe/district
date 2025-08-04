@@ -3,9 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 export function middleware(request: NextRequest) {
   const headers = new Headers(request.headers)
   const host = request.headers.get('host')
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN
 
-  if (!host || !rootDomain) {
+  const appDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN
+  const tenantRootDomain = process.env.NEXT_PUBLIC_TENANT_ROOT_DOMAIN
+
+  if (!host || !appDomain || !tenantRootDomain) {
     return NextResponse.next()
   }
 
@@ -13,15 +15,17 @@ export function middleware(request: NextRequest) {
 
   let subdomain = ''
 
-  if (cleanHost === rootDomain) {
+  if (cleanHost === appDomain) {
     subdomain = 'district'
-  } else {
-    subdomain = cleanHost.replace(`.${rootDomain}`, '')
+  } else if (cleanHost.endsWith(`.${tenantRootDomain}`)) {
+    const subdomainEndIndex = cleanHost.length - tenantRootDomain.length - 1
+    subdomain = cleanHost.slice(0, subdomainEndIndex)
   }
 
-  console.log(`[Middleware] Production Derived Subdomain: ${subdomain}`)
-
-  headers.set('x-tenant-subdomain', subdomain)
+  if (subdomain) {
+    console.log(`[Middleware] Derived Subdomain: ${subdomain}`)
+    headers.set('x-tenant-subdomain', subdomain)
+  }
 
   return NextResponse.next({
     request: {
