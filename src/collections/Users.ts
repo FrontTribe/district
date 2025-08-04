@@ -1,5 +1,3 @@
-// collections/Users.ts
-
 import { CollectionConfig } from 'payload'
 
 const restrictTenantLogin = async ({ req, user }: { req: any; user: any }) => {
@@ -10,11 +8,9 @@ const restrictTenantLogin = async ({ req, user }: { req: any; user: any }) => {
   if (user.role === 'tenant-admin') {
     let requestSubdomain = ''
 
-    // First, try to get the tenant from our middleware (for page loads)
     if (req.tenant) {
       requestSubdomain = req.tenant.subdomain
     } else {
-      // As a fallback for API requests, get the host from the 'Origin' header
       const origin = req.headers.get('origin')
       if (origin) {
         const url = new URL(origin)
