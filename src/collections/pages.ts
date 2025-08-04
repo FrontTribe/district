@@ -53,6 +53,11 @@ const Pages: CollectionConfig = {
       },
     ],
   },
+  versions: {
+    drafts: {
+      autosave: true,
+    },
+  },
   fields: [
     {
       name: 'title',
