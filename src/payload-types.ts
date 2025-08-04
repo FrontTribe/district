@@ -161,6 +161,7 @@ export interface Tenant {
 export interface Media {
   id: string;
   alt: string;
+  tenant?: (string | null) | Tenant;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -180,10 +181,7 @@ export interface Media {
 export interface Page {
   id: string;
   title: string;
-  tenant: {
-    relationTo: 'tenants';
-    value: string | Tenant;
-  };
+  tenant?: (string | null) | Tenant;
   layout?:
     | (
         | {
@@ -305,6 +303,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  tenant?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;

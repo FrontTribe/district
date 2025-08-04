@@ -6,10 +6,10 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
-import { Media } from './collections/Media'
 import Tenants from './collections/tenants'
 import Users from './collections/Users'
 import Pages from './collections/pages'
+import Media from './collections/Media'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -20,11 +20,12 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    // components: {
+    //   providers: [AfterLoginRedirect],
+    // },
   },
   collections: [Users, Media, Tenants, Pages],
   editor: lexicalEditor(),
-
-  // Express middleware for tenant resolution should be registered in your server entry file, not in the Payload config.
 
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -34,8 +35,5 @@ export default buildConfig({
     url: process.env.DATABASE_URI || '',
   }),
   sharp,
-  plugins: [
-    payloadCloudPlugin(),
-    // storage-adapter-placeholder
-  ],
+  plugins: [payloadCloudPlugin()],
 })

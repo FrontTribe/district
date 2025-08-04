@@ -20,6 +20,7 @@ const Pages: CollectionConfig = {
     },
     create: ({ req }) =>
       (req.user as any)?.role === 'superadmin' || (req.user as any)?.role === 'tenant-admin',
+
     update: ({ req }) => {
       if ((req.user as any)?.role === 'superadmin') {
         return true
@@ -30,13 +31,23 @@ const Pages: CollectionConfig = {
         },
       }
     },
-    delete: ({ req }) => (req.user as any)?.role === 'superadmin',
+    delete: ({ req }) => {
+      if ((req.user as any)?.role === 'superadmin') {
+        return true
+      }
+      return {
+        tenant: {
+          equals: (req.user as any)?.tenant?.id || (req.user as any)?.tenant,
+        },
+      }
+    },
   },
   hooks: {
     beforeChange: [
       ({ req, data, operation }) => {
         if (operation === 'create' && (req.user as any)?.role === 'tenant-admin') {
           data.tenant = (req.user as any)?.tenant?.id || (req.user as any)?.tenant
+          return data
         }
         return data
       },
@@ -51,11 +62,15 @@ const Pages: CollectionConfig = {
     {
       name: 'tenant',
       type: 'relationship',
-      relationTo: ['tenants'],
+      relationTo: 'tenants',
       required: true,
       access: {
-        create: ({ req }) => (req.user as any)?.role === 'superadmin',
+        create: ({ req }) =>
+          (req.user as any)?.role === 'superadmin' || (req.user as any)?.role === 'tenant-admin',
         update: ({ req }) => (req.user as any)?.role === 'superadmin',
+      },
+      admin: {
+        condition: ({ user }) => user?.role === 'superadmin',
       },
     },
     {

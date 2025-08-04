@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
   let subdomain = ''
 
   if (cleanHost === appDomain) {
-    subdomain = 'district'
+    subdomain = 'shifutit'
   } else if (cleanHost.endsWith(`.${tenantRootDomain}`)) {
     const subdomainEndIndex = cleanHost.length - tenantRootDomain.length - 1
     subdomain = cleanHost.slice(0, subdomainEndIndex)

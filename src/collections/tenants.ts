@@ -7,10 +7,13 @@ const Tenants: CollectionConfig = {
     useAsTitle: 'name',
   },
   access: {
-    read: () => true,
-    create: ({ req: { user } }) => (user as any)?.role === 'superadmin',
-    update: ({ req: { user } }) => (user as any)?.role === 'superadmin',
-    delete: ({ req: { user } }) => (user as any)?.role === 'superadmin',
+    read: ({ req: { user } }) => {
+      if (!user) return false
+      return user.role === 'superadmin'
+    },
+    create: ({ req: { user } }) => user?.role === 'superadmin',
+    update: ({ req: { user } }) => user?.role === 'superadmin',
+    delete: ({ req: { user } }) => user?.role === 'superadmin',
   },
   fields: [
     {

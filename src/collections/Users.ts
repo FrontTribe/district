@@ -8,23 +8,19 @@ const restrictTenantLogin = async ({ req, user }: { req: any; user: any }) => {
   if (user.role === 'tenant-admin') {
     let requestSubdomain = ''
 
-    if (req.tenant) {
-      requestSubdomain = req.tenant.subdomain
-    } else {
-      const origin = req.headers.get('origin')
-      if (origin) {
-        const url = new URL(origin)
-        const hostname = url.hostname
-        requestSubdomain = hostname.split('.')[0]
-      }
+    const origin = req.headers.get('origin')
+    if (origin) {
+      const url = new URL(origin)
+      const hostname = url.hostname
+      requestSubdomain = hostname.split('.')[0]
     }
 
     if (!requestSubdomain) {
-      throw new Error('Could not identify the login domain. Access denied.')
+      throw new Error('Access Denied: Could not identify the login domain.')
     }
 
     if (!user.tenant) {
-      throw new Error('You are not assigned to a tenant. Access denied.')
+      throw new Error('Access Denied: You are not assigned to a tenant.')
     }
 
     const userTenantDoc = await req.payload.findByID({
@@ -34,7 +30,7 @@ const restrictTenantLogin = async ({ req, user }: { req: any; user: any }) => {
     })
 
     if (!userTenantDoc) {
-      throw new Error('Your assigned tenant could not be found. Access denied.')
+      throw new Error('Access Denied: Your assigned tenant could not be found.')
     }
 
     if (userTenantDoc.subdomain !== requestSubdomain) {
@@ -45,8 +41,7 @@ const restrictTenantLogin = async ({ req, user }: { req: any; user: any }) => {
 
 const Users: CollectionConfig = {
   slug: 'users',
-  auth: true, // Set auth to true
-  // ✅ Corrected for your version: The hooks object is at the top level
+  auth: {},
   hooks: {
     afterLogin: [restrictTenantLogin],
   },
@@ -54,36 +49,12 @@ const Users: CollectionConfig = {
     useAsTitle: 'email',
   },
   access: {
-    // ... your access controls remain the same
-    read: ({ req: { user } }) => {
-      if (!user) {
-        return false
-      }
-      if (user && user.role === 'superadmin') {
-        return true
-      }
-      return user
-        ? {
-            id: {
-              equals: user.id,
-            },
-          }
-        : false
-    },
-    create: ({ req: { user } }) => !!user && user.role === 'superadmin',
-    update: ({ req: { user }, id }) => {
-      if (!user) {
-        return false
-      }
-      if (user.role === 'superadmin') {
-        return true
-      }
-      return user.id === id
-    },
-    delete: ({ req: { user } }) => !!user && user.role === 'superadmin',
+    read: ({ req: { user } }) => user?.role === 'superadmin',
+    create: ({ req: { user } }) => user?.role === 'superadmin',
+    update: ({ req: { user } }) => user?.role === 'superadmin',
+    delete: ({ req: { user } }) => user?.role === 'superadmin',
   },
   fields: [
-    // ... your fields remain the same
     {
       name: 'role',
       type: 'select',
