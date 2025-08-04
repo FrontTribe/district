@@ -1,4 +1,3 @@
-// storage-adapter-import-placeholder
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
@@ -7,8 +6,10 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
-import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import Tenants from './collections/tenants'
+import Users from './collections/Users'
+import Pages from './collections/pages'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -20,8 +21,11 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media],
+  collections: [Users, Media, Tenants, Pages],
   editor: lexicalEditor(),
+
+  // Express middleware for tenant resolution should be registered in your server entry file, not in the Payload config.
+
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

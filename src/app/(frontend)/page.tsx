@@ -15,6 +15,10 @@ export default async function HomePage() {
 
   const fileURL = `vscode://file/${fileURLToPath(import.meta.url)}`
 
+  const headersList = headers
+  const subdomain = headersList.get('x-tenant-subdomain')
+  console.log(`[Page] Received Subdomain from header: ${subdomain}`)
+
   return (
     <div className="home">
       <div className="content">
