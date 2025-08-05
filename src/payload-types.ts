@@ -187,6 +187,8 @@ export interface Media {
 export interface Page {
   id: string;
   title: string;
+  slug: string;
+  excerpt?: string | null;
   tenant?: (string | null) | Tenant;
   layout?:
     | (
@@ -405,6 +407,8 @@ export interface TenantsSelect<T extends boolean = true> {
  */
 export interface PagesSelect<T extends boolean = true> {
   title?: T;
+  slug?: T;
+  excerpt?: T;
   tenant?: T;
   layout?:
     | T
