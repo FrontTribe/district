@@ -21,9 +21,10 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
-    // components: {
-    //   providers: [AfterLoginRedirect],
-    // },
+    livePreview: {
+      url: process.env.NEXT_PUBLIC_PAYLOAD_URL || 'http://localhost:3000',
+      collections: ['pages', 'tenants'],
+    },
   },
   collections: [Users, Media, Tenants, Pages],
   editor: lexicalEditor(),

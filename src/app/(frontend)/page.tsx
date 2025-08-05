@@ -8,6 +8,7 @@ import config from '@/payload.config'
 import { BlockRenderer } from '@/components/BlockRenderer'
 import { Page, Tenant } from '@/payload-types'
 import './styles.css'
+import { RefreshRouteOnSave } from '@/components/RefreshRouteOnSave'
 
 export default async function HomePage() {
   const headers = await getHeaders()
@@ -93,98 +94,103 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="home">
-      <div className="content">
-        {!user && <h1>Welcome to your new project.</h1>}
-        {user && <h1>Welcome back, {user.email}</h1>}
+    <>
+      <RefreshRouteOnSave />
 
-        {/* Debug info */}
-        <div className="debug-info">
-          <h3>Debug Information</h3>
-          <p>Subdomain from header: {subdomain || 'None'}</p>
-          <p>
-            Current tenant: {currentTenant ? `${currentTenant.name} (${currentTenant.id})` : 'None'}
-          </p>
-          <p>
-            Pages found: {pages.length}{' '}
-            {!currentTenant && pages.length > 0 ? '(showing all pages)' : ''}
-          </p>
-          {pages.length > 0 && (
-            <div style={{ marginTop: '10px' }}>
-              <p>
-                <strong>Page details:</strong>
-              </p>
-              {pages.map((page, index) => (
-                <div key={page.id} style={{ marginLeft: '10px', fontSize: '12px' }}>
-                  <p>
-                    • {page.title} (ID: {page.id})
-                  </p>
-                  <p style={{ marginLeft: '10px' }}>
-                    Tenant:{' '}
-                    {typeof page.tenant === 'string' ? page.tenant : page.tenant?.id || 'None'}
-                  </p>
-                  <p style={{ marginLeft: '10px' }}>Layout blocks: {page.layout?.length || 0}</p>
-                </div>
-              ))}
+      <div className="home">
+        <div className="content">
+          {!user && <h1>Welcome to your new project.</h1>}
+          {user && <h1>Welcome back, {user.email}</h1>}
+
+          {/* Debug info */}
+          <div className="debug-info">
+            <h3>Debug Information</h3>
+            <p>Subdomain from header: {subdomain || 'None'}</p>
+            <p>
+              Current tenant:{' '}
+              {currentTenant ? `${currentTenant.name} (${currentTenant.id})` : 'None'}
+            </p>
+            <p>
+              Pages found: {pages.length}{' '}
+              {!currentTenant && pages.length > 0 ? '(showing all pages)' : ''}
+            </p>
+            {pages.length > 0 && (
+              <div style={{ marginTop: '10px' }}>
+                <p>
+                  <strong>Page details:</strong>
+                </p>
+                {pages.map((page, index) => (
+                  <div key={page.id} style={{ marginLeft: '10px', fontSize: '12px' }}>
+                    <p>
+                      • {page.title} (ID: {page.id})
+                    </p>
+                    <p style={{ marginLeft: '10px' }}>
+                      Tenant:{' '}
+                      {typeof page.tenant === 'string' ? page.tenant : page.tenant?.id || 'None'}
+                    </p>
+                    <p style={{ marginLeft: '10px' }}>Layout blocks: {page.layout?.length || 0}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Show current tenant info */}
+          {currentTenant && (
+            <div className="tenant-info">
+              <h2>Current Tenant: {currentTenant.name}</h2>
+              <p>Subdomain: {currentTenant.subdomain}</p>
             </div>
           )}
-        </div>
 
-        {/* Show current tenant info */}
-        {currentTenant && (
-          <div className="tenant-info">
-            <h2>Current Tenant: {currentTenant.name}</h2>
-            <p>Subdomain: {currentTenant.subdomain}</p>
-          </div>
-        )}
-
-        {!currentTenant && subdomain && (
-          <div className="tenant-not-found">
-            <h2>Tenant Not Found</h2>
-            <p>No tenant found for subdomain: {subdomain}</p>
-          </div>
-        )}
-
-        {/* Render blocks from pages */}
-        {pages.length > 0 ? (
-          pages.map((page) => (
-            <div key={page.id} className="page-content">
-              <h2>{page.title}</h2>
-              {page.layout && <BlockRenderer blocks={page.layout} />}
+          {!currentTenant && subdomain && (
+            <div className="tenant-not-found">
+              <h2>Tenant Not Found</h2>
+              <p>No tenant found for subdomain: {subdomain}</p>
             </div>
-          ))
-        ) : currentTenant ? (
-          <div className="no-pages">
-            <h2>No Pages Found</h2>
-            <p>No pages have been created for this tenant yet.</p>
-          </div>
-        ) : null}
+          )}
 
-        <div className="links">
-          <a
-            className="admin"
-            href={payloadConfig.routes.admin}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Go to admin panel
-          </a>
-          <a
-            className="docs"
-            href="https://payloadcms.com/docs"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Documentation
+          {/* Render blocks from pages */}
+          {pages.length > 0 ? (
+            pages.map((page) => (
+              <div key={page.id} className="page-content">
+                <h2>{page.title}</h2>
+                {page.layout && <BlockRenderer blocks={page.layout} />}
+              </div>
+            ))
+          ) : currentTenant ? (
+            <div className="no-pages">
+              <h2>No Pages Found</h2>
+              <p>No pages have been created for this tenant yet.</p>
+            </div>
+          ) : null}
+
+          <div className="links">
+            <a
+              className="admin"
+              href={payloadConfig.routes.admin}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Go to admin panel
+            </a>
+            <a
+              className="docs"
+              href="https://payloadcms.com/docs"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Documentation
+            </a>
+          </div>
+        </div>
+        <div className="footer">
+          <p>Update this page by editing</p>
+          <a className="codeLink" href={fileURL}>
+            <code>app/(frontend)/page.tsx</code>
           </a>
         </div>
       </div>
-      <div className="footer">
-        <p>Update this page by editing</p>
-        <a className="codeLink" href={fileURL}>
-          <code>app/(frontend)/page.tsx</code>
-        </a>
-      </div>
-    </div>
+    </>
   )
 }
