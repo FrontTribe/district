@@ -6,6 +6,8 @@ import { fileURLToPath } from 'url'
 
 import config from '@/payload.config'
 import { BlockRenderer } from '@/components/BlockRenderer'
+import { Menu } from '@/components/Menu'
+import { Footer } from '@/components/Footer'
 import { Page, Tenant } from '@/payload-types'
 import './styles.css'
 import { RefreshRouteOnSave } from '@/components/RefreshRouteOnSave'
@@ -74,31 +76,114 @@ export default async function HomePage() {
       console.error('Error fetching pages:', error)
     }
   } else {
-    console.log('[Page] No current tenant, fetching all published pages for debugging')
+    console.log('[Page] No current tenant, fetching only main domain pages (no tenant assigned)')
     try {
-      const allPagesResponse = await payload.find({
+      const mainPagesResponse = await payload.find({
         collection: 'pages',
         depth: 2,
         where: {
-          _status: {
-            equals: 'published',
-          },
+          and: [
+            {
+              _status: {
+                equals: 'published',
+              },
+            },
+            {
+              tenant: {
+                exists: false,
+              },
+            },
+          ],
         },
       })
-      console.log(`[Page] Found ${allPagesResponse.docs.length} total published pages`)
-      console.log(`[Page] All pages data:`, allPagesResponse.docs)
-      pages = allPagesResponse.docs as Page[]
+      console.log(`[Page] Found ${mainPagesResponse.docs.length} main domain pages`)
+      console.log(`[Page] Main pages data:`, mainPagesResponse.docs)
+      pages = mainPagesResponse.docs as Page[]
     } catch (error) {
-      console.error('Error fetching all pages:', error)
+      console.error('Error fetching main domain pages:', error)
     }
+  }
+
+  // Fetch globals (menu and footer) for the current tenant
+  let menuGlobal = null
+  let footerGlobal = null
+
+  try {
+    // For now, we'll fetch all globals and filter by tenant on the client side
+    // In a production environment, you might want to implement a custom API endpoint
+    // that filters globals by tenant
+    const menuResponse = await payload.findGlobal({
+      slug: 'menu',
+      depth: 2,
+    })
+
+    const footerResponse = await payload.findGlobal({
+      slug: 'footer',
+      depth: 2,
+    })
+
+    // Filter by tenant if we have one
+    if (currentTenant) {
+      // For tenant-specific globals, we'll need to check if the global has the tenant field
+      // and if it matches our current tenant
+      if (menuResponse && menuResponse.tenant === currentTenant.id) {
+        menuGlobal = menuResponse
+      }
+      if (footerResponse && footerResponse.tenant === currentTenant.id) {
+        footerGlobal = footerResponse
+      }
+    } else {
+      // For main domain, use globals without tenant assignment
+      if (menuResponse && !menuResponse.tenant) {
+        menuGlobal = menuResponse
+      }
+      if (footerResponse && !footerResponse.tenant) {
+        footerGlobal = footerResponse
+      }
+    }
+
+    console.log('[Page] Menu global:', menuGlobal)
+    console.log('[Page] Footer global:', footerGlobal)
+  } catch (error) {
+    console.error('Error fetching globals:', error)
   }
 
   return (
     <>
       <RefreshRouteOnSave />
 
-      <div className="home">
-        <div className="content">
+      {/* Menu */}
+      <Menu
+        menuItems={
+          menuGlobal?.menuItems?.map((item) => ({
+            label: item.label,
+            link: item.link,
+            scrollTarget: item.scrollTarget || undefined,
+            external: item.external || false,
+            children:
+              item.children?.map((child) => ({
+                label: child.label,
+                link: child.link,
+                scrollTarget: child.scrollTarget || undefined,
+                external: child.external || false,
+              })) || [],
+          })) || []
+        }
+        logo={
+          menuGlobal?.logo && typeof menuGlobal.logo !== 'string' && menuGlobal.logo.url
+            ? {
+                url: menuGlobal.logo.url,
+                alt: menuGlobal.logo.alt || 'Logo',
+                width: menuGlobal.logo.width || 100,
+                height: menuGlobal.logo.height || 100,
+              }
+            : undefined
+        }
+        logoText={menuGlobal?.logoText || undefined}
+      />
+
+      <div className="flex-1 pt-16">
+        <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {!user && <h1>Welcome to your new project.</h1>}
           {user && <h1>Welcome back, {user.email}</h1>}
 
@@ -112,8 +197,10 @@ export default async function HomePage() {
             </p>
             <p>
               Pages found: {pages.length}{' '}
-              {!currentTenant && pages.length > 0 ? '(showing all pages)' : ''}
+              {!currentTenant && pages.length > 0 ? '(showing main domain pages only)' : ''}
             </p>
+            <p>Menu global: {menuGlobal ? 'Found' : 'Not found'}</p>
+            <p>Footer global: {footerGlobal ? 'Found' : 'Not found'}</p>
             {pages.length > 0 && (
               <div style={{ marginTop: '10px' }}>
                 <p>
@@ -163,7 +250,12 @@ export default async function HomePage() {
               <h2>No Pages Found</h2>
               <p>No pages have been created for this tenant yet.</p>
             </div>
-          ) : null}
+          ) : (
+            <div className="no-pages">
+              <h2>No Pages Found</h2>
+              <p>No pages have been created for the main domain yet.</p>
+            </div>
+          )}
 
           <div className="links">
             <a
@@ -184,13 +276,34 @@ export default async function HomePage() {
             </a>
           </div>
         </div>
-        <div className="footer">
-          <p>Update this page by editing</p>
-          <a className="codeLink" href={fileURL}>
-            <code>app/(frontend)/page.tsx</code>
-          </a>
-        </div>
       </div>
+
+      {/* Footer */}
+      <Footer
+        columns={
+          footerGlobal?.columns?.map((column) => ({
+            title: column.title,
+            links:
+              column.links?.map((link) => ({
+                label: link.label,
+                link: link.link,
+                external: link.external || false,
+              })) || [],
+          })) || []
+        }
+        bottomSection={
+          footerGlobal?.bottomSection
+            ? {
+                copyright: footerGlobal.bottomSection.copyright || undefined,
+                socialLinks:
+                  footerGlobal.bottomSection.socialLinks?.map((social) => ({
+                    platform: social.platform || 'facebook',
+                    url: social.url,
+                  })) || [],
+              }
+            : undefined
+        }
+      />
     </>
   )
 }

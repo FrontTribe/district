@@ -14,6 +14,14 @@ const Hero: Block = {
       name: 'subheading',
       type: 'textarea',
     },
+    {
+      name: 'sectionId',
+      type: 'text',
+      label: 'Section ID',
+      admin: {
+        description: 'Optional ID for this section (used for menu navigation)',
+      },
+    },
   ],
 }
 
@@ -21,9 +29,10 @@ const Hero: Block = {
 export const HeroBlock: React.FC<{
   heading: string
   subheading?: string
-}> = ({ heading, subheading }) => {
+  sectionId?: string
+}> = ({ heading, subheading, sectionId }) => {
   return (
-    <section className="hero-block">
+    <section id={sectionId} className="hero-block">
       <div className="hero-content">
         <h1 className="hero-heading">{heading}</h1>
         {subheading && <p className="hero-subheading">{subheading}</p>}

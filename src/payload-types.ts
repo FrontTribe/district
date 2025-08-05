@@ -88,8 +88,14 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    menu: Menu;
+    footer: Footer;
+  };
+  globalsSelect: {
+    menu: MenuSelect<false> | MenuSelect<true>;
+    footer: FooterSelect<false> | FooterSelect<true>;
+  };
   locale: null;
   user: User & {
     collection: 'users';
@@ -181,17 +187,22 @@ export interface Media {
 export interface Page {
   id: string;
   title: string;
-  tenant: string | Tenant;
+  tenant?: (string | null) | Tenant;
   layout?:
     | (
         | {
             heading: string;
             subheading?: string | null;
+            /**
+             * Optional ID for this section (used for menu navigation)
+             */
+            sectionId?: string | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'hero';
           }
         | {
+            heading?: string | null;
             features?:
               | {
                   title?: string | null;
@@ -199,9 +210,62 @@ export interface Page {
                   id?: string | null;
                 }[]
               | null;
+            /**
+             * Optional ID for this section (used for menu navigation)
+             */
+            sectionId?: string | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'features';
+          }
+        | {
+            title?: string | null;
+            /**
+             * Unique ID for this section (used for menu navigation)
+             */
+            sectionId: string;
+            backgroundColor?: ('default' | 'light-gray' | 'dark-gray' | 'primary' | 'secondary') | null;
+            blocks?:
+              | (
+                  | {
+                      heading: string;
+                      subheading?: string | null;
+                      /**
+                       * Optional ID for this section (used for menu navigation)
+                       */
+                      sectionId?: string | null;
+                      id?: string | null;
+                      blockName?: string | null;
+                      blockType: 'hero';
+                    }
+                  | {
+                      heading?: string | null;
+                      features?:
+                        | {
+                            title?: string | null;
+                            description?: string | null;
+                            id?: string | null;
+                          }[]
+                        | null;
+                      /**
+                       * Optional ID for this section (used for menu navigation)
+                       */
+                      sectionId?: string | null;
+                      id?: string | null;
+                      blockName?: string | null;
+                      blockType: 'features';
+                    }
+                )[]
+              | null;
+            padding?: ('small' | 'medium' | 'large' | 'xl') | null;
+            height?: ('auto' | 'small' | 'medium' | 'large' | 'full' | 'custom') | null;
+            /**
+             * Custom height value (e.g., "500px", "50vh", "100%")
+             */
+            customHeight?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'section';
           }
       )[]
     | null;
@@ -350,12 +414,14 @@ export interface PagesSelect<T extends boolean = true> {
           | {
               heading?: T;
               subheading?: T;
+              sectionId?: T;
               id?: T;
               blockName?: T;
             };
         features?:
           | T
           | {
+              heading?: T;
               features?:
                 | T
                 | {
@@ -363,6 +429,47 @@ export interface PagesSelect<T extends boolean = true> {
                     description?: T;
                     id?: T;
                   };
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        section?:
+          | T
+          | {
+              title?: T;
+              sectionId?: T;
+              backgroundColor?: T;
+              blocks?:
+                | T
+                | {
+                    hero?:
+                      | T
+                      | {
+                          heading?: T;
+                          subheading?: T;
+                          sectionId?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    features?:
+                      | T
+                      | {
+                          heading?: T;
+                          features?:
+                            | T
+                            | {
+                                title?: T;
+                                description?: T;
+                                id?: T;
+                              };
+                          sectionId?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                  };
+              padding?: T;
+              height?: T;
+              customHeight?: T;
               id?: T;
               blockName?: T;
             };
@@ -409,6 +516,148 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu".
+ */
+export interface Menu {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  menuItems?:
+    | {
+        label: string;
+        /**
+         * URL or path for this menu item (required even if using scroll target)
+         */
+        link: string;
+        /**
+         * Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.
+         */
+        scrollTarget?: string | null;
+        external?: boolean | null;
+        children?:
+          | {
+              label: string;
+              /**
+               * URL or path for this menu item (required even if using scroll target)
+               */
+              link: string;
+              /**
+               * Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.
+               */
+              scrollTarget?: string | null;
+              external?: boolean | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  logo?: (string | null) | Media;
+  logoText?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "footer".
+ */
+export interface Footer {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  columns?:
+    | {
+        title: string;
+        links?:
+          | {
+              label: string;
+              link: string;
+              external?: boolean | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  bottomSection?: {
+    copyright?: string | null;
+    socialLinks?:
+      | {
+          platform?: ('facebook' | 'twitter' | 'instagram' | 'linkedin' | 'youtube') | null;
+          url: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu_select".
+ */
+export interface MenuSelect<T extends boolean = true> {
+  tenant?: T;
+  menuItems?:
+    | T
+    | {
+        label?: T;
+        link?: T;
+        scrollTarget?: T;
+        external?: T;
+        children?:
+          | T
+          | {
+              label?: T;
+              link?: T;
+              scrollTarget?: T;
+              external?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  logo?: T;
+  logoText?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "footer_select".
+ */
+export interface FooterSelect<T extends boolean = true> {
+  tenant?: T;
+  columns?:
+    | T
+    | {
+        title?: T;
+        links?:
+          | T
+          | {
+              label?: T;
+              link?: T;
+              external?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  bottomSection?:
+    | T
+    | {
+        copyright?: T;
+        socialLinks?:
+          | T
+          | {
+              platform?: T;
+              url?: T;
+              id?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

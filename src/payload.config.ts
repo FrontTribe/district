@@ -11,6 +11,8 @@ import Tenants from './collections/tenants'
 import Users from './collections/Users'
 import Pages from './collections/pages'
 import Media from './collections/Media'
+import Menu from './globals/menu'
+import Footer from './globals/footer'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -24,9 +26,11 @@ export default buildConfig({
     livePreview: {
       url: process.env.NEXT_PUBLIC_PAYLOAD_URL || 'http://localhost:3000',
       collections: ['pages', 'tenants'],
+      globals: ['menu', 'footer'],
     },
   },
   collections: [Users, Media, Tenants, Pages],
+  globals: [Menu, Footer],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL,

@@ -1,6 +1,7 @@
 import { CollectionConfig } from 'payload'
 import Hero from '@/blocks/Hero'
 import Features from '@/blocks/Features'
+import Section from '@/blocks/Section'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
@@ -68,7 +69,7 @@ const Pages: CollectionConfig = {
       name: 'tenant',
       type: 'relationship',
       relationTo: 'tenants',
-      required: true,
+      required: false,
       access: {
         create: ({ req }) =>
           (req.user as any)?.role === 'superadmin' || (req.user as any)?.role === 'tenant-admin',
@@ -81,7 +82,7 @@ const Pages: CollectionConfig = {
     {
       name: 'layout',
       type: 'blocks',
-      blocks: [Hero, Features],
+      blocks: [Hero, Features, Section],
     },
   ],
 }
