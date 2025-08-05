@@ -4,13 +4,16 @@ const Tenants: CollectionConfig = {
   slug: 'tenants',
   admin: {
     useAsTitle: 'name',
-    hidden: ({ user }) => (user as any).role !== 'superadmin',
+    hidden: ({ user }) => {
+      if (!user || typeof user !== 'object') return true
+      return (user as { role?: string }).role !== 'superadmin'
+    },
   },
   access: {
     read: ({ req: { user } }) => {
       if (!user) return false
 
-      if ((user as any).role === 'superadmin') {
+      if ((user as any)?.role === 'superadmin') {
         return true
       }
 
