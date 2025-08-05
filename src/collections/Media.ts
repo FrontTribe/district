@@ -68,9 +68,9 @@ const Media: CollectionConfig = {
         update: ({ req }) => (req.user as any)?.role === 'superadmin',
       },
 
-      admin: {
-        condition: ({ user }) => user?.role === 'superadmin',
-      },
+      // admin: {
+      //   condition: ({ user }) => user?.role === 'superadmin',
+      // },
     },
   ],
   upload: {

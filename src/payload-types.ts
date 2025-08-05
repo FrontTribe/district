@@ -181,7 +181,7 @@ export interface Media {
 export interface Page {
   id: string;
   title: string;
-  tenant?: (string | null) | Tenant;
+  tenant: string | Tenant;
   layout?:
     | (
         | {

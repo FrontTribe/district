@@ -69,9 +69,9 @@ const Pages: CollectionConfig = {
           (req.user as any)?.role === 'superadmin' || (req.user as any)?.role === 'tenant-admin',
         update: ({ req }) => (req.user as any)?.role === 'superadmin',
       },
-      admin: {
-        condition: ({ user }) => user?.role === 'superadmin',
-      },
+      // admin: {
+      //   condition: ({ user }) => user?.role === 'superadmin',
+      // },
     },
     {
       name: 'layout',
