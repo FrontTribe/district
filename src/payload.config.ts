@@ -24,8 +24,19 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     livePreview: {
-      url: process.env.NEXT_PUBLIC_PAYLOAD_URL || 'http://localhost:3000',
-      collections: ['pages', 'tenants'],
+      collections: ['pages'],
+      url: ({ data, collectionConfig, locale }) => {
+        const frontendURL = data.tenant?.url || 'http://localhost:3000'
+        const pagePath = collectionConfig?.slug === 'pages' ? `/${data.slug}` : `/${data.slug}`
+        const draftURL = new URL(`${frontendURL}/api/draft`)
+        draftURL.searchParams.set('url', pagePath)
+        draftURL.searchParams.set('secret', process.env.DRAFT_SECRET || '')
+        if (locale) {
+          draftURL.searchParams.set('locale', locale.code)
+        }
+
+        return draftURL.toString()
+      },
       globals: ['menu', 'footer'],
     },
   },
