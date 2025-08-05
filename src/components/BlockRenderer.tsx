@@ -1,61 +1,41 @@
 import React from 'react'
+import { Page } from '@/payload-types'
 import { HeroBlock } from '@/blocks/Hero'
 import { FeaturesBlock } from '@/blocks/Features'
 import { SectionBlock } from '@/blocks/Section'
 
-type BlockData = {
-  blockType: string
-  [key: string]: any
+const blockComponents = {
+  section: SectionBlock,
+  hero: HeroBlock,
+  features: FeaturesBlock,
 }
 
-type BlockRendererProps = {
-  blocks: BlockData[]
-}
+type Block = NonNullable<Page['layout']>[number]
 
-export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks }) => {
+export const BlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null }> = ({
+  blocks,
+}) => {
   if (!blocks || blocks.length === 0) {
     return null
   }
 
   return (
-    <div className="blocks-container">
+    <div>
       {blocks.map((block, index) => {
-        switch (block.blockType) {
-          case 'hero':
-            return (
-              <HeroBlock
-                key={index}
-                heading={block.heading}
-                subheading={block.subheading}
-                sectionId={block.sectionId}
-              />
-            )
-          case 'features':
-            return (
-              <FeaturesBlock
-                key={index}
-                features={block.features}
-                heading={block.heading}
-                sectionId={block.sectionId}
-              />
-            )
-          case 'section':
-            return (
-              <SectionBlock
-                key={index}
-                title={block.title}
-                sectionId={block.sectionId}
-                backgroundColor={block.backgroundColor}
-                blocks={block.blocks}
-                padding={block.padding}
-                height={block.height}
-                customHeight={block.customHeight}
-              />
-            )
-          default:
-            console.warn(`Unknown block type: ${block.blockType}`)
-            return null
+        const { blockType } = block
+
+        if (blockType && blockType in blockComponents) {
+          const BlockComponent = blockComponents[blockType as keyof typeof blockComponents]
+          const key = block.id ? `${block.id}-${index}` : index
+          // @ts-expect-error
+          return <BlockComponent key={key} {...block} />
         }
+
+        return (
+          <div key={index}>
+            The component for block type &quot;{blockType}&quot; does not exist.
+          </div>
+        )
       })}
     </div>
   )

@@ -220,55 +220,6 @@ export interface Page {
             blockName?: string | null;
             blockType: 'features';
           }
-        | {
-            title?: string | null;
-            /**
-             * Unique ID for this section (used for menu navigation)
-             */
-            sectionId: string;
-            backgroundColor?: ('default' | 'light-gray' | 'dark-gray' | 'primary' | 'secondary') | null;
-            blocks?:
-              | (
-                  | {
-                      heading: string;
-                      subheading?: string | null;
-                      /**
-                       * Optional ID for this section (used for menu navigation)
-                       */
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'hero';
-                    }
-                  | {
-                      heading?: string | null;
-                      features?:
-                        | {
-                            title?: string | null;
-                            description?: string | null;
-                            id?: string | null;
-                          }[]
-                        | null;
-                      /**
-                       * Optional ID for this section (used for menu navigation)
-                       */
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'features';
-                    }
-                )[]
-              | null;
-            padding?: ('small' | 'medium' | 'large' | 'xl') | null;
-            height?: ('auto' | 'small' | 'medium' | 'large' | 'full' | 'custom') | null;
-            /**
-             * Custom height value (e.g., "500px", "50vh", "100%")
-             */
-            customHeight?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'section';
-          }
       )[]
     | null;
   meta?: {
@@ -434,46 +385,6 @@ export interface PagesSelect<T extends boolean = true> {
                     id?: T;
                   };
               sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
-        section?:
-          | T
-          | {
-              title?: T;
-              sectionId?: T;
-              backgroundColor?: T;
-              blocks?:
-                | T
-                | {
-                    hero?:
-                      | T
-                      | {
-                          heading?: T;
-                          subheading?: T;
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    features?:
-                      | T
-                      | {
-                          heading?: T;
-                          features?:
-                            | T
-                            | {
-                                title?: T;
-                                description?: T;
-                                id?: T;
-                              };
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                  };
-              padding?: T;
-              height?: T;
-              customHeight?: T;
               id?: T;
               blockName?: T;
             };

@@ -1,8 +1,15 @@
-import { Block } from 'payload'
+'use client'
+
 import React from 'react'
-import Hero from '@/blocks/Hero'
-import Features from '@/blocks/Features'
-import { BlockRenderer } from '@/components/BlockRenderer'
+import dynamic from 'next/dynamic'
+import { Block } from 'payload'
+import Hero from './Hero'
+import Features from './Features'
+
+const BlockRenderer = dynamic(
+  () => import('@/components/BlockRenderer').then((mod) => mod.BlockRenderer),
+  { ssr: false },
+)
 
 const Section: Block = {
   slug: 'section',
@@ -16,9 +23,8 @@ const Section: Block = {
       name: 'sectionId',
       type: 'text',
       label: 'Section ID',
-      required: true,
       admin: {
-        description: 'Unique ID for this section (used for menu navigation)',
+        description: 'Unique ID for this section (used for menu navigation).',
       },
     },
     {
@@ -33,12 +39,6 @@ const Section: Block = {
         { label: 'Secondary', value: 'secondary' },
       ],
       defaultValue: 'default',
-    },
-    {
-      name: 'blocks',
-      type: 'blocks',
-      label: 'Section Blocks',
-      blocks: [Hero, Features],
     },
     {
       name: 'padding',
@@ -71,17 +71,23 @@ const Section: Block = {
       type: 'text',
       label: 'Custom Height',
       admin: {
-        description: 'Custom height value (e.g., "500px", "50vh", "100%")',
-        condition: (data) => data.height === 'custom',
+        description: 'Custom height value (e.g., "500px", "50vh", "100%").',
+        condition: (_, siblingData) => siblingData?.height === 'custom',
       },
+    },
+    {
+      name: 'blocks',
+      type: 'blocks',
+      label: 'Section Blocks',
+      minRows: 0,
+      blocks: [Hero, Features],
     },
   ],
 }
 
-// React component to render the Section block
 export const SectionBlock: React.FC<{
   title?: string
-  sectionId: string
+  sectionId?: string
   backgroundColor?: string
   blocks?: any[]
   padding?: string
@@ -107,7 +113,7 @@ export const SectionBlock: React.FC<{
       case 'secondary':
         return 'bg-green-600 text-white'
       default:
-        return 'bg-white'
+        return 'bg-white text-black'
     }
   }
 
@@ -124,7 +130,7 @@ export const SectionBlock: React.FC<{
     }
   }
 
-  const getHeightStyle = () => {
+  const getHeightStyle = (): React.CSSProperties => {
     if (height === 'custom' && customHeight) {
       return { minHeight: customHeight }
     }
@@ -145,8 +151,8 @@ export const SectionBlock: React.FC<{
 
   return (
     <section
-      id={sectionId}
-      className={`section-block ${getBackgroundClass()} ${getPaddingClass()} scroll-margin-top-80`}
+      {...(sectionId ? { id: sectionId } : {})}
+      className={`section-block ${getBackgroundClass()} ${getPaddingClass()} scroll-mt-20`}
       style={getHeightStyle()}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -155,11 +161,7 @@ export const SectionBlock: React.FC<{
             <h2 className="text-3xl font-bold">{title}</h2>
           </div>
         )}
-        {blocks && blocks.length > 0 && (
-          <div className="section-blocks">
-            <BlockRenderer blocks={blocks} />
-          </div>
-        )}
+        <BlockRenderer blocks={Array.isArray(blocks) ? blocks : []} />
       </div>
     </section>
   )

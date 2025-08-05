@@ -1,4 +1,3 @@
-// blocks/Hero.tsx
 import { Block } from 'payload'
 import React from 'react'
 
@@ -25,7 +24,6 @@ const Hero: Block = {
   ],
 }
 
-// React component to render the Hero block
 export const HeroBlock: React.FC<{
   heading: string
   subheading?: string

@@ -13,9 +13,22 @@ const Features: Block = {
     {
       name: 'features',
       type: 'array',
+      label: 'Features List',
+      labels: {
+        singular: 'Feature',
+        plural: 'Features',
+      },
       fields: [
-        { name: 'title', type: 'text' },
-        { name: 'description', type: 'textarea' },
+        {
+          name: 'title',
+          type: 'text',
+          label: 'Title',
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          label: 'Description',
+        },
       ],
     },
     {
@@ -29,7 +42,6 @@ const Features: Block = {
   ],
 }
 
-// React component to render the Features block
 export const FeaturesBlock: React.FC<{
   features: Array<{
     title: string

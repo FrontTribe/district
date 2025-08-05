@@ -96,7 +96,7 @@ const Pages: CollectionConfig = {
     {
       name: 'layout',
       type: 'blocks',
-      blocks: [Hero, Features, Section],
+      blocks: [Hero, Features],
     },
   ],
 }
