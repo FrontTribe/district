@@ -5,6 +5,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
+import { seoPlugin } from '@payloadcms/plugin-seo'
 
 import Tenants from './collections/tenants'
 import Users from './collections/Users'
@@ -34,5 +35,13 @@ export default buildConfig({
     url: process.env.DATABASE_URI || '',
   }),
   sharp,
-  plugins: [payloadCloudPlugin()],
+  plugins: [
+    payloadCloudPlugin(),
+    seoPlugin({
+      collections: ['pages'],
+      uploadsCollection: 'media',
+      generateTitle: ({ doc }) => `Website.com — ${doc.title}`,
+      generateDescription: ({ doc }) => doc.excerpt,
+    }),
+  ],
 })
