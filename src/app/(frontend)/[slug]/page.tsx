@@ -29,7 +29,7 @@ async function fetchPage(slug: string): Promise<PageType | null> {
 }
 
 export default async function Page({ params }: { params: { slug: string } }) {
-  const { slug } = await params
+  const { slug } = params
   const page = await fetchPage(slug)
 
   if (!page) {
