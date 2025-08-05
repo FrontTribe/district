@@ -66,6 +66,20 @@ const Pages: CollectionConfig = {
       required: true,
     },
     {
+      name: 'slug',
+      type: 'text',
+      required: true,
+      unique: true,
+    },
+    {
+      name: 'excerpt',
+      type: 'textarea',
+      required: false,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'tenant',
       type: 'relationship',
       relationTo: 'tenants',
