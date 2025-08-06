@@ -10,28 +10,7 @@ const Tenants: CollectionConfig = {
     },
   },
   access: {
-    read: ({ req: { user } }) => {
-      if (!user) return false
-
-      if ((user as any)?.role === 'superadmin') {
-        return true
-      }
-
-      const tenantId =
-        typeof (user as any).tenant === 'object' && (user as any).tenant !== null
-          ? (user as any).tenant.id
-          : (user as any).tenant
-
-      if (!tenantId) {
-        return false
-      }
-
-      return {
-        id: {
-          equals: tenantId,
-        },
-      }
-    },
+    read: () => true,
     create: ({ req: { user } }) => user?.role === 'superadmin',
     update: ({ req: { user } }) => user?.role === 'superadmin',
     delete: ({ req: { user } }) => user?.role === 'superadmin',

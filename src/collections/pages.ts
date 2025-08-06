@@ -83,15 +83,27 @@ const Pages: CollectionConfig = {
       name: 'tenant',
       type: 'relationship',
       relationTo: 'tenants',
-      required: false,
+      required: true,
       access: {
-        create: ({ req }) =>
-          (req.user as any)?.role === 'superadmin' || (req.user as any)?.role === 'tenant-admin',
-        update: ({ req }) => (req.user as any)?.role === 'superadmin',
+        read: ({ req }) => {
+          const user = req.user as any
+          return user?.role === 'superadmin' || user?.role === 'tenant-admin'
+        },
+        create: ({ req }) => {
+          const user = req.user as any
+          return user?.role === 'superadmin' || user?.role === 'tenant-admin'
+        },
+        update: ({ req, data }) => {
+          const user = req.user as any
+          // This must allow tenant-admin to update if the tenant matches
+          if (user?.role === 'superadmin') return true
+          if (user?.role === 'tenant-admin') {
+            // Only allow update if the tenant matches
+            return data?.tenant === (user?.tenant?.id || user?.tenant)
+          }
+          return false
+        },
       },
-      // admin: {
-      //   condition: ({ user }) => user?.role === 'superadmin',
-      // },
     },
     {
       name: 'layout',

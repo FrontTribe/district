@@ -23,6 +23,7 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+
     livePreview: {
       collections: ['pages'],
       url: ({ data, collectionConfig, locale }) => {
@@ -45,6 +46,10 @@ export default buildConfig({
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL,
+  cors: [
+    'http://restaurants.test:3000',
+    'http://localhost:3000', // Good to keep this for other tools
+  ],
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
