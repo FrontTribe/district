@@ -95,14 +95,29 @@ const Pages: CollectionConfig = {
         },
         update: ({ req, data }) => {
           const user = req.user as any
-          // This must allow tenant-admin to update if the tenant matches
+
           if (user?.role === 'superadmin') return true
+
           if (user?.role === 'tenant-admin') {
-            // Only allow update if the tenant matches
-            return data?.tenant === (user?.tenant?.id || user?.tenant)
+            console.log('🔒 tenant-admin update check')
+
+            const tenantId = user?.tenant?.id || user?.tenant
+            const dataTenant = data?.tenant
+
+            // Extract tenant ID safely from string or object
+            const dataTenantId = typeof dataTenant === 'string' ? dataTenant : dataTenant?.id
+
+            const allowed = dataTenantId === tenantId
+            console.log(`✅ Allowed to update: ${allowed}`)
+
+            return allowed
           }
+
           return false
         },
+      },
+      admin: {
+        condition: ({ user }) => user?.role === 'superadmin' || user?.role === 'tenant-admin',
       },
     },
     {
