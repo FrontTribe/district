@@ -10,6 +10,8 @@ const Pages: CollectionConfig = {
   },
   access: {
     read: ({ req }) => {
+      console.log(req.user)
+
       if ((req.user as any)?.role === 'superadmin') {
         return true
       }
@@ -116,9 +118,9 @@ const Pages: CollectionConfig = {
           return false
         },
       },
-      admin: {
-        condition: ({ user }) => user?.role === 'superadmin' || user?.role === 'tenant-admin',
-      },
+      // admin: {
+      //   condition: ({ user }) => user?.role === 'superadmin',
+      // },
     },
     {
       name: 'layout',

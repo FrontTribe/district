@@ -189,7 +189,7 @@ export interface Page {
   title: string;
   slug: string;
   excerpt?: string | null;
-  tenant?: (string | null) | Tenant;
+  tenant: string | Tenant;
   layout?:
     | (
         | {

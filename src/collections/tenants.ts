@@ -10,7 +10,7 @@ const Tenants: CollectionConfig = {
     },
   },
   access: {
-    read: () => true,
+    read: ({ req: { user } }) => user?.role === 'superadmin',
     create: ({ req: { user } }) => user?.role === 'superadmin',
     update: ({ req: { user } }) => user?.role === 'superadmin',
     delete: ({ req: { user } }) => user?.role === 'superadmin',
