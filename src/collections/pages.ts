@@ -72,52 +72,26 @@ const Pages: CollectionConfig = {
       unique: true,
     },
     {
-      name: 'excerpt',
-      type: 'textarea',
-      required: false,
-      admin: {
-        position: 'sidebar',
-      },
-    },
-    {
       name: 'tenant',
       type: 'relationship',
       relationTo: 'tenants',
-      required: true,
+      required: false,
       access: {
         read: ({ req }) => {
           const user = req.user as any
-          return user?.role === 'superadmin' || user?.role === 'tenant-admin'
+          return user?.role === 'superadmin'
         },
         create: ({ req }) => {
           const user = req.user as any
-          return user?.role === 'superadmin' || user?.role === 'tenant-admin'
+          return user?.role === 'superadmin'
         },
-        update: ({ req, data }) => {
+        update: ({ req }) => {
           const user = req.user as any
-
-          if (user?.role === 'superadmin') return true
-
-          if (user?.role === 'tenant-admin') {
-            console.log('🔒 tenant-admin update check')
-
-            const tenantId = user?.tenant?.id || user?.tenant
-            const dataTenant = data?.tenant
-
-            // Extract tenant ID safely from string or object
-            const dataTenantId = typeof dataTenant === 'string' ? dataTenant : dataTenant?.id
-
-            const allowed = dataTenantId === tenantId
-            console.log(`✅ Allowed to update: ${allowed}`)
-
-            return allowed
-          }
-
-          return false
+          return user?.role === 'superadmin'
         },
       },
       admin: {
-        condition: ({ user }) => user?.role === 'superadmin' || user?.role === 'tenant-admin',
+        // Show field for all users, but access control will prevent non-superadmin from using it
       },
     },
     {
