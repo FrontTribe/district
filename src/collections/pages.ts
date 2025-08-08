@@ -10,6 +10,8 @@ const Pages: CollectionConfig = {
   },
   access: {
     read: ({ req }) => {
+      console.log(req.user)
+
       if ((req.user as any)?.role === 'superadmin') {
         return true
       }
@@ -90,9 +92,9 @@ const Pages: CollectionConfig = {
           return user?.role === 'superadmin'
         },
       },
-      admin: {
-        // Show field for all users, but access control will prevent non-superadmin from using it
-      },
+      // admin: {
+      //   condition: ({ user }) => user?.role === 'superadmin',
+      // },
     },
     {
       name: 'layout',
