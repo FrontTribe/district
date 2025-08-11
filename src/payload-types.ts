@@ -59,529 +59,527 @@ export type SupportedTimezones =
   | 'Pacific/Guam'
   | 'Pacific/Noumea'
   | 'Pacific/Auckland'
-  | 'Pacific/Fiji'
+  | 'Pacific/Fiji';
 
 export interface Config {
   auth: {
-    users: UserAuthOperations
-  }
-  blocks: {}
+    users: UserAuthOperations;
+  };
+  blocks: {};
   collections: {
-    users: User
-    media: Media
-    tenants: Tenant
-    pages: Page
-    'payload-locked-documents': PayloadLockedDocument
-    'payload-preferences': PayloadPreference
-    'payload-migrations': PayloadMigration
-  }
-  collectionsJoins: {}
+    users: User;
+    media: Media;
+    tenants: Tenant;
+    pages: Page;
+    'payload-locked-documents': PayloadLockedDocument;
+    'payload-preferences': PayloadPreference;
+    'payload-migrations': PayloadMigration;
+  };
+  collectionsJoins: {};
   collectionsSelect: {
-    users: UsersSelect<false> | UsersSelect<true>
-    media: MediaSelect<false> | MediaSelect<true>
-    tenants: TenantsSelect<false> | TenantsSelect<true>
-    pages: PagesSelect<false> | PagesSelect<true>
-    'payload-locked-documents':
-      | PayloadLockedDocumentsSelect<false>
-      | PayloadLockedDocumentsSelect<true>
-    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>
-    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>
-  }
+    users: UsersSelect<false> | UsersSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
+    tenants: TenantsSelect<false> | TenantsSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
+    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
+    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
+    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
+  };
   db: {
-    defaultIDType: string
-  }
+    defaultIDType: string;
+  };
   globals: {
-    menu: Menu
-    footer: Footer
-  }
+    menu: Menu;
+    footer: Footer;
+  };
   globalsSelect: {
-    menu: MenuSelect<false> | MenuSelect<true>
-    footer: FooterSelect<false> | FooterSelect<true>
-  }
-  locale: null
+    menu: MenuSelect<false> | MenuSelect<true>;
+    footer: FooterSelect<false> | FooterSelect<true>;
+  };
+  locale: 'en' | 'ar' | 'fr' | 'es';
   user: User & {
-    collection: 'users'
-  }
+    collection: 'users';
+  };
   jobs: {
-    tasks: unknown
-    workflows: unknown
-  }
+    tasks: unknown;
+    workflows: unknown;
+  };
 }
 export interface UserAuthOperations {
   forgotPassword: {
-    email: string
-    password: string
-  }
+    email: string;
+    password: string;
+  };
   login: {
-    email: string
-    password: string
-  }
+    email: string;
+    password: string;
+  };
   registerFirstUser: {
-    email: string
-    password: string
-  }
+    email: string;
+    password: string;
+  };
   unlock: {
-    email: string
-    password: string
-  }
+    email: string;
+    password: string;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
-  id: string
-  role: 'superadmin' | 'tenant-admin'
-  tenant?: (string | null) | Tenant
-  updatedAt: string
-  createdAt: string
-  email: string
-  resetPasswordToken?: string | null
-  resetPasswordExpiration?: string | null
-  salt?: string | null
-  hash?: string | null
-  loginAttempts?: number | null
-  lockUntil?: string | null
+  id: string;
+  role: 'superadmin' | 'tenant-admin';
+  tenant?: (string | null) | Tenant;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
   sessions?:
     | {
-        id: string
-        createdAt?: string | null
-        expiresAt: string
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
       }[]
-    | null
-  password?: string | null
+    | null;
+  password?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tenants".
  */
 export interface Tenant {
-  id: string
-  name: string
-  subdomain: string
-  updatedAt: string
-  createdAt: string
+  id: string;
+  name: string;
+  subdomain: string;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
-  id: string
-  alt: string
-  tenant?: (string | null) | Tenant
-  updatedAt: string
-  createdAt: string
-  url?: string | null
-  thumbnailURL?: string | null
-  filename?: string | null
-  mimeType?: string | null
-  filesize?: number | null
-  width?: number | null
-  height?: number | null
-  focalX?: number | null
-  focalY?: number | null
+  id: string;
+  alt: string;
+  tenant?: (string | null) | Tenant;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
  */
 export interface Page {
-  id: string
-  title: string
-  slug: string
-  excerpt?: string | null
-  tenant: string | Tenant
+  id: string;
+  title: string;
+  slug: string;
+  tenant?: (string | null) | Tenant;
   layout?:
     | (
         | {
-            heading: string
-            subheading?: string | null
+            heading: string;
+            subheading?: string | null;
             /**
              * Optional ID for this section (used for menu navigation)
              */
-            sectionId?: string | null
-            id?: string | null
-            blockName?: string | null
-            blockType: 'hero'
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'hero';
           }
         | {
-            heading?: string | null
+            heading?: string | null;
             features?:
               | {
-                  title?: string | null
-                  description?: string | null
-                  id?: string | null
+                  title?: string | null;
+                  description?: string | null;
+                  id?: string | null;
                 }[]
-              | null
+              | null;
             /**
              * Optional ID for this section (used for menu navigation)
              */
-            sectionId?: string | null
-            id?: string | null
-            blockName?: string | null
-            blockType: 'features'
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'features';
           }
       )[]
-    | null
+    | null;
   meta?: {
-    title?: string | null
-    description?: string | null
+    title?: string | null;
+    description?: string | null;
     /**
      * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
      */
-    image?: (string | null) | Media
-  }
-  updatedAt: string
-  createdAt: string
-  _status?: ('draft' | 'published') | null
+    image?: (string | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string
+  id: string;
   document?:
     | ({
-        relationTo: 'users'
-        value: string | User
+        relationTo: 'users';
+        value: string | User;
       } | null)
     | ({
-        relationTo: 'media'
-        value: string | Media
+        relationTo: 'media';
+        value: string | Media;
       } | null)
     | ({
-        relationTo: 'tenants'
-        value: string | Tenant
+        relationTo: 'tenants';
+        value: string | Tenant;
       } | null)
     | ({
-        relationTo: 'pages'
-        value: string | Page
-      } | null)
-  globalSlug?: string | null
+        relationTo: 'pages';
+        value: string | Page;
+      } | null);
+  globalSlug?: string | null;
   user: {
-    relationTo: 'users'
-    value: string | User
-  }
-  updatedAt: string
-  createdAt: string
+    relationTo: 'users';
+    value: string | User;
+  };
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string
+  id: string;
   user: {
-    relationTo: 'users'
-    value: string | User
-  }
-  key?: string | null
+    relationTo: 'users';
+    value: string | User;
+  };
+  key?: string | null;
   value?:
     | {
-        [k: string]: unknown
+        [k: string]: unknown;
       }
     | unknown[]
     | string
     | number
     | boolean
-    | null
-  updatedAt: string
-  createdAt: string
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string
-  name?: string | null
-  batch?: number | null
-  updatedAt: string
-  createdAt: string
+  id: string;
+  name?: string | null;
+  batch?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  role?: T
-  tenant?: T
-  updatedAt?: T
-  createdAt?: T
-  email?: T
-  resetPasswordToken?: T
-  resetPasswordExpiration?: T
-  salt?: T
-  hash?: T
-  loginAttempts?: T
-  lockUntil?: T
+  role?: T;
+  tenant?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
   sessions?:
     | T
     | {
-        id?: T
-        createdAt?: T
-        expiresAt?: T
-      }
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
-  alt?: T
-  tenant?: T
-  updatedAt?: T
-  createdAt?: T
-  url?: T
-  thumbnailURL?: T
-  filename?: T
-  mimeType?: T
-  filesize?: T
-  width?: T
-  height?: T
-  focalX?: T
-  focalY?: T
+  alt?: T;
+  tenant?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tenants_select".
  */
 export interface TenantsSelect<T extends boolean = true> {
-  name?: T
-  subdomain?: T
-  updatedAt?: T
-  createdAt?: T
+  name?: T;
+  subdomain?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages_select".
  */
 export interface PagesSelect<T extends boolean = true> {
-  title?: T
-  slug?: T
-  tenant?: T
+  title?: T;
+  slug?: T;
+  tenant?: T;
   layout?:
     | T
     | {
         hero?:
           | T
           | {
-              heading?: T
-              subheading?: T
-              sectionId?: T
-              id?: T
-              blockName?: T
-            }
+              heading?: T;
+              subheading?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
         features?:
           | T
           | {
-              heading?: T
+              heading?: T;
               features?:
                 | T
                 | {
-                    title?: T
-                    description?: T
-                    id?: T
-                  }
-              sectionId?: T
-              id?: T
-              blockName?: T
-            }
-      }
+                    title?: T;
+                    description?: T;
+                    id?: T;
+                  };
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
   meta?:
     | T
     | {
-        title?: T
-        description?: T
-        image?: T
-      }
-  updatedAt?: T
-  createdAt?: T
-  _status?: T
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents_select".
  */
 export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
-  document?: T
-  globalSlug?: T
-  user?: T
-  updatedAt?: T
-  createdAt?: T
+  document?: T;
+  globalSlug?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-preferences_select".
  */
 export interface PayloadPreferencesSelect<T extends boolean = true> {
-  user?: T
-  key?: T
-  value?: T
-  updatedAt?: T
-  createdAt?: T
+  user?: T;
+  key?: T;
+  value?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-migrations_select".
  */
 export interface PayloadMigrationsSelect<T extends boolean = true> {
-  name?: T
-  batch?: T
-  updatedAt?: T
-  createdAt?: T
+  name?: T;
+  batch?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "menu".
  */
 export interface Menu {
-  id: string
-  tenant?: (string | null) | Tenant
+  id: string;
+  tenant?: (string | null) | Tenant;
   menuItems?:
     | {
-        label: string
+        label: string;
         /**
          * URL or path for this menu item (required even if using scroll target)
          */
-        link: string
+        link: string;
         /**
          * Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.
          */
-        scrollTarget?: string | null
-        external?: boolean | null
+        scrollTarget?: string | null;
+        external?: boolean | null;
         children?:
           | {
-              label: string
+              label: string;
               /**
                * URL or path for this menu item (required even if using scroll target)
                */
-              link: string
+              link: string;
               /**
                * Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.
                */
-              scrollTarget?: string | null
-              external?: boolean | null
-              id?: string | null
+              scrollTarget?: string | null;
+              external?: boolean | null;
+              id?: string | null;
             }[]
-          | null
-        id?: string | null
+          | null;
+        id?: string | null;
       }[]
-    | null
-  logo?: (string | null) | Media
-  logoText?: string | null
-  updatedAt?: string | null
-  createdAt?: string | null
+    | null;
+  logo?: (string | null) | Media;
+  logoText?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "footer".
  */
 export interface Footer {
-  id: string
-  tenant?: (string | null) | Tenant
+  id: string;
+  tenant?: (string | null) | Tenant;
   columns?:
     | {
-        title: string
+        title: string;
         links?:
           | {
-              label: string
-              link: string
-              external?: boolean | null
-              id?: string | null
+              label: string;
+              link: string;
+              external?: boolean | null;
+              id?: string | null;
             }[]
-          | null
-        id?: string | null
+          | null;
+        id?: string | null;
       }[]
-    | null
+    | null;
   bottomSection?: {
-    copyright?: string | null
+    copyright?: string | null;
     socialLinks?:
       | {
-          platform?: ('facebook' | 'twitter' | 'instagram' | 'linkedin' | 'youtube') | null
-          url: string
-          id?: string | null
+          platform?: ('facebook' | 'twitter' | 'instagram' | 'linkedin' | 'youtube') | null;
+          url: string;
+          id?: string | null;
         }[]
-      | null
-  }
-  updatedAt?: string | null
-  createdAt?: string | null
+      | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "menu_select".
  */
 export interface MenuSelect<T extends boolean = true> {
-  tenant?: T
+  tenant?: T;
   menuItems?:
     | T
     | {
-        label?: T
-        link?: T
-        scrollTarget?: T
-        external?: T
+        label?: T;
+        link?: T;
+        scrollTarget?: T;
+        external?: T;
         children?:
           | T
           | {
-              label?: T
-              link?: T
-              scrollTarget?: T
-              external?: T
-              id?: T
-            }
-        id?: T
-      }
-  logo?: T
-  logoText?: T
-  updatedAt?: T
-  createdAt?: T
-  globalType?: T
+              label?: T;
+              link?: T;
+              scrollTarget?: T;
+              external?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  logo?: T;
+  logoText?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "footer_select".
  */
 export interface FooterSelect<T extends boolean = true> {
-  tenant?: T
+  tenant?: T;
   columns?:
     | T
     | {
-        title?: T
+        title?: T;
         links?:
           | T
           | {
-              label?: T
-              link?: T
-              external?: T
-              id?: T
-            }
-        id?: T
-      }
+              label?: T;
+              link?: T;
+              external?: T;
+              id?: T;
+            };
+        id?: T;
+      };
   bottomSection?:
     | T
     | {
-        copyright?: T
+        copyright?: T;
         socialLinks?:
           | T
           | {
-              platform?: T
-              url?: T
-              id?: T
-            }
-      }
-  updatedAt?: T
-  createdAt?: T
-  globalType?: T
+              platform?: T;
+              url?: T;
+              id?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "auth".
  */
 export interface Auth {
-  [k: string]: unknown
+  [k: string]: unknown;
 }
+
 
 declare module 'payload' {
   export interface GeneratedTypes extends Config {}

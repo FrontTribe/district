@@ -56,6 +56,29 @@ export default buildConfig({
   db: mongooseAdapter({
     url: process.env.DATABASE_URI || '',
   }),
+  localization: {
+    locales: [
+      {
+        label: 'English',
+        code: 'en',
+      },
+      {
+        label: 'Arabic',
+        code: 'ar',
+        rtl: true,
+      },
+      {
+        label: 'French',
+        code: 'fr',
+      },
+      {
+        label: 'Spanish',
+        code: 'es',
+      },
+    ],
+    defaultLocale: 'en',
+    fallback: true,
+  },
   sharp,
   plugins: [
     payloadCloudPlugin(),
