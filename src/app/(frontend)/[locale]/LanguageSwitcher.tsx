@@ -1,13 +1,7 @@
 'use client'
 
+import { localeLang } from '@/utils/locale'
 import { usePathname } from 'next/navigation'
-
-const locales = [
-  { code: 'en', label: 'English' },
-  { code: 'ar', label: 'Arabic' },
-  { code: 'fr', label: 'French' },
-  { code: 'es', label: 'Spanish' },
-]
 
 interface LanguageSwitcherProps {
   currentLocale: string
@@ -28,7 +22,7 @@ export default function LanguageSwitcher({ currentLocale, slug }: LanguageSwitch
 
   return (
     <select value={currentLocale} onChange={handleChange} aria-label="Select language">
-      {locales.map(({ code, label }) => (
+      {localeLang.map(({ code, label }) => (
         <option key={code} value={code}>
           {label}
         </option>
