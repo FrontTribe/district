@@ -5,13 +5,17 @@ import { draftMode } from 'next/headers'
 import type { Page as PageType } from '@/payload-types'
 
 type PageProps = {
-  params: Promise<{ slug: string }> // <-- params is a Promise here
+  params: {
+    slug: string
+    locale: string
+  }
 }
 
-async function fetchPage(slug: string): Promise<PageType | null> {
+type AllowedLocale = 'en' | 'ar' | 'fr' | 'es' | 'all' | undefined
+
+async function fetchPage(slug: string, locale: AllowedLocale): Promise<PageType | null> {
   try {
     const { isEnabled: isDraftMode } = await draftMode()
-
     const payload = await getPayloadClient()
 
     const pageQuery = await payload.find({
@@ -23,6 +27,7 @@ async function fetchPage(slug: string): Promise<PageType | null> {
       },
       draft: isDraftMode,
       depth: 2,
+      locale, // <-- add locale here to fetch localized content
     })
 
     return pageQuery.docs[0] || null
@@ -32,13 +37,13 @@ async function fetchPage(slug: string): Promise<PageType | null> {
   }
 }
 
-export default async function Page(props: { params: Promise<{ slug: string }> }) {
-  const { slug } = await props.params // <-- await here
-  const page = await fetchPage(slug)
+export default async function Page({ params }: PageProps) {
+  const { slug, locale } = await params
+  const page = await fetchPage(slug, locale as AllowedLocale)
 
   if (!page) {
     return notFound()
   }
 
-  return <PageClient page={page} />
+  return <PageClient page={page} locale={locale} />
 }

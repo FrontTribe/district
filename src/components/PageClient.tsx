@@ -3,8 +3,15 @@
 import { useLivePreview } from '@payloadcms/live-preview-react'
 import { Page as PageType } from '@/payload-types'
 import { BlockRenderer } from './BlockRenderer'
+import LanguageSwitcher from '@/app/(frontend)/[locale]/LanguageSwitcher'
 
-export default function PageClient({ page: initialPage }: { page: PageType }) {
+export default function PageClient({
+  page: initialPage,
+  locale,
+}: {
+  page: PageType
+  locale: string
+}) {
   const { data } = useLivePreview<PageType>({
     initialData: initialPage,
     serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
@@ -13,8 +20,10 @@ export default function PageClient({ page: initialPage }: { page: PageType }) {
 
   return (
     <div className="prose mx-auto max-w-4xl p-4 lg:p-8">
+      <LanguageSwitcher currentLocale={locale} slug={data.slug} />
+
       <h1>{data.title}</h1>
-      {data.excerpt && <p className="text-lg italic text-gray-600">{data.excerpt}</p>}
+      {/* {data.excerpt && <p className="text-lg italic text-gray-600">{data.excerpt}</p>} */}
 
       {/* Replace the <pre> tag with the BlockRenderer */}
       {data.layout && <BlockRenderer blocks={data.layout} />}

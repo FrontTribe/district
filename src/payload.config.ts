@@ -28,7 +28,11 @@ export default buildConfig({
       collections: ['pages'],
       url: ({ data, collectionConfig, locale }) => {
         const frontendURL = data.tenant?.url || 'http://localhost:3000'
-        const pagePath = collectionConfig?.slug === 'pages' ? `/${data.slug}` : `/${data.slug}`
+        const pagePath =
+          collectionConfig?.slug === 'pages'
+            ? `/${locale.code}/${data.slug}`
+            : `/${locale.code}/${data.slug}`
+
         const draftURL = new URL(`${frontendURL}/api/draft`)
         draftURL.searchParams.set('url', pagePath)
         draftURL.searchParams.set('secret', process.env.DRAFT_SECRET || '')
