@@ -101,6 +101,7 @@ const Pages: CollectionConfig = {
       name: 'layout',
       type: 'blocks',
       blocks: [Hero, Features],
+      localized: true,
     },
   ],
 }

@@ -13,7 +13,6 @@ import Pages from './collections/pages'
 import Media from './collections/Media'
 import Menu from './globals/menu'
 import Footer from './globals/footer'
-import { localesLang } from './utils/local-switcher'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -58,7 +57,25 @@ export default buildConfig({
     url: process.env.DATABASE_URI || '',
   }),
   localization: {
-    locales: localesLang,
+    locales: [
+      {
+        label: 'English',
+        code: 'en',
+      },
+      {
+        label: 'Arabic',
+        code: 'ar',
+        rtl: true,
+      },
+      {
+        label: 'French',
+        code: 'fr',
+      },
+      {
+        label: 'Spanish',
+        code: 'es',
+      },
+    ],
     defaultLocale: 'en',
     fallback: true,
   },
