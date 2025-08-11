@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 
 const locales = [
   { code: 'en', label: 'English' },
@@ -15,17 +15,15 @@ interface LanguageSwitcherProps {
 }
 
 export default function LanguageSwitcher({ currentLocale, slug }: LanguageSwitcherProps) {
-  const router = useRouter()
   const pathname = usePathname()
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLocale = e.target.value
-
-    // Build new path by replacing locale segment
-    // Assuming URL structure: /[locale]/[slug]
     const segments = pathname.split('/')
-    segments[1] = newLocale // Replace locale segment
-    router.push(segments.join('/'))
+    segments[1] = newLocale
+    const newPath = segments.join('/')
+
+    window.location.href = newPath // full reload
   }
 
   return (
