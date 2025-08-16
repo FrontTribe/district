@@ -15,7 +15,7 @@ import { localeLang } from '@/utils/locale'
 import { notFound } from 'next/navigation'
 
 export default async function HomePage({ params }: { params: { locale: string } }) {
-  const locale = params.locale
+  const { locale } = await params
   const supportedLocale = localeLang.find((lang) => lang.code === locale)
   if (!supportedLocale) {
     return notFound()
@@ -135,29 +135,20 @@ export default async function HomePage({ params }: { params: { locale: string } 
       if (
         menuResponse &&
         typeof menuResponse.tenant === 'object' &&
-        menuResponse.tenant !== null &&
-        'id' in menuResponse.tenant &&
-        (menuResponse.tenant as Tenant).id === currentTenant.id
+        menuResponse.tenant?.id === currentTenant.id
       ) {
         menuGlobal = menuResponse
       }
       if (
         footerResponse &&
         typeof footerResponse.tenant === 'object' &&
-        footerResponse.tenant !== null &&
-        'id' in footerResponse.tenant &&
-        (footerResponse.tenant as Tenant).id === currentTenant.id
+        footerResponse.tenant?.id === currentTenant.id
       ) {
         footerGlobal = footerResponse
       }
     } else {
-      // For main domain, use globals without tenant assignment
-      if (menuResponse && !menuResponse.tenant) {
-        menuGlobal = menuResponse
-      }
-      if (footerResponse && !footerResponse.tenant) {
-        footerGlobal = footerResponse
-      }
+      if (menuResponse && !menuResponse.tenant) menuGlobal = menuResponse
+      if (footerResponse && !footerResponse.tenant) footerGlobal = footerResponse
     }
     console.log('[Page] Menu global:', menuGlobal)
     console.log('[Page] Footer global:', footerGlobal)
