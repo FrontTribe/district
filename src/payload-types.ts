@@ -96,7 +96,7 @@ export interface Config {
     menu: MenuSelect<false> | MenuSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
   };
-  locale: 'en' | 'ar' | 'fr' | 'es';
+  locale: 'hr' | 'en' | 'de';
   user: User & {
     collection: 'users';
   };
