@@ -11,7 +11,7 @@ type PageProps = {
   }
 }
 
-type AllowedLocale = 'en' | 'ar' | 'fr' | 'es' | 'all' | undefined
+type AllowedLocale = 'en' | 'hr' | 'de' | undefined
 
 async function fetchPage(slug: string, locale: AllowedLocale): Promise<PageType | null> {
   try {
