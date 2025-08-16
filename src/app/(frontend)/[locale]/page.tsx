@@ -131,14 +131,23 @@ export default async function HomePage({ params }: { params: { locale: string } 
       depth: 2,
     })
 
-    // Filter by tenant if we have one
     if (currentTenant) {
-      // For tenant-specific globals, we'll need to check if the global has the tenant field
-      // and if it matches our current tenant
-      if (menuResponse && menuResponse.tenant === currentTenant.id) {
+      if (
+        menuResponse &&
+        typeof menuResponse.tenant === 'object' &&
+        menuResponse.tenant !== null &&
+        'id' in menuResponse.tenant &&
+        (menuResponse.tenant as Tenant).id === currentTenant.id
+      ) {
         menuGlobal = menuResponse
       }
-      if (footerResponse && footerResponse.tenant === currentTenant.id) {
+      if (
+        footerResponse &&
+        typeof footerResponse.tenant === 'object' &&
+        footerResponse.tenant !== null &&
+        'id' in footerResponse.tenant &&
+        (footerResponse.tenant as Tenant).id === currentTenant.id
+      ) {
         footerGlobal = footerResponse
       }
     } else {
@@ -150,7 +159,6 @@ export default async function HomePage({ params }: { params: { locale: string } 
         footerGlobal = footerResponse
       }
     }
-
     console.log('[Page] Menu global:', menuGlobal)
     console.log('[Page] Footer global:', footerGlobal)
   } catch (error) {
