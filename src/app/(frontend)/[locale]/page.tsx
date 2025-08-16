@@ -13,7 +13,6 @@ import '../styles.css'
 import { RefreshRouteOnSave } from '@/components/RefreshRouteOnSave'
 import { localeLang } from '@/utils/locale'
 import { notFound } from 'next/navigation'
-import MainPageLanguageSwitcher from '@/components/mainPageLanguageSwitcher'
 
 export default async function HomePage({ params }: { params: { locale: string } }) {
   const locale = params.locale
@@ -191,7 +190,6 @@ export default async function HomePage({ params }: { params: { locale: string } 
         }
         logoText={menuGlobal?.logoText || undefined}
       />
-      <MainPageLanguageSwitcher locale={locale} />
       <div className="flex-1 pt-16">
         <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {!user && <h1>Welcome to your new project.</h1>}
