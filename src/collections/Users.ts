@@ -4,6 +4,7 @@ const restrictTenantLogin = async ({ req, user }: { req: any; user: any }) => {
   if (user.role === 'superadmin') {
     return
   }
+  console.log('from user:', user)
 
   if (user.role === 'tenant-admin') {
     let requestSubdomain = ''
@@ -41,7 +42,12 @@ const restrictTenantLogin = async ({ req, user }: { req: any; user: any }) => {
 
 const Users: CollectionConfig = {
   slug: 'users',
-  auth: {},
+  auth: {
+    cookies: {
+      sameSite: 'Lax',
+      secure: false,
+    },
+  },
   hooks: {
     afterLogin: [restrictTenantLogin],
   },
