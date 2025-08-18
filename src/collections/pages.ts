@@ -66,6 +66,7 @@ const Pages: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
     },
     {
       name: 'slug',
@@ -100,6 +101,7 @@ const Pages: CollectionConfig = {
       name: 'layout',
       type: 'blocks',
       blocks: [Hero, Features],
+      localized: true,
     },
   ],
 }

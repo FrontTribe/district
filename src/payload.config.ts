@@ -13,6 +13,7 @@ import Pages from './collections/pages'
 import Media from './collections/Media'
 import Menu from './globals/menu'
 import Footer from './globals/footer'
+import { localeLang } from './utils/locale'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -28,7 +29,11 @@ export default buildConfig({
       collections: ['pages'],
       url: ({ data, collectionConfig, locale }) => {
         const frontendURL = data.tenant?.url || 'http://localhost:3000'
-        const pagePath = collectionConfig?.slug === 'pages' ? `/${data.slug}` : `/${data.slug}`
+        const pagePath =
+          collectionConfig?.slug === 'pages'
+            ? `/${locale.code}/${data.slug}`
+            : `/${locale.code}/${data.slug}`
+
         const draftURL = new URL(`${frontendURL}/api/draft`)
         draftURL.searchParams.set('url', pagePath)
         draftURL.searchParams.set('secret', process.env.DRAFT_SECRET || '')
@@ -56,6 +61,11 @@ export default buildConfig({
   db: mongooseAdapter({
     url: process.env.DATABASE_URI || '',
   }),
+  localization: {
+    locales: localeLang,
+    defaultLocale: 'en',
+    fallback: true,
+  },
   sharp,
   plugins: [
     payloadCloudPlugin(),
