@@ -12,6 +12,9 @@ const nextConfig = {
 
     return webpackConfig
   },
+  images: {
+    domains: ['localhost'],
+  },
 }
 
 export default withPayload(nextConfig, { devBundleServerPackages: false })
