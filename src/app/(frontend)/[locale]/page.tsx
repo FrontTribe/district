@@ -1,11 +1,8 @@
-import { headers as getHeaders, headers } from 'next/headers'
-import Image from 'next/image'
+import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import React from 'react'
-import { fileURLToPath } from 'url'
 
 import config from '@/payload.config'
-import { BlockRenderer } from '@/components/BlockRenderer'
 import { Menu } from '@/components/Menu'
 import { Footer } from '@/components/Footer'
 import { Page, Tenant } from '@/payload-types'
@@ -26,9 +23,6 @@ export default async function HomePage({ params }: { params: { locale: string } 
   const requestHeaders: Headers = await headers()
   const payloadConfig = await config
   const payload = await getPayload({ config: payloadConfig })
-  const { user } = await payload.auth({ headers: requestHeaders })
-
-  const fileURL = `vscode://file/${fileURLToPath(import.meta.url)}`
 
   const headersList = requestHeaders
   const subdomain = headersList.get('x-tenant-subdomain')
@@ -146,72 +140,11 @@ export default async function HomePage({ params }: { params: { locale: string } 
       />
       <div className="flex-1 pt-16">
         <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {!user && <h1>Welcome to your new project.</h1>}
-          {user && <h1>Welcome back, {user.email}</h1>}
-
-          {/* Debug info */}
-          <div className="debug-info">
-            <h3>Debug Information</h3>
-            <p>Subdomain from header: {subdomain || 'None'}</p>
-            <p>
-              Locale from URL: {locale || 'None'}
-              {supportedLocale ? ` (${supportedLocale.label})` : ''}
-            </p>
-            <p>
-              Current tenant:{' '}
-              {currentTenant ? `${currentTenant.name} (${currentTenant.id})` : 'None'}
-            </p>
-            <p>
-              Pages found: {pages.length}{' '}
-              {!currentTenant && pages.length > 0 ? '(showing main domain pages only)' : ''}
-            </p>
-            <p>Menu: {menuGlobal ? `Found (${menuGlobal.title})` : 'Not found'}</p>
-            <p>Footer: {footerGlobal ? `Found (${footerGlobal.title})` : 'Not found'}</p>
-            {pages.length > 0 && (
-              <div style={{ marginTop: '10px' }}>
-                <p>
-                  <strong>Page details:</strong>
-                </p>
-                {pages.map((page, index) => (
-                  <div key={page.id} style={{ marginLeft: '10px', fontSize: '12px' }}>
-                    <p>
-                      • {page.title} (ID: {page.id})
-                    </p>
-                    <p style={{ marginLeft: '10px' }}>
-                      Tenant:{' '}
-                      {typeof page.tenant === 'string' ? page.tenant : page.tenant?.id || 'None'}
-                    </p>
-                    <p style={{ marginLeft: '10px' }}>Layout blocks: {page.layout?.length || 0}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Show current tenant info */}
-          {currentTenant && (
-            <div className="tenant-info">
-              <h2>Current Tenant: {currentTenant.name}</h2>
-              <p>Subdomain: {currentTenant.subdomain}</p>
-            </div>
-          )}
-
-          {!currentTenant && subdomain && (
-            <div className="tenant-not-found">
-              <h2>Tenant Not Found</h2>
-              <p>No tenant found for subdomain: {subdomain}</p>
-            </div>
-          )}
-
           {/* Render blocks from pages */}
           {pages.length > 0 ? (
             pages.map((page) => (
               <div key={page.id}>
-                <PageClient key={page.id} page={page} locale={locale} />
-                {/* <div key={page.id} className="page-content">
-                  <h2>{page.title}</h2>
-                  {page.layout && <BlockRenderer blocks={page.layout} />}
-                </div> */}
+                <PageClient key={page.id} page={page} />
               </div>
             ))
           ) : currentTenant ? (
@@ -225,25 +158,6 @@ export default async function HomePage({ params }: { params: { locale: string } 
               <p>No pages have been created for the main domain yet.</p>
             </div>
           )}
-
-          <div className="links">
-            <a
-              className="admin"
-              href={payloadConfig.routes.admin}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Go to admin panel
-            </a>
-            <a
-              className="docs"
-              href="https://payloadcms.com/docs"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Documentation
-            </a>
-          </div>
         </div>
       </div>
 
