@@ -29,17 +29,15 @@ export default buildConfig({
       collections: ['pages'],
       url: ({ data, req, locale }) => {
         const { user } = req
-        console.log('data from live url:', data)
-
         let tenantSubdomain = null
 
-        if (typeof data.tenant === 'object' && data.tenant !== null && data.tenant.subdomain) {
+        if (typeof data.tenant === 'object' && data.tenant?.subdomain) {
           tenantSubdomain = data.tenant.subdomain
         } else if (
           user &&
           user.role === 'tenant-admin' &&
           typeof user.tenant === 'object' &&
-          user.tenant !== null
+          user.tenant?.subdomain
         ) {
           tenantSubdomain = user.tenant.subdomain
         }
@@ -48,11 +46,17 @@ export default buildConfig({
           ? `http://${tenantSubdomain}.test:3000`
           : 'http://localhost:3000'
 
-        const pagePath = locale ? `/${locale.code}/${data.slug}` : `/${data.slug}`
+        let pagePath = '/'
+        if (data.slug !== '/') {
+          pagePath = locale ? `/${locale.code}/${data.slug}` : `/${data.slug}`
+        } else {
+          pagePath = locale ? `/${locale.code}` : '/'
+        }
 
         const draftURL = new URL(`${frontendURL}/api/draft`)
         draftURL.searchParams.set('url', pagePath)
         draftURL.searchParams.set('secret', process.env.DRAFT_SECRET || '')
+
         if (locale) {
           draftURL.searchParams.set('locale', locale.code)
         }
