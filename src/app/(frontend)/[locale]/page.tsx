@@ -62,6 +62,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
       const pagesResponse = await payload.find({
         collection: 'pages',
         depth: 2, // Include nested relationships
+        locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
         where: {
           and: [
             {
@@ -89,6 +90,8 @@ export default async function HomePage({ params }: { params: { locale: string } 
       const mainPagesResponse = await payload.find({
         collection: 'pages',
         depth: 2,
+        locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
+
         where: {
           and: [
             {

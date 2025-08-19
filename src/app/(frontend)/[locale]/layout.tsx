@@ -10,7 +10,7 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params
   return (
-    <html lang={locale}>
+    <html>
       <body>
         <MainPageLanguageSwitcher locale={locale} />
         {children}
