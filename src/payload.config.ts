@@ -27,16 +27,36 @@ export default buildConfig({
 
     livePreview: {
       collections: ['pages'],
-      url: ({ data, collectionConfig, locale }) => {
-        const frontendURL = data.tenant?.url || 'http://localhost:3000'
-        const pagePath =
-          collectionConfig?.slug === 'pages'
-            ? `/${locale.code}/${data.slug}`
-            : `/${locale.code}/${data.slug}`
+      url: ({ data, req, locale }) => {
+        const { user } = req
+        let tenantSubdomain = null
+
+        if (typeof data.tenant === 'object' && data.tenant?.subdomain) {
+          tenantSubdomain = data.tenant.subdomain
+        } else if (
+          user &&
+          user.role === 'tenant-admin' &&
+          typeof user.tenant === 'object' &&
+          user.tenant?.subdomain
+        ) {
+          tenantSubdomain = user.tenant.subdomain
+        }
+
+        const frontendURL = tenantSubdomain
+          ? `http://${tenantSubdomain}.test:3000`
+          : 'http://localhost:3000'
+
+        let pagePath = '/'
+        if (data.slug !== '/') {
+          pagePath = locale ? `/${locale.code}/${data.slug}` : `/${data.slug}`
+        } else {
+          pagePath = locale ? `/${locale.code}` : '/'
+        }
 
         const draftURL = new URL(`${frontendURL}/api/draft`)
         draftURL.searchParams.set('url', pagePath)
         draftURL.searchParams.set('secret', process.env.DRAFT_SECRET || '')
+
         if (locale) {
           draftURL.searchParams.set('locale', locale.code)
         }

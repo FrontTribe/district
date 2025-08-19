@@ -63,6 +63,7 @@ const Media: CollectionConfig = {
 
       required: false,
       access: {
+        read: () => true,
         create: ({ req }) =>
           (req.user as any)?.role === 'superadmin' || (req.user as any)?.role === 'tenant-admin',
         update: ({ req }) => (req.user as any)?.role === 'superadmin',

@@ -80,10 +80,7 @@ const Pages: CollectionConfig = {
       relationTo: 'tenants',
       required: false,
       access: {
-        read: ({ req }) => {
-          const user = req.user as any
-          return user?.role === 'superadmin'
-        },
+        read: () => true,
         create: ({ req }) => {
           const user = req.user as any
           return user?.role === 'superadmin'

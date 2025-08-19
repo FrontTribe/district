@@ -13,6 +13,7 @@ import '../styles.css'
 import { RefreshRouteOnSave } from '@/components/RefreshRouteOnSave'
 import { localeLang } from '@/utils/locale'
 import { notFound } from 'next/navigation'
+import PageClient from '@/components/PageClient'
 
 export default async function HomePage({ params }: { params: { locale: string } }) {
   const { locale } = await params
@@ -62,6 +63,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
       const pagesResponse = await payload.find({
         collection: 'pages',
         depth: 2, // Include nested relationships
+        locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
         where: {
           and: [
             {
@@ -89,6 +91,8 @@ export default async function HomePage({ params }: { params: { locale: string } 
       const mainPagesResponse = await payload.find({
         collection: 'pages',
         depth: 2,
+        locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
+
         where: {
           and: [
             {
@@ -251,10 +255,13 @@ export default async function HomePage({ params }: { params: { locale: string } 
           {/* Render blocks from pages */}
           {pages.length > 0 ? (
             pages.map((page) => (
-              <div key={page.id} className="page-content">
-                <h2>{page.title}</h2>
-                {page.layout && <BlockRenderer blocks={page.layout} />}
-              </div>
+              <>
+                <PageClient key={page.id} page={page} locale={locale} />
+                {/* <div key={page.id} className="page-content">
+                  <h2>{page.title}</h2>
+                  {page.layout && <BlockRenderer blocks={page.layout} />}
+                </div> */}
+              </>
             ))
           ) : currentTenant ? (
             <div className="no-pages">
