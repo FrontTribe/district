@@ -4,6 +4,8 @@ const Menu: CollectionConfig = {
   slug: 'menu',
   admin: {
     useAsTitle: 'title',
+    group: 'Site Content',
+    description: 'Manage navigation menus for tenants and main domain',
   },
   access: {
     read: ({ req }) => {

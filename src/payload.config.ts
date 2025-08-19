@@ -11,8 +11,8 @@ import Tenants from './collections/tenants'
 import Users from './collections/Users'
 import Pages from './collections/pages'
 import Media from './collections/Media'
-import Menu from './globals/menu'
-import Footer from './globals/footer'
+import Menu from './collections/Menu'
+import Footer from './collections/Footer'
 import { localeLang } from './utils/locale'
 
 const filename = fileURLToPath(import.meta.url)
@@ -26,7 +26,7 @@ export default buildConfig({
     },
 
     livePreview: {
-      collections: ['pages'],
+      collections: ['pages', 'menu', 'footer'],
       url: ({ data, req, locale }) => {
         const { user } = req
         let tenantSubdomain = null
@@ -63,11 +63,9 @@ export default buildConfig({
 
         return draftURL.toString()
       },
-      globals: ['menu', 'footer'],
     },
   },
-  collections: [Users, Media, Tenants, Pages],
-  globals: [Menu, Footer],
+  collections: [Users, Media, Tenants, Pages, Menu, Footer],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL,

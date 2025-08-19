@@ -7,6 +7,8 @@ const Pages: CollectionConfig = {
   slug: 'pages',
   admin: {
     useAsTitle: 'title',
+    group: 'Site Content',
+    description: 'Manage pages for tenants and main domain',
   },
   access: {
     read: ({ req }) => {

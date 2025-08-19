@@ -2,6 +2,11 @@ import { CollectionConfig } from 'payload'
 
 const Media: CollectionConfig = {
   slug: 'media',
+  admin: {
+    useAsTitle: 'alt',
+    group: 'Media & Assets',
+    description: 'Manage images, documents and other media files',
+  },
   access: {
     read: ({ req }) => {
       if (!req.user) {

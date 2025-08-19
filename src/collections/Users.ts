@@ -53,6 +53,8 @@ const Users: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'email',
+    group: 'System Management',
+    description: 'Manage user accounts and permissions',
   },
   access: {
     read: ({ req: { user } }) => user?.role === 'superadmin',

@@ -1,7 +1,10 @@
-import { GlobalConfig } from 'payload'
+import { CollectionConfig } from 'payload'
 
-const Footer: GlobalConfig = {
+const Footer: CollectionConfig = {
   slug: 'footer',
+  admin: {
+    useAsTitle: 'title',
+  },
   access: {
     read: ({ req }) => {
       if ((req.user as any)?.role === 'superadmin') {
@@ -36,6 +39,15 @@ const Footer: GlobalConfig = {
     ],
   },
   fields: [
+    {
+      name: 'title',
+      type: 'text',
+      required: true,
+      admin: {
+        description:
+          'Internal title for this footer (e.g., "Hotel ABC Footer", "Restaurant XYZ Footer")',
+      },
+    },
     {
       name: 'tenant',
       type: 'relationship',

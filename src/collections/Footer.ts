@@ -1,9 +1,11 @@
 import { CollectionConfig } from 'payload'
 
-const Menu: CollectionConfig = {
-  slug: 'menu',
+const Footer: CollectionConfig = {
+  slug: 'footer',
   admin: {
     useAsTitle: 'title',
+    group: 'Site Content',
+    description: 'Manage footer content for tenants and main domain',
   },
   access: {
     read: ({ req }) => {
@@ -44,7 +46,8 @@ const Menu: CollectionConfig = {
       type: 'text',
       required: true,
       admin: {
-        description: 'Internal title for this menu (e.g., "Hotel ABC Menu", "Restaurant XYZ Menu")',
+        description:
+          'Internal title for this footer (e.g., "Hotel ABC Footer", "Restaurant XYZ Footer")',
       },
     },
     {
@@ -59,38 +62,16 @@ const Menu: CollectionConfig = {
       },
     },
     {
-      name: 'menuItems',
+      name: 'columns',
       type: 'array',
       fields: [
         {
-          name: 'label',
+          name: 'title',
           type: 'text',
           required: true,
         },
         {
-          name: 'link',
-          type: 'text',
-          required: true,
-          admin: {
-            description: 'URL or path for this menu item (required even if using scroll target)',
-          },
-        },
-        {
-          name: 'scrollTarget',
-          type: 'text',
-          label: 'Scroll Target (Section ID)',
-          admin: {
-            description:
-              'Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.',
-          },
-        },
-        {
-          name: 'external',
-          type: 'checkbox',
-          defaultValue: false,
-        },
-        {
-          name: 'children',
+          name: 'links',
           type: 'array',
           fields: [
             {
@@ -102,19 +83,6 @@ const Menu: CollectionConfig = {
               name: 'link',
               type: 'text',
               required: true,
-              admin: {
-                description:
-                  'URL or path for this menu item (required even if using scroll target)',
-              },
-            },
-            {
-              name: 'scrollTarget',
-              type: 'text',
-              label: 'Scroll Target (Section ID)',
-              admin: {
-                description:
-                  'Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.',
-              },
             },
             {
               name: 'external',
@@ -126,17 +94,39 @@ const Menu: CollectionConfig = {
       ],
     },
     {
-      name: 'logo',
-      type: 'upload',
-      relationTo: 'media',
-      required: false,
-    },
-    {
-      name: 'logoText',
-      type: 'text',
-      required: false,
+      name: 'bottomSection',
+      type: 'group',
+      fields: [
+        {
+          name: 'copyright',
+          type: 'text',
+          required: false,
+        },
+        {
+          name: 'socialLinks',
+          type: 'array',
+          fields: [
+            {
+              name: 'platform',
+              type: 'select',
+              options: [
+                { label: 'Facebook', value: 'facebook' },
+                { label: 'Twitter', value: 'twitter' },
+                { label: 'Instagram', value: 'instagram' },
+                { label: 'LinkedIn', value: 'linkedin' },
+                { label: 'YouTube', value: 'youtube' },
+              ],
+            },
+            {
+              name: 'url',
+              type: 'text',
+              required: true,
+            },
+          ],
+        },
+      ],
     },
   ],
 }
 
-export default Menu
+export default Footer

@@ -4,6 +4,8 @@ const Tenants: CollectionConfig = {
   slug: 'tenants',
   admin: {
     useAsTitle: 'name',
+    group: 'System Management',
+    description: 'Manage tenant organizations (hotels, restaurants, etc.)',
     hidden: ({ user }) => {
       if (!user || typeof user !== 'object') return true
       return (user as { role?: string }).role !== 'superadmin'

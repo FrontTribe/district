@@ -14,6 +14,7 @@ import { RefreshRouteOnSave } from '@/components/RefreshRouteOnSave'
 import { localeLang } from '@/utils/locale'
 import { notFound } from 'next/navigation'
 import PageClient from '@/components/PageClient'
+import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
 
 export default async function HomePage({ params }: { params: { locale: string } }) {
   const { locale } = await params
@@ -36,21 +37,8 @@ export default async function HomePage({ params }: { params: { locale: string } 
   // Get current tenant based on subdomain
   let currentTenant: Tenant | null = null
   if (subdomain) {
-    try {
-      const tenantsResponse = await payload.find({
-        collection: 'tenants',
-        where: {
-          subdomain: {
-            equals: subdomain,
-          },
-        },
-      })
-      console.log(`[Page] Found ${tenantsResponse.docs.length} tenants for subdomain: ${subdomain}`)
-      console.log(`[Page] Tenant data:`, tenantsResponse.docs)
-      currentTenant = tenantsResponse.docs[0] || null
-    } catch (error) {
-      console.error('Error fetching tenant:', error)
-    }
+    currentTenant = await getTenantBySubdomain(subdomain)
+    console.log(`[Page] Found tenant for subdomain ${subdomain}:`, currentTenant)
   } else {
     console.log('[Page] No subdomain found in headers')
   }
@@ -116,49 +104,12 @@ export default async function HomePage({ params }: { params: { locale: string } 
     }
   }
 
-  // Fetch globals (menu and footer) for the current tenant
-  let menuGlobal = null
-  let footerGlobal = null
+  // Fetch menu and footer for the current tenant
+  const tenantId = currentTenant?.id || null
+  const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
 
-  try {
-    // For now, we'll fetch all globals and filter by tenant on the client side
-    // In a production environment, you might want to implement a custom API endpoint
-    // that filters globals by tenant
-    const menuResponse = await payload.findGlobal({
-      slug: 'menu',
-      depth: 2,
-    })
-    console.log('[Page] Menu global:', menuResponse)
-
-    const footerResponse = await payload.findGlobal({
-      slug: 'footer',
-      depth: 2,
-    })
-
-    if (currentTenant) {
-      if (
-        menuResponse &&
-        typeof menuResponse.tenant === 'object' &&
-        menuResponse.tenant?.id === currentTenant.id
-      ) {
-        menuGlobal = menuResponse
-      }
-      if (
-        footerResponse &&
-        typeof footerResponse.tenant === 'object' &&
-        footerResponse.tenant?.id === currentTenant.id
-      ) {
-        footerGlobal = footerResponse
-      }
-    } else {
-      if (menuResponse && !menuResponse.tenant) menuGlobal = menuResponse
-      if (footerResponse && !footerResponse.tenant) footerGlobal = footerResponse
-    }
-    console.log('[Page] Menu global:', menuGlobal)
-    console.log('[Page] Footer global:', footerGlobal)
-  } catch (error) {
-    console.error('Error fetching globals:', error)
-  }
+  console.log('[Page] Menu data:', menuGlobal)
+  console.log('[Page] Footer data:', footerGlobal)
 
   return (
     <>
@@ -214,8 +165,8 @@ export default async function HomePage({ params }: { params: { locale: string } 
               Pages found: {pages.length}{' '}
               {!currentTenant && pages.length > 0 ? '(showing main domain pages only)' : ''}
             </p>
-            <p>Menu global: {menuGlobal ? 'Found' : 'Not found'}</p>
-            <p>Footer global: {footerGlobal ? 'Found' : 'Not found'}</p>
+            <p>Menu: {menuGlobal ? `Found (${menuGlobal.title})` : 'Not found'}</p>
+            <p>Footer: {footerGlobal ? `Found (${footerGlobal.title})` : 'Not found'}</p>
             {pages.length > 0 && (
               <div style={{ marginTop: '10px' }}>
                 <p>

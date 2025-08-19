@@ -71,6 +71,8 @@ export interface Config {
     media: Media;
     tenants: Tenant;
     pages: Page;
+    menu: Menu;
+    footer: Footer;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -81,6 +83,8 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     tenants: TenantsSelect<false> | TenantsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
+    menu: MenuSelect<false> | MenuSelect<true>;
+    footer: FooterSelect<false> | FooterSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -88,14 +92,8 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-  globals: {
-    menu: Menu;
-    footer: Footer;
-  };
-  globalsSelect: {
-    menu: MenuSelect<false> | MenuSelect<true>;
-    footer: FooterSelect<false> | FooterSelect<true>;
-  };
+  globals: {};
+  globalsSelect: {};
   locale: 'en' | 'hr' | 'de';
   user: User & {
     collection: 'users';
@@ -124,6 +122,8 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * Manage user accounts and permissions
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
@@ -150,6 +150,8 @@ export interface User {
   password?: string | null;
 }
 /**
+ * Manage tenant organizations (hotels, restaurants, etc.)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tenants".
  */
@@ -161,6 +163,8 @@ export interface Tenant {
   createdAt: string;
 }
 /**
+ * Manage images, documents and other media files
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
@@ -181,6 +185,8 @@ export interface Media {
   focalY?: number | null;
 }
 /**
+ * Manage pages for tenants and main domain
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
  */
@@ -234,6 +240,94 @@ export interface Page {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Manage navigation menus for tenants and main domain
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu".
+ */
+export interface Menu {
+  id: string;
+  /**
+   * Internal title for this menu (e.g., "Hotel ABC Menu", "Restaurant XYZ Menu")
+   */
+  title: string;
+  tenant?: (string | null) | Tenant;
+  menuItems?:
+    | {
+        label: string;
+        /**
+         * URL or path for this menu item (required even if using scroll target)
+         */
+        link: string;
+        /**
+         * Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.
+         */
+        scrollTarget?: string | null;
+        external?: boolean | null;
+        children?:
+          | {
+              label: string;
+              /**
+               * URL or path for this menu item (required even if using scroll target)
+               */
+              link: string;
+              /**
+               * Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.
+               */
+              scrollTarget?: string | null;
+              external?: boolean | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  logo?: (string | null) | Media;
+  logoText?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Manage footer content for tenants and main domain
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "footer".
+ */
+export interface Footer {
+  id: string;
+  /**
+   * Internal title for this footer (e.g., "Hotel ABC Footer", "Restaurant XYZ Footer")
+   */
+  title: string;
+  tenant?: (string | null) | Tenant;
+  columns?:
+    | {
+        title: string;
+        links?:
+          | {
+              label: string;
+              link: string;
+              external?: boolean | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  bottomSection?: {
+    copyright?: string | null;
+    socialLinks?:
+      | {
+          platform?: ('facebook' | 'twitter' | 'instagram' | 'linkedin' | 'youtube') | null;
+          url: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
@@ -255,6 +349,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'pages';
         value: string | Page;
+      } | null)
+    | ({
+        relationTo: 'menu';
+        value: string | Menu;
+      } | null)
+    | ({
+        relationTo: 'footer';
+        value: string | Footer;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -400,117 +502,10 @@ export interface PagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-locked-documents_select".
- */
-export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
-  document?: T;
-  globalSlug?: T;
-  user?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-preferences_select".
- */
-export interface PayloadPreferencesSelect<T extends boolean = true> {
-  user?: T;
-  key?: T;
-  value?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-migrations_select".
- */
-export interface PayloadMigrationsSelect<T extends boolean = true> {
-  name?: T;
-  batch?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "menu".
- */
-export interface Menu {
-  id: string;
-  tenant?: (string | null) | Tenant;
-  menuItems?:
-    | {
-        label: string;
-        /**
-         * URL or path for this menu item (required even if using scroll target)
-         */
-        link: string;
-        /**
-         * Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.
-         */
-        scrollTarget?: string | null;
-        external?: boolean | null;
-        children?:
-          | {
-              label: string;
-              /**
-               * URL or path for this menu item (required even if using scroll target)
-               */
-              link: string;
-              /**
-               * Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.
-               */
-              scrollTarget?: string | null;
-              external?: boolean | null;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  logo?: (string | null) | Media;
-  logoText?: string | null;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "footer".
- */
-export interface Footer {
-  id: string;
-  tenant?: (string | null) | Tenant;
-  columns?:
-    | {
-        title: string;
-        links?:
-          | {
-              label: string;
-              link: string;
-              external?: boolean | null;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  bottomSection?: {
-    copyright?: string | null;
-    socialLinks?:
-      | {
-          platform?: ('facebook' | 'twitter' | 'instagram' | 'linkedin' | 'youtube') | null;
-          url: string;
-          id?: string | null;
-        }[]
-      | null;
-  };
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "menu_select".
  */
 export interface MenuSelect<T extends boolean = true> {
+  title?: T;
   tenant?: T;
   menuItems?:
     | T
@@ -534,13 +529,13 @@ export interface MenuSelect<T extends boolean = true> {
   logoText?: T;
   updatedAt?: T;
   createdAt?: T;
-  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "footer_select".
  */
 export interface FooterSelect<T extends boolean = true> {
+  title?: T;
   tenant?: T;
   columns?:
     | T
@@ -570,7 +565,38 @@ export interface FooterSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
-  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-locked-documents_select".
+ */
+export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
+  document?: T;
+  globalSlug?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-preferences_select".
+ */
+export interface PayloadPreferencesSelect<T extends boolean = true> {
+  user?: T;
+  key?: T;
+  value?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-migrations_select".
+ */
+export interface PayloadMigrationsSelect<T extends boolean = true> {
+  name?: T;
+  batch?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
