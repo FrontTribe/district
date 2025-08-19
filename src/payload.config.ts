@@ -33,13 +33,9 @@ export default buildConfig({
 
         let tenantSubdomain = null
 
-        // Case 1 (Best): The tenant data is fully populated on the page document.
         if (typeof data.tenant === 'object' && data.tenant !== null && data.tenant.subdomain) {
           tenantSubdomain = data.tenant.subdomain
-        }
-        // Case 2 (Fallback for Tenant Admins): The tenant data is not populated on the page,
-        // so we use the tenant information from the logged-in user's profile.
-        else if (
+        } else if (
           user &&
           user.role === 'tenant-admin' &&
           typeof user.tenant === 'object' &&
@@ -48,16 +44,12 @@ export default buildConfig({
           tenantSubdomain = user.tenant.subdomain
         }
 
-        // Construct the base URL for the frontend application.
-        // It defaults to localhost for superadmins if the tenant isn't populated.
         const frontendURL = tenantSubdomain
-          ? `http://${tenantSubdomain}.test:3000` // Assumes local dev format like hotels.test:3000
+          ? `http://${tenantSubdomain}.test:3000`
           : 'http://localhost:3000'
 
-        // Construct the path to the specific page, including the locale.
         const pagePath = locale ? `/${locale.code}/${data.slug}` : `/${data.slug}`
 
-        // Build the full draft URL for Next.js preview mode.
         const draftURL = new URL(`${frontendURL}/api/draft`)
         draftURL.searchParams.set('url', pagePath)
         draftURL.searchParams.set('secret', process.env.DRAFT_SECRET || '')
