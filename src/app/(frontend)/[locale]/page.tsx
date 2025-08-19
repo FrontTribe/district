@@ -255,13 +255,13 @@ export default async function HomePage({ params }: { params: { locale: string } 
           {/* Render blocks from pages */}
           {pages.length > 0 ? (
             pages.map((page) => (
-              <>
-                <PageClient key={page.id} page={page} locale={locale} />
+              <React.Fragment key={page.id}>
+                <PageClient page={page} locale={locale} />
                 {/* <div key={page.id} className="page-content">
                   <h2>{page.title}</h2>
                   {page.layout && <BlockRenderer blocks={page.layout} />}
                 </div> */}
-              </>
+              </React.Fragment>
             ))
           ) : currentTenant ? (
             <div className="no-pages">
