@@ -114,9 +114,90 @@ export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, s
       1.2,
     )
 
+    // Add hover animations for columns
+    columnRefs.current.forEach((column, index) => {
+      if (column) {
+        const columnTitle = column.querySelector('.column-title')
+        const columnSubtitle = column.querySelector('.column-subtitle')
+        const columnLink = column.querySelector('.column-link')
+        const columnBackground = column.querySelector('.column-background-image')
+
+        // Create hover timeline
+        const hoverTl = gsap.timeline({ paused: true })
+
+        // Background image scale on hover
+        if (columnBackground) {
+          hoverTl.to(
+            columnBackground,
+            {
+              scale: 1.1,
+              duration: 0.6,
+              ease: 'power2.out',
+            },
+            0,
+          )
+        }
+
+        // Text reveal animations
+        if (columnTitle) {
+          hoverTl.to(
+            columnTitle,
+            {
+              y: -10,
+              duration: 0.4,
+              ease: 'power2.out',
+            },
+            0,
+          )
+        }
+
+        if (columnSubtitle) {
+          hoverTl.to(
+            columnSubtitle,
+            {
+              y: -10,
+              opacity: 0.9,
+              duration: 0.4,
+              ease: 'power2.out',
+            },
+            0.1,
+          )
+        }
+
+        if (columnLink) {
+          hoverTl.to(
+            columnLink,
+            {
+              y: -15,
+              scale: 1.05,
+              duration: 0.4,
+              ease: 'back.out(1.7)',
+            },
+            0.2,
+          )
+        }
+
+        // Column hover events
+        column.addEventListener('mouseenter', () => {
+          hoverTl.play()
+        })
+
+        column.addEventListener('mouseleave', () => {
+          hoverTl.reverse()
+        })
+      }
+    })
+
     // Cleanup function
     return () => {
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
+      // Remove hover event listeners
+      columnRefs.current.forEach((column) => {
+        if (column) {
+          column.removeEventListener('mouseenter', () => {})
+          column.removeEventListener('mouseleave', () => {})
+        }
+      })
     }
   }, [columns])
 
