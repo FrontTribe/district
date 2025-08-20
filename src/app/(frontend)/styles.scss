@@ -535,6 +535,7 @@ svg {
   padding: 60px;
   will-change: transform; /* Optimize for animations */
   transform-origin: center center; /* Better scaling animation */
+  clip-path: inset(0 0 0 0); /* Ensure clean clipping for reveal */
 }
 
 /* Background image container */
@@ -546,6 +547,7 @@ svg {
   bottom: 0;
   z-index: 1;
   overflow: hidden;
+  will-change: transform; /* Optimize for left-to-right animation */
 }
 
 .column-background-image {
@@ -554,6 +556,7 @@ svg {
   object-fit: cover;
   object-position: center;
   transition: transform 0.3s ease;
+  will-change: transform; /* Optimize for left-to-right animation */
 }
 
 /* Gradient overlay */
@@ -715,6 +718,7 @@ svg {
   z-index: 3;
   width: 100%;
   transform: translateZ(0); /* Force hardware acceleration */
+  will-change: transform; /* Optimize for left-to-right animation */
 }
 
 .column-title {

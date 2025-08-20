@@ -25,16 +25,16 @@ export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, s
     if (!sectionRef.current) return
 
     // Set initial states for animations
-    gsap.set('.column-title', { opacity: 0, y: 100 })
-    gsap.set('.column-subtitle', { opacity: 0, y: 100 })
-    gsap.set('.column-link', { opacity: 0, y: 100, scale: 0.8 })
-    gsap.set('.column', { y: 100, opacity: 0 })
+    gsap.set('.column-title', { opacity: 0, x: -100 })
+    gsap.set('.column-subtitle', { opacity: 0, x: -100 })
+    gsap.set('.column-link', { opacity: 0, x: -100, scale: 0.8 })
+    gsap.set('.column', { x: -100, opacity: 0 })
 
-    // Background image reveal animation - start with scale and blur
+    // Background image reveal animation - start with left offset and scale
     if (columns?.some((col) => col.backgroundImage)) {
       gsap.set('.column-background-image', {
-        scale: 1.3,
-        filter: 'blur(8px)',
+        x: -100,
+        scale: 1.1,
       })
     }
 
@@ -48,42 +48,42 @@ export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, s
       },
     })
 
-    // First: Animate background images reveal with scale down and blur removal
+    // First: Animate background images sliding in from left with scale
     if (columns?.some((col) => col.backgroundImage)) {
       tl.to(
         '.column-background-image',
         {
+          x: 0,
           scale: 1,
-          filter: 'blur(0px)',
-          duration: 2,
-          stagger: 0.2,
+          duration: 1.5,
+          stagger: 0.3,
           ease: 'power2.out',
         },
         0,
       )
     }
 
-    // Second: Animate columns entrance with stagger
+    // Second: Animate columns sliding in from left with stagger
     tl.to(
       '.column',
       {
-        y: 0,
+        x: 0,
         opacity: 1,
         duration: 1.2,
-        stagger: 0.3,
+        stagger: 0.4,
         ease: 'power3.out',
       },
-      0.3,
+      0.2,
     )
 
-    // Third: Animate content elements sliding up from bottom with stagger
+    // Third: Animate content elements sliding in from left with stagger
     tl.to(
       '.column-title',
       {
         opacity: 1,
-        y: 0,
+        x: 0,
         duration: 1,
-        stagger: { each: 0.2, from: 'start' },
+        stagger: { each: 0.3, from: 'start' },
         ease: 'power2.out',
       },
       0.8,
@@ -93,9 +93,9 @@ export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, s
       '.column-subtitle',
       {
         opacity: 1,
-        y: 0,
+        x: 0,
         duration: 0.9,
-        stagger: { each: 0.2, from: 'start' },
+        stagger: { each: 0.3, from: 'start' },
         ease: 'power2.out',
       },
       1.0,
@@ -105,10 +105,10 @@ export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, s
       '.column-link',
       {
         opacity: 1,
-        y: 0,
+        x: 0,
         scale: 1,
         duration: 0.8,
-        stagger: { each: 0.2, from: 'start' },
+        stagger: { each: 0.3, from: 'start' },
         ease: 'back.out(1.7)',
       },
       1.2,
