@@ -1,5 +1,4 @@
 import { Block } from 'payload'
-import React from 'react'
 
 const ThreeColumns: Block = {
   slug: 'three-columns',
@@ -178,110 +177,6 @@ const ThreeColumns: Block = {
       },
     },
   ],
-}
-
-export const ThreeColumnsBlock: React.FC<{
-  columns: Array<{
-    title: string
-    subtitle?: string
-    backgroundImage?: {
-      id: string
-      url: string
-      alt: string
-    }
-    fullHeight?: boolean
-    gradient?: {
-      enabled: boolean
-      type?: 'linear' | 'radial'
-      direction?:
-        | 'to-bottom'
-        | 'to-top'
-        | 'to-right'
-        | 'to-left'
-        | 'to-bottom-right'
-        | 'to-bottom-left'
-        | 'to-top-right'
-        | 'to-top-left'
-      position?:
-        | 'center'
-        | 'top'
-        | 'bottom'
-        | 'left'
-        | 'right'
-        | 'top-left'
-        | 'top-right'
-        | 'bottom-left'
-        | 'bottom-right'
-      startColor?: string
-      endColor?: string
-      opacity?: number
-    }
-    link: {
-      url: string
-      text: string
-      openInNewTab?: boolean
-    }
-  }>
-  sectionId?: string
-}> = ({ columns, sectionId }) => {
-  // Helper function to convert hex to rgba
-  const hexToRgba = (hex: string, opacity: number) => {
-    const r = parseInt(hex.slice(1, 3), 16)
-    const g = parseInt(hex.slice(3, 5), 16)
-    const b = parseInt(hex.slice(5, 7), 16)
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`
-  }
-
-  return (
-    <section id={sectionId} className="three-columns-block">
-      <div className="three-columns-content">
-        {columns?.map((column, index) => (
-          <div
-            key={index}
-            className={`column ${column.fullHeight ? 'column-full-height' : ''} ${
-              column.gradient?.enabled
-                ? `has-gradient gradient-${column.gradient.type || 'linear'} ${
-                    column.gradient.type === 'linear'
-                      ? `direction-${column.gradient.direction || 'to-bottom'}`
-                      : `position-${column.gradient.position || 'center'}`
-                  }`
-                : ''
-            }`}
-            style={{
-              ...(column.backgroundImage
-                ? {
-                    backgroundImage: `url(${column.backgroundImage.url})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                  }
-                : {}),
-              ...(column.gradient?.enabled
-                ? {
-                    '--gradient-start': column.gradient.startColor || '#000000',
-                    '--gradient-end': column.gradient.endColor || '#ffffff',
-                    '--gradient-opacity': column.gradient.opacity || 0.7,
-                  }
-                : {}),
-            }}
-          >
-            <div className="column-content">
-              <h2 className="column-title">{column.title}</h2>
-              {column.subtitle && <p className="column-subtitle">{column.subtitle}</p>}
-              <a
-                href={column.link.url}
-                className="column-link"
-                target={column.link.openInNewTab ? '_blank' : undefined}
-                rel={column.link.openInNewTab ? 'noopener noreferrer' : undefined}
-              >
-                {column.link.text}
-              </a>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
 }
 
 export default ThreeColumns

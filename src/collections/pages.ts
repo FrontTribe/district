@@ -3,7 +3,7 @@ import Hero from '@/blocks/Hero'
 import Features from '@/blocks/Features'
 import Section from '@/blocks/Section'
 import Text from '@/blocks/Text'
-import ThreeColumns from '@/blocks/ThreeColumns'
+import { ThreeColumns } from '@/blocks/ThreeColumns'
 
 const Pages: CollectionConfig = {
   slug: 'pages',

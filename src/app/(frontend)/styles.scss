@@ -516,6 +516,7 @@ svg {
   min-height: 100vh;
   display: flex;
   background: rgb(0, 0, 0);
+  overflow: hidden; /* Ensure animations don't cause horizontal scroll */
 }
 
 .three-columns-content {
@@ -532,28 +533,38 @@ svg {
   min-height: 400px;
   justify-content: flex-end;
   padding: 60px;
+  will-change: transform; /* Optimize for animations */
+  transform-origin: center center; /* Better scaling animation */
 }
 
-.column[style*='background-image']::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.2);
-  z-index: 1;
-}
-
-/* Gradient overlay using ::before pseudo-element */
-.column.has-gradient::before {
-  content: '';
+/* Background image container */
+.column-background {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 1;
+  overflow: hidden;
+}
+
+.column-background-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.3s ease;
+}
+
+/* Gradient overlay */
+.column-gradient-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  pointer-events: none;
 }
 
 /* Linear gradient directions */
@@ -622,7 +633,7 @@ svg {
 }
 
 /* Radial gradient positions */
-.column.position-center::before {
+.column.has-gradient.position-center .column-gradient-overlay {
   background: radial-gradient(
     circle at center,
     color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
@@ -630,7 +641,7 @@ svg {
   );
 }
 
-.column.position-top::before {
+.column.has-gradient.position-top .column-gradient-overlay {
   background: radial-gradient(
     circle at top,
     color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
@@ -638,7 +649,7 @@ svg {
   );
 }
 
-.column.position-bottom::before {
+.column.has-gradient.position-bottom .column-gradient-overlay {
   background: radial-gradient(
     circle at bottom,
     color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
@@ -646,23 +657,7 @@ svg {
   );
 }
 
-.column.position-left::before {
-  background: radial-gradient(
-    circle at left,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
-  );
-}
-
-.column.position-right::before {
-  background: radial-gradient(
-    circle at right,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
-  );
-}
-
-.column.position-top-left::before {
+.column.has-gradient.position-left .column-gradient-overlay {
   background: radial-gradient(
     circle at top left,
     color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
@@ -670,7 +665,23 @@ svg {
   );
 }
 
-.column.position-top-right::before {
+.column.has-gradient.position-right .column-gradient-overlay {
+  background: radial-gradient(
+    circle at right,
+    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
+    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+  );
+}
+
+.column.has-gradient.position-top-left .column-gradient-overlay {
+  background: radial-gradient(
+    circle at top left,
+    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
+    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+  );
+}
+
+.column.has-gradient.position-top-right .column-gradient-overlay {
   background: radial-gradient(
     circle at top right,
     color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
@@ -678,7 +689,7 @@ svg {
   );
 }
 
-.column.position-bottom-left::before {
+.column.has-gradient.position-bottom-left .column-gradient-overlay {
   background: radial-gradient(
     circle at bottom left,
     color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
@@ -686,17 +697,12 @@ svg {
   );
 }
 
-.column.position-bottom-right::before {
+.column.has-gradient.position-bottom-right .column-gradient-overlay {
   background: radial-gradient(
     circle at bottom right,
     color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
     color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
   );
-}
-
-/* Override background image overlay when gradient is present */
-.column.has-gradient[style*='background-image']::before {
-  /* The gradient will override the background image overlay */
 }
 
 .column-full-height {
@@ -708,6 +714,7 @@ svg {
   position: relative;
   z-index: 3;
   width: 100%;
+  transform: translateZ(0); /* Force hardware acceleration */
 }
 
 .column-title {
@@ -717,6 +724,8 @@ svg {
   font-family: var(--font-headline), system-ui, serif;
   color: rgb(1000, 1000, 1000);
   margin-bottom: 0;
+  will-change: transform, opacity; /* Optimize for animations */
+  transform: translateZ(0); /* Force hardware acceleration */
 }
 
 .column-subtitle {
@@ -725,6 +734,8 @@ svg {
   margin: 0 0 30px 0;
   color: rgba(1000, 1000, 1000, 0.8);
   max-width: 300px;
+  will-change: transform, opacity; /* Optimize for animations */
+  transform: translateZ(0); /* Force hardware acceleration */
 }
 
 .column-link {
@@ -738,6 +749,8 @@ svg {
   font-weight: 600;
   font-size: 16px;
   transition: all 0.3s ease;
+  will-change: transform, opacity; /* Optimize for animations */
+  transform: translateZ(0); /* Force hardware acceleration */
 
   &:hover {
     background: rgba(1000, 1000, 1000, 0.2);
