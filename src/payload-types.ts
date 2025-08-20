@@ -225,6 +225,104 @@ export interface Page {
             blockName?: string | null;
             blockType: 'features';
           }
+        | {
+            heading: string;
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: string;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            /**
+             * Optional ID for this section (used for menu navigation)
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'text';
+          }
+        | {
+            columns?:
+              | {
+                  title: string;
+                  subtitle?: string | null;
+                  /**
+                   * Optional background image for this column
+                   */
+                  backgroundImage?: (string | null) | Media;
+                  /**
+                   * Make this column take the full viewport height
+                   */
+                  fullHeight?: boolean | null;
+                  /**
+                   * Optional gradient overlay for this column
+                   */
+                  gradient?: {
+                    enabled?: boolean | null;
+                    type?: ('linear' | 'radial') | null;
+                    direction?:
+                      | (
+                          | 'to-bottom'
+                          | 'to-top'
+                          | 'to-right'
+                          | 'to-left'
+                          | 'to-bottom-right'
+                          | 'to-bottom-left'
+                          | 'to-top-right'
+                          | 'to-top-left'
+                        )
+                      | null;
+                    position?:
+                      | (
+                          | 'center'
+                          | 'top'
+                          | 'bottom'
+                          | 'left'
+                          | 'right'
+                          | 'top-left'
+                          | 'top-right'
+                          | 'bottom-left'
+                          | 'bottom-right'
+                        )
+                      | null;
+                    /**
+                     * Hex color code (e.g., #000000)
+                     */
+                    startColor?: string | null;
+                    /**
+                     * Hex color code (e.g., #ffffff)
+                     */
+                    endColor?: string | null;
+                    /**
+                     * Gradient opacity (0 = transparent, 1 = opaque)
+                     */
+                    opacity?: number | null;
+                  };
+                  link: {
+                    url: string;
+                    text: string;
+                    openInNewTab?: boolean | null;
+                  };
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Optional ID for this section (used for menu navigation)
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'three-columns';
+          }
       )[]
     | null;
   meta?: {
@@ -284,6 +382,10 @@ export interface Menu {
     | null;
   logo?: (string | null) | Media;
   logoText?: string | null;
+  /**
+   * Choose how the menu should be positioned on the page
+   */
+  positioning?: ('fixed' | 'absolute' | 'relative') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -488,6 +590,49 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        text?:
+          | T
+          | {
+              heading?: T;
+              content?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'three-columns'?:
+          | T
+          | {
+              columns?:
+                | T
+                | {
+                    title?: T;
+                    subtitle?: T;
+                    backgroundImage?: T;
+                    fullHeight?: T;
+                    gradient?:
+                      | T
+                      | {
+                          enabled?: T;
+                          type?: T;
+                          direction?: T;
+                          position?: T;
+                          startColor?: T;
+                          endColor?: T;
+                          opacity?: T;
+                        };
+                    link?:
+                      | T
+                      | {
+                          url?: T;
+                          text?: T;
+                          openInNewTab?: T;
+                        };
+                    id?: T;
+                  };
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
       };
   meta?:
     | T
@@ -527,6 +672,7 @@ export interface MenuSelect<T extends boolean = true> {
       };
   logo?: T;
   logoText?: T;
+  positioning?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -3,11 +3,13 @@ import { Page } from '@/payload-types'
 import { HeroBlock } from '@/blocks/Hero'
 import { FeaturesBlock } from '@/blocks/Features'
 import { SectionBlock } from '@/blocks/Section'
+import { ThreeColumnsBlock } from '@/blocks/ThreeColumns'
 
 const blockComponents = {
   section: SectionBlock,
   hero: HeroBlock,
   features: FeaturesBlock,
+  'three-columns': ThreeColumnsBlock,
 }
 
 type Block = NonNullable<Page['layout']>[number]

@@ -1,5 +1,4 @@
-import MainPageLanguageSwitcher from '@/components/mainPageLanguageSwitcher'
-import '../styles.css'
+import '../styles.scss'
 
 export default async function LocaleLayout({
   children,
@@ -8,13 +7,9 @@ export default async function LocaleLayout({
   children: React.ReactNode
   params: { locale: string }
 }) {
-  const { locale } = await params
   return (
     <html>
-      <body>
-        <MainPageLanguageSwitcher locale={locale} />
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

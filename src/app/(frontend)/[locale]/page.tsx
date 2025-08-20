@@ -3,10 +3,10 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import config from '@/payload.config'
-import { Menu } from '@/components/Menu'
+import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
 import { Page, Tenant } from '@/payload-types'
-import '../styles.css'
+import '../styles.scss'
 import { RefreshRouteOnSave } from '@/components/RefreshRouteOnSave'
 import { localeLang } from '@/utils/locale'
 import { notFound } from 'next/navigation'
@@ -109,8 +109,8 @@ export default async function HomePage({ params }: { params: { locale: string } 
     <>
       <RefreshRouteOnSave />
 
-      {/* Menu */}
-      <Menu
+      {/* Menu Wrapper */}
+      <MenuWrapper
         menuItems={
           menuGlobal?.menuItems?.map((item) => ({
             label: item.label,
@@ -137,8 +137,10 @@ export default async function HomePage({ params }: { params: { locale: string } 
             : undefined
         }
         logoText={menuGlobal?.logoText || undefined}
+        positioning={menuGlobal?.positioning || 'fixed'}
+        locale={locale}
       />
-      <div className="flex-1 pt-16">
+      <div className={`flex-1 ${menuGlobal?.positioning === 'fixed' ? 'pt-16' : ''}`}>
         <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Render blocks from pages */}
           {pages.length > 0 ? (

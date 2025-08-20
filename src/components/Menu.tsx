@@ -21,9 +21,15 @@ interface MenuProps {
     height: number
   }
   logoText?: string
+  positioning?: 'fixed' | 'absolute' | 'relative'
 }
 
-export const Menu: React.FC<MenuProps> = ({ menuItems = [], logo, logoText }) => {
+export const Menu: React.FC<MenuProps> = ({
+  menuItems = [],
+  logo,
+  logoText,
+  positioning = 'fixed',
+}) => {
   const handleMenuClick = (item: MenuItem, e: React.MouseEvent) => {
     if (item.scrollTarget && !item.external) {
       e.preventDefault()
@@ -108,8 +114,21 @@ export const Menu: React.FC<MenuProps> = ({ menuItems = [], logo, logoText }) =>
     )
   }
 
+  const getPositioningClasses = () => {
+    switch (positioning) {
+      case 'fixed':
+        return 'fixed top-0 left-0 right-0 z-50'
+      case 'absolute':
+        return 'absolute top-0 left-0 right-0 z-50'
+      case 'relative':
+        return 'relative z-50'
+      default:
+        return 'fixed top-0 left-0 right-0 z-50'
+    }
+  }
+
   return (
-    <nav className="bg-white shadow-sm border-b fixed top-0 left-0 right-0 z-50">
+    <nav className={`bg-white shadow-sm border-b ${getPositioningClasses()}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}

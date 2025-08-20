@@ -138,6 +138,29 @@ const Menu: CollectionConfig = {
       type: 'text',
       required: false,
     },
+    {
+      name: 'positioning',
+      type: 'select',
+      label: 'Menu Positioning',
+      defaultValue: 'fixed',
+      options: [
+        {
+          label: 'Fixed (Stays at top when scrolling)',
+          value: 'fixed',
+        },
+        {
+          label: 'Absolute (Scrolls with content)',
+          value: 'absolute',
+        },
+        {
+          label: 'Relative (Normal document flow)',
+          value: 'relative',
+        },
+      ],
+      admin: {
+        description: 'Choose how the menu should be positioned on the page',
+      },
+    },
   ],
 }
 

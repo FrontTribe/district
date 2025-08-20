@@ -2,6 +2,8 @@ import { CollectionConfig } from 'payload'
 import Hero from '@/blocks/Hero'
 import Features from '@/blocks/Features'
 import Section from '@/blocks/Section'
+import Text from '@/blocks/Text'
+import ThreeColumns from '@/blocks/ThreeColumns'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
@@ -99,7 +101,7 @@ const Pages: CollectionConfig = {
     {
       name: 'layout',
       type: 'blocks',
-      blocks: [Hero, Features],
+      blocks: [Hero, Features, Text, ThreeColumns],
       localized: true,
     },
   ],
