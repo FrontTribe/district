@@ -240,8 +240,7 @@ export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, s
               </div>
             )}
 
-            {/* Gradient Overlay */}
-            {column.gradient?.enabled && <div className="column-gradient-overlay" />}
+            {/* Gradient Overlay - Now handled by CSS ::after pseudo-element */}
 
             <div className="column-content">
               <h2 className="column-title">{column.title}</h2>

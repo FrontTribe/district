@@ -570,8 +570,11 @@ svg {
   will-change: transform; /* Optimize for left-to-right animation */
 }
 
-/* Gradient overlay */
-.column-gradient-overlay {
+/* Gradient overlay - Now handled by ::after pseudo-element */
+
+/* Linear gradient directions */
+.column.has-gradient::after {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -579,144 +582,164 @@ svg {
   bottom: 0;
   z-index: 2;
   pointer-events: none;
+  /* Ensure the gradient is visible */
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* Default gradient fallback */
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(255, 255, 255, 0.7));
 }
 
-/* Linear gradient directions */
-.column.direction-to-bottom::before {
+.column.direction-to-bottom::after {
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
+  /* Debug: ensure gradient is visible */
+  border: 2px solid red;
 }
 
-.column.direction-to-top::before {
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
-  );
+.column.direction-to-top::after {
+  background: linear-gradient(to top, var(--gradient-start, #000000), var(--gradient-end, #ffffff));
+  opacity: var(--gradient-opacity, 0.7);
 }
 
-.column.direction-to-right::before {
+.column.direction-to-right::after {
   background: linear-gradient(
     to right,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
-.column.direction-to-left::before {
+.column.direction-to-left::after {
   background: linear-gradient(
     to left,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
-.column.direction-to-bottom-right::before {
+.column.direction-to-bottom-right::after {
   background: linear-gradient(
     to bottom right,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
-.column.direction-to-bottom-left::before {
+.column.direction-to-bottom-left::after {
   background: linear-gradient(
     to bottom left,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
-.column.direction-to-top-right::before {
+.column.direction-to-top-right::after {
   background: linear-gradient(
     to top right,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
-.column.direction-to-top-left::before {
+.column.direction-to-top-left::after {
   background: linear-gradient(
     to top left,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
 /* Radial gradient positions */
-.column.has-gradient.position-center .column-gradient-overlay {
+.column.has-gradient.position-center::after {
   background: radial-gradient(
     circle at center,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
-.column.has-gradient.position-top .column-gradient-overlay {
+.column.has-gradient.position-top::after {
   background: radial-gradient(
     circle at top,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
-.column.has-gradient.position-bottom .column-gradient-overlay {
+.column.has-gradient.position-bottom::after {
   background: radial-gradient(
     circle at bottom,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
-.column.has-gradient.position-left .column-gradient-overlay {
+.column.has-gradient.position-left::after {
   background: radial-gradient(
     circle at top left,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
-.column.has-gradient.position-right .column-gradient-overlay {
+.column.has-gradient.position-right::after {
   background: radial-gradient(
     circle at right,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
-.column.has-gradient.position-top-left .column-gradient-overlay {
+.column.has-gradient.position-top-left::after {
   background: radial-gradient(
     circle at top left,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
-.column.has-gradient.position-top-right .column-gradient-overlay {
+.column.has-gradient.position-top-right::after {
   background: radial-gradient(
     circle at top right,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
-.column.has-gradient.position-bottom-left .column-gradient-overlay {
+.column.has-gradient.position-bottom-left::after {
   background: radial-gradient(
     circle at bottom left,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
-.column.has-gradient.position-bottom-right .column-gradient-overlay {
+.column.has-gradient.position-bottom-right::after {
   background: radial-gradient(
     circle at bottom right,
-    color-mix(in srgb, var(--gradient-start, #000000) var(--gradient-opacity, 0.7), transparent),
-    color-mix(in srgb, var(--gradient-end, #ffffff) var(--gradient-opacity, 0.7), transparent)
+    var(--gradient-start, #000000),
+    var(--gradient-end, #ffffff)
   );
+  opacity: var(--gradient-opacity, 0.7);
 }
 
 .column-full-height {
