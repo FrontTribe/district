@@ -139,6 +139,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
         logoText={menuGlobal?.logoText || undefined}
         positioning={menuGlobal?.positioning || 'fixed'}
         locale={locale}
+        menuId={menuGlobal?.identifier || 'main-menu'}
       />
       <div className={`flex-1 ${menuGlobal?.positioning === 'fixed' ? 'pt-16' : ''}`}>
         <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

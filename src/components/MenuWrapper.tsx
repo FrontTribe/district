@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import { Menu } from './Menu'
 import MainPageLanguageSwitcher from './mainPageLanguageSwitcher'
 
 interface MenuItem {
@@ -23,6 +22,7 @@ interface MenuWrapperProps {
   logoText?: string
   positioning?: 'fixed' | 'absolute' | 'relative'
   locale: string
+  menuId?: string
 }
 
 export const MenuWrapper: React.FC<MenuWrapperProps> = ({
@@ -31,20 +31,21 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
   logoText,
   positioning = 'fixed',
   locale,
+  menuId = 'default',
 }) => {
   return (
-    <div className={`menu-wrapper ${positioning}`}>
+    <div className={`menu-wrapper menu-${menuId} ${positioning}`}>
       <div className="menu-container">
         <div className="menu-content">
-          {/* Logo */}
-          <div className="menu-logo">
+          {/* Logo - Centered */}
+          <div className="menu-logo-centered">
             <a href="/">
               {logo ? (
                 <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
               ) : logoText ? (
-                <span>{logoText}</span>
+                <span className="logo-text">{logoText}</span>
               ) : (
-                <span>Logo</span>
+                <span className="logo-text">Logo</span>
               )}
             </a>
           </div>

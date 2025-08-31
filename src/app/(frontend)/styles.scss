@@ -329,11 +329,6 @@ svg {
 
 /* Menu Wrapper Styles */
 .menu-wrapper {
-  background: white;
-  box-shadow:
-    0 1px 3px 0 rgba(0, 0, 0, 0.1),
-    0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  border-bottom: 1px solid #e5e7eb;
 }
 
 .menu-wrapper.fixed {
@@ -382,28 +377,87 @@ svg {
   height: 4rem;
 }
 
-.menu-logo {
-  flex-shrink: 0;
+/* Only apply relative positioning for main frontend menu */
+.menu-main-menu .menu-content {
+  position: relative;
 }
 
-.menu-logo a {
+/* Main Menu - Centered Logo */
+.menu-main-menu .menu-logo-centered {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.menu-main-menu .menu-logo-centered a {
   display: flex;
   align-items: center;
+  text-decoration: none;
 }
 
-.menu-logo img {
+.menu-main-menu .menu-logo-centered img {
   height: 2rem;
   width: auto;
 }
 
-.menu-logo span {
+.menu-main-menu .logo-text {
+  font-size: 15vw;
+  font-weight: bold;
+  color: white;
+  font-family: var(--font-headline), system-ui, serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  margin-top: 40vh;
+}
+
+/* Tenant Menu - Standard Top Left Logo */
+.menu-tenant-menu .menu-logo-centered {
+  position: static;
+  transform: none;
+  z-index: auto;
+}
+
+.menu-tenant-menu .menu-logo-centered a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.menu-tenant-menu .menu-logo-centered img {
+  height: 2rem;
+  width: auto;
+}
+
+.menu-tenant-menu .logo-text {
   font-size: 1.25rem;
   font-weight: bold;
   color: #111827;
+  font-family: var(--font-headline), system-ui, serif;
+  margin-top: 0;
+}
+
+/* Tenant Menu - Different background and styling */
+.menu-tenant-menu {
+  background: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.menu-tenant-menu .menu-content {
+  height: 3.5rem;
+}
+
+.menu-tenant-menu .logo-text {
+  color: #475569;
 }
 
 .menu-navigation {
   display: none;
+}
+
+/* Main frontend menu specific navigation styling */
+.menu-main-menu .menu-navigation {
+  flex: 1;
 }
 
 @media (min-width: 768px) {
@@ -413,10 +467,14 @@ svg {
 }
 
 .menu-items {
-  margin-left: 2.5rem;
   display: flex;
   align-items: baseline;
   gap: 1rem;
+}
+
+/* Main frontend menu specific items styling */
+.menu-main-menu .menu-items {
+  justify-content: flex-start;
 }
 
 .menu-item {
@@ -488,6 +546,12 @@ svg {
 .menu-language-switcher {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+}
+
+/* Main frontend menu specific language switcher positioning */
+.menu-main-menu .menu-language-switcher {
+  margin-left: auto;
 }
 
 .menu-language-switcher select {
@@ -1011,5 +1075,44 @@ svg {
       width: 18px;
       height: 18px;
     }
+  }
+
+  /* Mobile menu adjustments */
+  .menu-content {
+    height: 3rem;
+  }
+
+  .menu-main-menu .logo-text {
+    font-size: 36px;
+  }
+
+  .menu-tenant-menu .logo-text {
+    font-size: 20px;
+  }
+
+  .menu-navigation {
+    display: none;
+  }
+
+  .menu-language-switcher {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-content {
+    height: 2.5rem;
+  }
+
+  .menu-main-menu .logo-text {
+    font-size: 28px;
+  }
+
+  .menu-tenant-menu .logo-text {
+    font-size: 18px;
+  }
+
+  .menu-container {
+    padding: 0 0.5rem;
   }
 }

@@ -42,6 +42,26 @@ const Menu: CollectionConfig = {
   },
   fields: [
     {
+      name: 'identifier',
+      type: 'select',
+      label: 'Menu Identifier',
+      required: true,
+      defaultValue: 'main-menu',
+      options: [
+        {
+          label: 'Main Menu (Frontend)',
+          value: 'main-menu',
+        },
+        {
+          label: 'Tenant Menu',
+          value: 'tenant-menu',
+        },
+      ],
+      admin: {
+        description: 'Unique identifier for this menu type. Main Menu gets centered logo styling, Tenant Menu gets standard top-left styling.',
+      },
+    },
+    {
       name: 'title',
       type: 'text',
       required: true,

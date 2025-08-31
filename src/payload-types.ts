@@ -359,6 +359,10 @@ export interface Page {
 export interface Menu {
   id: string;
   /**
+   * Unique identifier for this menu type. Main Menu gets centered logo styling, Tenant Menu gets standard top-left styling.
+   */
+  identifier: 'main-menu' | 'tenant-menu';
+  /**
    * Internal title for this menu (e.g., "Hotel ABC Menu", "Restaurant XYZ Menu")
    */
   title: string;
@@ -669,6 +673,7 @@ export interface PagesSelect<T extends boolean = true> {
  * via the `definition` "menu_select".
  */
 export interface MenuSelect<T extends boolean = true> {
+  identifier?: T;
   title?: T;
   tenant?: T;
   menuItems?:
