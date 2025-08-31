@@ -49,7 +49,7 @@ export default function DemoPage() {
       <header className="header">
         <div className="header-content">
           <div className="logo">
-            <h1>room</h1>
+            <h1>district.</h1>
           </div>
           <div className="language-switcher-wrapper">
             <EnhancedLanguageSwitcher
