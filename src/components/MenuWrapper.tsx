@@ -1,13 +1,14 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 import MainPageLanguageSwitcher from './mainPageLanguageSwitcher'
 
 interface MenuItem {
   label: string
   link: string
-  scrollTarget?: string
   external?: boolean
+  scrollTarget?: string
   children?: MenuItem[]
 }
 
@@ -39,7 +40,7 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
         <div className="menu-content">
           {/* Logo - Centered */}
           <div className="menu-logo-centered">
-            <a href="/">
+            <Link href="/">
               {logo ? (
                 <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
               ) : logoText ? (
@@ -47,7 +48,7 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
               ) : (
                 <span className="logo-text">Logo</span>
               )}
-            </a>
+            </Link>
           </div>
 
           {/* Navigation Menu */}
@@ -67,15 +68,11 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
                   }
                 }
 
-                const linkProps = item.external
-                  ? { href: item.link, target: '_blank', rel: 'noopener noreferrer' }
-                  : { href: item.link }
-
-                return (
-                  <div key={index} className={`menu-item ${item.external ? 'external' : ''}`}>
-                    <a {...linkProps} onClick={handleMenuClick}>
-                      {item.label}
-                      {item.external && (
+                if (item.external) {
+                  return (
+                    <div key={index} className="menu-item external">
+                      <a href={item.link} target="_blank" rel="noopener noreferrer">
+                        {item.label}
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
                             strokeLinecap="round"
@@ -84,12 +81,44 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
                             d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
                           />
                         </svg>
+                      </a>
+                      {item.children && item.children.length > 0 && (
+                        <div className="menu-dropdown">
+                          {item.children.map((child, childIndex) => (
+                            <a
+                              key={childIndex}
+                              href={child.link}
+                              target={child.external ? '_blank' : undefined}
+                              rel={child.external ? 'noopener noreferrer' : undefined}
+                            >
+                              {child.label}
+                              {child.external && (
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                  />
+                                </svg>
+                              )}
+                            </a>
+                          ))}
+                        </div>
                       )}
-                    </a>
+                    </div>
+                  )
+                }
+
+                return (
+                  <div key={index} className="menu-item">
+                    <Link href={item.link} onClick={handleMenuClick}>
+                      {item.label}
+                    </Link>
                     {item.children && item.children.length > 0 && (
                       <div className="menu-dropdown">
                         {item.children.map((child, childIndex) => (
-                          <a
+                          <Link
                             key={childIndex}
                             href={child.link}
                             target={child.external ? '_blank' : undefined}
@@ -106,7 +135,7 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
                                 />
                               </svg>
                             )}
-                          </a>
+                          </Link>
                         ))}
                       </div>
                     )}

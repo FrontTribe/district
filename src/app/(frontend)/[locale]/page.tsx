@@ -14,7 +14,7 @@ import { notFound } from 'next/navigation'
 import PageClient from '@/components/PageClient'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
 
-export default async function HomePage({ params }: { params: { locale: string } }) {
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
   const supportedLocale = localeLang.find((lang) => lang.code === locale)
   if (!supportedLocale) {
@@ -158,7 +158,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
           {pages.length > 0 ? (
             pages.map((page) => (
               <div key={page.id}>
-                <PageClient key={page.id} page={page} />
+                <PageClient page={page} />
               </div>
             ))
           ) : currentTenant ? (
