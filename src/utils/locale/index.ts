@@ -1,5 +1,5 @@
 export const localeLang = [
-  { code: 'en', label: 'English' },
-  { code: 'hr', label: 'Croatian' },
-  { code: 'de', label: 'German' },
+  { code: 'en', label: 'EN' },
+  { code: 'hr', label: 'HR' },
+  { code: 'de', label: 'DE' },
 ]

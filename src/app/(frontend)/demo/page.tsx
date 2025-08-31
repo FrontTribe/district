@@ -1,8 +1,16 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { Space_Grotesk } from 'next/font/google'
 import EnhancedLanguageSwitcher from '@/components/EnhancedLanguageSwitcher'
 import { gsap } from 'gsap'
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-space-grotesk',
+})
 
 export default function DemoPage() {
   const [currentLocale, setCurrentLocale] = useState('en')
@@ -44,7 +52,7 @@ export default function DemoPage() {
   }
 
   return (
-    <div className="demo-page">
+    <div className={`demo-page ${spaceGrotesk.variable}`}>
       {/* Header */}
       <header className="header">
         <div className="header-content">
