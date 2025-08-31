@@ -166,6 +166,32 @@ const ThreeColumns: Block = {
             },
           ],
         },
+        {
+          name: 'socialNetworks',
+          type: 'group',
+          label: 'Social Networks',
+          admin: {
+            description: 'Optional social network links for this column',
+          },
+          fields: [
+            {
+              name: 'facebook',
+              type: 'text',
+              label: 'Facebook URL',
+              admin: {
+                description: 'Full Facebook profile or page URL',
+              },
+            },
+            {
+              name: 'instagram',
+              type: 'text',
+              label: 'Instagram URL',
+              admin: {
+                description: 'Full Instagram profile URL',
+              },
+            },
+          ],
+        },
       ],
     },
     {

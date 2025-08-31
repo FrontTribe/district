@@ -312,6 +312,19 @@ export interface Page {
                     text: string;
                     openInNewTab?: boolean | null;
                   };
+                  /**
+                   * Optional social network links for this column
+                   */
+                  socialNetworks?: {
+                    /**
+                     * Full Facebook profile or page URL
+                     */
+                    facebook?: string | null;
+                    /**
+                     * Full Instagram profile URL
+                     */
+                    instagram?: string | null;
+                  };
                   id?: string | null;
                 }[]
               | null;
@@ -626,6 +639,12 @@ export interface PagesSelect<T extends boolean = true> {
                           url?: T;
                           text?: T;
                           openInNewTab?: T;
+                        };
+                    socialNetworks?:
+                      | T
+                      | {
+                          facebook?: T;
+                          instagram?: T;
                         };
                     id?: T;
                   };

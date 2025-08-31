@@ -853,6 +853,79 @@ svg {
   left: 100%;
 }
 
+/* Social Networks */
+.column-social-networks {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+  align-items: center;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(1000, 1000, 1000, 0.1);
+  border: 2px solid rgba(1000, 1000, 1000, 0.3);
+  color: rgb(1000, 1000, 1000);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  will-change: transform, opacity;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.6s ease;
+  }
+
+  &:hover {
+    background: rgba(1000, 1000, 1000, 0.2);
+    border-color: rgba(1000, 1000, 1000, 0.5);
+    transform: translateY(-3px) scale(1.05);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(1000, 1000, 1000, 0.3);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover svg {
+    transform: scale(1.1);
+  }
+}
+
+.social-link:hover::before {
+  left: 100%;
+}
+
+/* Facebook specific styles */
+.social-facebook:hover {
+  background: rgba(66, 103, 178, 0.2);
+  border-color: rgba(66, 103, 178, 0.6);
+}
+
+/* Instagram specific styles */
+.social-instagram:hover {
+  background: linear-gradient(45deg, rgba(225, 48, 108, 0.2), rgba(252, 175, 69, 0.2));
+  border-color: rgba(225, 48, 108, 0.6);
+}
+
 /* Responsive design for three columns */
 @media (max-width: 1024px) {
   .three-columns-content {
@@ -923,5 +996,20 @@ svg {
   .column-link {
     padding: 12px 24px;
     font-size: 14px;
+  }
+
+  .column-social-networks {
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .social-link {
+    width: 40px;
+    height: 40px;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
   }
 }

@@ -38,6 +38,10 @@ export interface ThreeColumnsColumn {
     text: string
     openInNewTab?: boolean
   }
+  socialNetworks?: {
+    facebook?: string
+    instagram?: string
+  }
 }
 
 export interface ThreeColumnsBlockProps {
