@@ -5,10 +5,10 @@ import { draftMode } from 'next/headers'
 import type { Page as PageType } from '@/payload-types'
 
 type PageProps = {
-  params: {
+  params: Promise<{
     slug: string
     locale: string
-  }
+  }>
 }
 
 type AllowedLocale = 'en' | 'hr' | 'de' | undefined
@@ -45,5 +45,5 @@ export default async function Page({ params }: PageProps) {
     return notFound()
   }
 
-  return <PageClient page={page} locale={locale} />
+  return <PageClient page={page} />
 }
