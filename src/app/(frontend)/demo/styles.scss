@@ -41,9 +41,8 @@
 }
 
 .loading-logo {
-  font-size: 3rem;
+  font-size: 4rem;
   font-weight: 400;
-  letter-spacing: 0.02em;
   text-transform: lowercase;
   color: #000000;
   opacity: 0;
@@ -297,10 +296,10 @@
 
         .hero-title {
           font-family: 'Space Grotesk', sans-serif;
-          font-weight: 700;
+          font-weight: 500;
           font-size: clamp(2rem, 4vw, 3.5rem);
           line-height: 1.1;
-          letter-spacing: -0.02em;
+          letter-spacing: -0.04em;
           text-transform: uppercase;
           color: #ffffff;
           margin: 0;
