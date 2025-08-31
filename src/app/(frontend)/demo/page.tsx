@@ -90,6 +90,7 @@ export default function DemoPage() {
               <h2 className="hero-title">Boutique</h2>
               <div className="social-links">
                 <span className="social-text">instagram</span>
+                <div className="social-divider"></div>
                 <span className="social-text">facebook</span>
               </div>
               <div className="see-more-container">
@@ -112,6 +113,7 @@ export default function DemoPage() {
               <h2 className="hero-title">Concept Bar</h2>
               <div className="social-links">
                 <span className="social-text">instagram</span>
+                <div className="social-divider"></div>
                 <span className="social-text">facebook</span>
               </div>
               <div className="see-more-container">
@@ -134,6 +136,7 @@ export default function DemoPage() {
               <h2 className="hero-title">Real Estate</h2>
               <div className="social-links">
                 <span className="social-text">instagram</span>
+                <div className="social-divider"></div>
                 <span className="social-text">facebook</span>
               </div>
               <div className="see-more-container">

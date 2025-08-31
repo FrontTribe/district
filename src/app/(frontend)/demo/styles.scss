@@ -264,15 +264,15 @@
 
         .social-links {
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           align-items: center;
-          gap: 0.5rem;
+          justify-content: center;
+          gap: 1rem;
           margin-top: 1.5rem;
           opacity: 0;
           animation: fadeInUp 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.8s both;
 
           .social-text {
-            font-family: 'Space Grotesk', sans-serif;
             font-size: 0.9rem;
             font-weight: 400;
             color: rgba(255, 255, 255, 0.7);
@@ -303,6 +303,13 @@
                 transform: scaleX(1);
               }
             }
+          }
+
+          .social-divider {
+            width: 2rem;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.3);
+            margin: 0 0.5rem;
           }
         }
 
