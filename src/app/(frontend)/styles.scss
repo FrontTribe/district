@@ -1235,29 +1235,40 @@ svg {
   }
 
   // Section overlays
-  &.section-overlay {
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 2;
-      pointer-events: none;
-    }
+  &.section-overlay--light::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    background: rgba(255, 255, 255, 0.1);
+  }
 
-    &--light::before {
-      background: rgba(255, 255, 255, 0.1);
-    }
+  &.section-overlay--medium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.3);
+  }
 
-    &--medium::before {
-      background: rgba(0, 0, 0, 0.3);
-    }
-
-    &--dark::before {
-      background: rgba(0, 0, 0, 0.6);
-    }
+  &.section-overlay--dark::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.6);
   }
 
   // Full height section
@@ -1273,14 +1284,8 @@ svg {
 }
 
 /* Text Block Styles */
-.text-block {
-  padding: 80px 20px;
-  background: rgb(0, 0, 0);
-}
-
 .text-content {
   width: 100%;
-  text-align: center;
 }
 
 .text-heading {

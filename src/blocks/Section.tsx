@@ -213,11 +213,6 @@ export const SectionBlock: React.FC<{
       return null
     }
 
-    const overlayClass =
-      backgroundMedia.overlay && backgroundMedia.overlay !== 'none'
-        ? `section-overlay--${backgroundMedia.overlay}`
-        : ''
-
     if (backgroundMedia.type === 'image' && backgroundMedia.image) {
       const imageUrl =
         typeof backgroundMedia.image === 'string'
@@ -225,7 +220,7 @@ export const SectionBlock: React.FC<{
           : backgroundMedia.image.url
 
       return (
-        <div className={`section-background-image ${overlayClass}`}>
+        <div className="section-background-image">
           <img
             src={imageUrl}
             alt=""
@@ -251,7 +246,7 @@ export const SectionBlock: React.FC<{
           : backgroundMedia.video.url
 
       return (
-        <div className={`section-background-video ${overlayClass}`}>
+        <div className="section-background-video">
           <video
             autoPlay
             muted
@@ -282,8 +277,14 @@ export const SectionBlock: React.FC<{
       ? 'section-content section-content--full'
       : 'section-content section-content--container'
 
+  // Build section classes including overlay
+  const sectionClasses = ['section-block']
+  if (backgroundMedia?.overlay && backgroundMedia.overlay !== 'none') {
+    sectionClasses.push(`section-overlay--${backgroundMedia.overlay}`)
+  }
+
   return (
-    <section id={sectionId} className="section-block" style={sectionStyle}>
+    <section id={sectionId} className={sectionClasses.join(' ')} style={sectionStyle}>
       {renderBackgroundMedia()}
       <div className={contentClassName} style={{ position: 'relative', zIndex: 10 }}>
         {blocks && blocks.length > 0 && <SectionBlockRenderer blocks={blocks} />}

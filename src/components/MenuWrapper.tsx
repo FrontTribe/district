@@ -63,6 +63,19 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
     }
   }
 
+  const handleMenuClick = (item: MenuItem, e: React.MouseEvent) => {
+    if (item.scrollTarget && !item.external) {
+      e.preventDefault()
+      const targetElement = document.getElementById(item.scrollTarget)
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        })
+      }
+    }
+  }
+
   const isTenantMenu = menuId === 'tenant-menu'
   const headerClass = isTenantMenu ? 'header header--tenant' : 'header'
   const contentClass = isTenantMenu ? 'header-content header-content--tenant' : 'header-content'
@@ -96,6 +109,7 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
                           href={item.link}
                           target={item.external ? '_blank' : undefined}
                           rel={item.external ? 'noopener noreferrer' : undefined}
+                          onClick={(e) => handleMenuClick(item, e)}
                           className="tenant-menu-link"
                         >
                           {item.label}
