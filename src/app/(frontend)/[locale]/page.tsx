@@ -144,16 +144,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       />
       <div className={`flex-1 ${menuGlobal?.positioning === 'fixed' ? 'pt-16' : ''}`}>
         <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Demo Link */}
-          <div className="demo-link-container mb-8 text-center">
-            <Link
-              href="/demo"
-              className="demo-link inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
-            >
-              🎨 View The Room Studio Demo
-            </Link>
-          </div>
-
           {/* Render blocks from pages */}
           {pages.length > 0 ? (
             pages.map((page) => (
