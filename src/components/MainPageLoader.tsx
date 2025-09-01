@@ -22,6 +22,7 @@ if (typeof window !== 'undefined') {
 
 export const MainPageLoader: React.FC<MainPageLoaderProps> = ({ children }) => {
   const loadingRef = useRef<HTMLDivElement>(null)
+  const progressBarRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -41,31 +42,46 @@ export const MainPageLoader: React.FC<MainPageLoaderProps> = ({ children }) => {
       // Loading animation
       const tl = gsap.timeline()
 
-      // Simulate loading progress
-      const progressBar = document.querySelector('.loading-progress')
-      if (progressBar) {
-        gsap.to(progressBar, {
-          width: '100%',
-          duration: 2,
-          ease: 'power2.inOut',
-          delay: 0.5,
-        })
-      }
+      // Simulate loading progress - small delay to ensure DOM is ready
+      setTimeout(() => {
+        const progressBar = progressBarRef.current || document.querySelector('.loading-progress')
+        if (progressBar) {
+          console.log('Progress bar found, starting animation')
+          gsap.to(progressBar, {
+            width: '100%',
+            duration: 2,
+            ease: 'power2.inOut',
+            delay: 0.5,
+          })
+        } else {
+          console.log('Progress bar not found')
+        }
+      }, 50)
 
       // After loading completes, slide overlay down
-      tl.to(loadingRef.current, {
-        y: '100%',
-        duration: 1,
-        ease: 'power2.inOut',
-        delay: 2.5,
-      })
+      setTimeout(() => {
+        if (loadingRef.current) {
+          console.log('Loading ref found, starting slide down animation')
 
-      // Complete the slide down and hide overlay
-      tl.to(loadingRef.current, {
-        y: '100%',
-        duration: 0.7,
-        ease: 'power2.inOut',
-      }).call(() => setIsLoading(false))
+          // Set initial transform
+          gsap.set(loadingRef.current, { y: 0 })
+
+          // Animate slide down using timeline
+          tl.to(loadingRef.current, {
+            y: '100%',
+            duration: 1,
+            ease: 'power2.inOut',
+            delay: 2.5,
+          }).call(() => {
+            console.log('Slide down animation completed')
+            setIsLoading(false)
+          })
+        } else {
+          console.log('Loading ref not found')
+          // Fallback: just hide the loader after delay
+          setTimeout(() => setIsLoading(false), 3500)
+        }
+      }, 100)
     } else {
       // Loader already shown, don't show it again
       setIsLoading(false)
@@ -80,7 +96,7 @@ export const MainPageLoader: React.FC<MainPageLoaderProps> = ({ children }) => {
           <div className="loading-content">
             <div className="loading-logo">district</div>
             <div className="loading-bar">
-              <div className="loading-progress"></div>
+              <div ref={progressBarRef} className="loading-progress"></div>
             </div>
           </div>
         </div>

@@ -111,6 +111,8 @@ div {
   align-items: center;
   justify-content: space-between;
   padding: 2rem 0;
+  transform: translateY(0);
+  will-change: transform;
 }
 
 .loading-content {
