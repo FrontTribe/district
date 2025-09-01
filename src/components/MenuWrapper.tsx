@@ -1,8 +1,9 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
-import MainPageLanguageSwitcher from './mainPageLanguageSwitcher'
+import { useRouter, usePathname } from 'next/navigation'
+import EnhancedLanguageSwitcher from './EnhancedLanguageSwitcher'
 
 interface MenuItem {
   label: string
@@ -34,123 +35,57 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
   locale,
   menuId = 'default',
 }) => {
+  const router = useRouter()
+  const pathname = usePathname()
+  const [isLanguageChanging, setIsLanguageChanging] = useState(false)
+
+  const handleLanguageChange = async (newLocale: string) => {
+    if (newLocale === locale) return // Don't switch if it's the same language
+
+    try {
+      setIsLanguageChanging(true)
+
+      // Get the current path without the locale
+      const pathWithoutLocale = pathname.replace(`/${locale}`, '')
+
+      // Navigate to the new locale while preserving the current page
+      if (pathWithoutLocale === '') {
+        // If we're on the main page, just go to the new locale
+        router.push(`/${newLocale}`)
+      } else {
+        // If we're on a specific page, preserve the page path
+        router.push(`/${newLocale}${pathWithoutLocale}`)
+      }
+    } catch (error) {
+      console.error('Error changing language:', error)
+    } finally {
+      setIsLanguageChanging(false)
+    }
+  }
+
   return (
-    <div className={`menu-wrapper menu-${menuId} ${positioning}`}>
-      <div className="menu-container">
-        <div className="menu-content">
-          {/* Logo - Centered */}
-          <div className="menu-logo-centered">
-            <Link href="/">
-              {logo ? (
-                <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
-              ) : logoText ? (
-                <span className="logo-text">{logoText}</span>
-              ) : (
-                <span className="logo-text">Logo</span>
-              )}
-            </Link>
-          </div>
-
-          {/* Navigation Menu */}
-          <div className="menu-navigation">
-            <div className="menu-items">
-              {menuItems.map((item, index) => {
-                const handleMenuClick = (e: React.MouseEvent) => {
-                  if (item.scrollTarget && !item.external) {
-                    e.preventDefault()
-                    const targetElement = document.getElementById(item.scrollTarget)
-                    if (targetElement) {
-                      targetElement.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start',
-                      })
-                    }
-                  }
-                }
-
-                if (item.external) {
-                  return (
-                    <div key={index} className="menu-item external">
-                      <a href={item.link} target="_blank" rel="noopener noreferrer">
-                        {item.label}
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                          />
-                        </svg>
-                      </a>
-                      {item.children && item.children.length > 0 && (
-                        <div className="menu-dropdown">
-                          {item.children.map((child, childIndex) => (
-                            <a
-                              key={childIndex}
-                              href={child.link}
-                              target={child.external ? '_blank' : undefined}
-                              rel={child.external ? 'noopener noreferrer' : undefined}
-                            >
-                              {child.label}
-                              {child.external && (
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                  />
-                                </svg>
-                              )}
-                            </a>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )
-                }
-
-                return (
-                  <div key={index} className="menu-item">
-                    <Link href={item.link} onClick={handleMenuClick}>
-                      {item.label}
-                    </Link>
-                    {item.children && item.children.length > 0 && (
-                      <div className="menu-dropdown">
-                        {item.children.map((child, childIndex) => (
-                          <Link
-                            key={childIndex}
-                            href={child.link}
-                            target={child.external ? '_blank' : undefined}
-                            rel={child.external ? 'noopener noreferrer' : undefined}
-                          >
-                            {child.label}
-                            {child.external && (
-                              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                />
-                              </svg>
-                            )}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Language Switcher */}
-          <div className="menu-language-switcher">
-            <MainPageLanguageSwitcher locale={locale} />
-          </div>
+    <header className="header">
+      <div className="header-content">
+        <div className="logo">
+          <Link href="/">
+            {logo ? (
+              <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
+            ) : logoText ? (
+              <h1>{logoText}</h1>
+            ) : (
+              <h1>district.</h1>
+            )}
+          </Link>
+        </div>
+        <div className="language-switcher-wrapper">
+          <EnhancedLanguageSwitcher
+            currentLocale={locale}
+            onLanguageChange={handleLanguageChange}
+            theme="transparent"
+            disabled={isLanguageChanging}
+          />
         </div>
       </div>
-    </div>
+    </header>
   )
 }

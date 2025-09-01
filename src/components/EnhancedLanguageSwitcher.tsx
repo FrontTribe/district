@@ -6,11 +6,15 @@ import { localeLang } from '@/utils/locale'
 interface EnhancedLanguageSwitcherProps {
   currentLocale: string
   onLanguageChange: (locale: string) => void
+  theme?: 'transparent' | 'dark' | 'light'
+  disabled?: boolean
 }
 
 export default function EnhancedLanguageSwitcher({
   currentLocale,
   onLanguageChange,
+  theme = 'transparent',
+  disabled = false,
 }: EnhancedLanguageSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -31,17 +35,27 @@ export default function EnhancedLanguageSwitcher({
   }, [])
 
   const handleLanguageSelect = (locale: string) => {
+    if (disabled) return
     onLanguageChange(locale)
     setIsOpen(false)
   }
 
+  const handleToggle = () => {
+    if (disabled) return
+    setIsOpen(!isOpen)
+  }
+
   return (
-    <div className="enhanced-language-switcher" ref={dropdownRef}>
+    <div
+      className={`enhanced-language-switcher theme-${theme} ${disabled ? 'disabled' : ''}`}
+      ref={dropdownRef}
+    >
       <button
         className="language-trigger"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         aria-expanded={isOpen}
         aria-haspopup="true"
+        disabled={disabled}
       >
         <span className="current-language">{currentLanguage?.label || 'EN'}</span>
         <svg
@@ -67,6 +81,7 @@ export default function EnhancedLanguageSwitcher({
             key={code}
             className={`language-option ${code === currentLocale ? 'active' : ''}`}
             onClick={() => handleLanguageSelect(code)}
+            disabled={disabled}
           >
             {label}
           </button>

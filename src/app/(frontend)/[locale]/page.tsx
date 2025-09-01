@@ -142,27 +142,25 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         locale={locale}
         menuId={menuGlobal?.identifier || 'main-menu'}
       />
-      <div className={`flex-1 ${menuGlobal?.positioning === 'fixed' ? 'pt-16' : ''}`}>
-        <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Render blocks from pages */}
-          {pages.length > 0 ? (
-            pages.map((page) => (
-              <div key={page.id}>
-                <PageClient page={page} />
-              </div>
-            ))
-          ) : currentTenant ? (
-            <div className="no-pages">
-              <h2>No Pages Found</h2>
-              <p>No pages have been created for this tenant yet.</p>
+      <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Render blocks from pages */}
+        {pages.length > 0 ? (
+          pages.map((page) => (
+            <div key={page.id}>
+              <PageClient page={page} />
             </div>
-          ) : (
-            <div className="no-pages">
-              <h2>No Pages Found</h2>
-              <p>No pages have been created for the main domain yet.</p>
-            </div>
-          )}
-        </div>
+          ))
+        ) : currentTenant ? (
+          <div className="no-pages">
+            <h2>No Pages Found</h2>
+            <p>No pages have been created for this tenant yet.</p>
+          </div>
+        ) : (
+          <div className="no-pages">
+            <h2>No Pages Found</h2>
+            <p>No pages have been created for the main domain yet.</p>
+          </div>
+        )}
       </div>
 
       {/* Footer */}
