@@ -198,6 +198,182 @@ export interface Page {
   layout?:
     | (
         | {
+            /**
+             * Make this section take up the full viewport height
+             */
+            isFullHeight?: boolean | null;
+            /**
+             * Choose the container width for section content
+             */
+            container?: ('full' | 'container') | null;
+            /**
+             * CSS color value (e.g., #000000, rgb(0,0,0), black)
+             */
+            backgroundColor?: string | null;
+            backgroundMedia?: {
+              type?: ('none' | 'image' | 'video') | null;
+              image?: (string | null) | Media;
+              video?: (string | null) | Media;
+              overlay?: ('none' | 'light' | 'medium' | 'dark') | null;
+            };
+            padding?: {
+              top?: number | null;
+              right?: number | null;
+              bottom?: number | null;
+              left?: number | null;
+            };
+            blocks?:
+              | (
+                  | {
+                      heading: string;
+                      subheading?: string | null;
+                      /**
+                       * Optional ID for this section (used for menu navigation)
+                       */
+                      sectionId?: string | null;
+                      id?: string | null;
+                      blockName?: string | null;
+                      blockType: 'hero';
+                    }
+                  | {
+                      heading?: string | null;
+                      features?:
+                        | {
+                            title?: string | null;
+                            description?: string | null;
+                            id?: string | null;
+                          }[]
+                        | null;
+                      /**
+                       * Optional ID for this section (used for menu navigation)
+                       */
+                      sectionId?: string | null;
+                      id?: string | null;
+                      blockName?: string | null;
+                      blockType: 'features';
+                    }
+                  | {
+                      heading: string;
+                      content: {
+                        root: {
+                          type: string;
+                          children: {
+                            type: string;
+                            version: number;
+                            [k: string]: unknown;
+                          }[];
+                          direction: ('ltr' | 'rtl') | null;
+                          format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                          indent: number;
+                          version: number;
+                        };
+                        [k: string]: unknown;
+                      };
+                      /**
+                       * Optional ID for this section (used for menu navigation)
+                       */
+                      sectionId?: string | null;
+                      id?: string | null;
+                      blockName?: string | null;
+                      blockType: 'text';
+                    }
+                  | {
+                      columns?:
+                        | {
+                            title: string;
+                            subtitle?: string | null;
+                            /**
+                             * Optional background image for this column
+                             */
+                            backgroundImage?: (string | null) | Media;
+                            /**
+                             * Make this column take the full viewport height
+                             */
+                            fullHeight?: boolean | null;
+                            /**
+                             * Optional gradient overlay for this column
+                             */
+                            gradient?: {
+                              enabled?: boolean | null;
+                              type?: ('linear' | 'radial') | null;
+                              direction?:
+                                | (
+                                    | 'to-bottom'
+                                    | 'to-top'
+                                    | 'to-right'
+                                    | 'to-left'
+                                    | 'to-bottom-right'
+                                    | 'to-bottom-left'
+                                    | 'to-top-right'
+                                    | 'to-top-left'
+                                  )
+                                | null;
+                              position?:
+                                | (
+                                    | 'center'
+                                    | 'top'
+                                    | 'bottom'
+                                    | 'left'
+                                    | 'right'
+                                    | 'top-left'
+                                    | 'top-right'
+                                    | 'bottom-left'
+                                    | 'bottom-right'
+                                  )
+                                | null;
+                              /**
+                               * Hex color code (e.g., #000000)
+                               */
+                              startColor?: string | null;
+                              /**
+                               * Hex color code (e.g., #ffffff)
+                               */
+                              endColor?: string | null;
+                              /**
+                               * Gradient opacity (0 = transparent, 1 = opaque)
+                               */
+                              opacity?: number | null;
+                            };
+                            link: {
+                              url: string;
+                              text: string;
+                              openInNewTab?: boolean | null;
+                            };
+                            /**
+                             * Optional social network links for this column
+                             */
+                            socialNetworks?: {
+                              /**
+                               * Full Facebook profile or page URL
+                               */
+                              facebook?: string | null;
+                              /**
+                               * Full Instagram profile URL
+                               */
+                              instagram?: string | null;
+                            };
+                            id?: string | null;
+                          }[]
+                        | null;
+                      /**
+                       * Optional ID for this section (used for menu navigation)
+                       */
+                      sectionId?: string | null;
+                      id?: string | null;
+                      blockName?: string | null;
+                      blockType: 'three-columns';
+                    }
+                )[]
+              | null;
+            /**
+             * Optional ID for this section (used for menu navigation)
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'section';
+          }
+        | {
             heading: string;
             subheading?: string | null;
             /**
@@ -583,6 +759,109 @@ export interface PagesSelect<T extends boolean = true> {
   layout?:
     | T
     | {
+        section?:
+          | T
+          | {
+              isFullHeight?: T;
+              container?: T;
+              backgroundColor?: T;
+              backgroundMedia?:
+                | T
+                | {
+                    type?: T;
+                    image?: T;
+                    video?: T;
+                    overlay?: T;
+                  };
+              padding?:
+                | T
+                | {
+                    top?: T;
+                    right?: T;
+                    bottom?: T;
+                    left?: T;
+                  };
+              blocks?:
+                | T
+                | {
+                    hero?:
+                      | T
+                      | {
+                          heading?: T;
+                          subheading?: T;
+                          sectionId?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    features?:
+                      | T
+                      | {
+                          heading?: T;
+                          features?:
+                            | T
+                            | {
+                                title?: T;
+                                description?: T;
+                                id?: T;
+                              };
+                          sectionId?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    text?:
+                      | T
+                      | {
+                          heading?: T;
+                          content?: T;
+                          sectionId?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    'three-columns'?:
+                      | T
+                      | {
+                          columns?:
+                            | T
+                            | {
+                                title?: T;
+                                subtitle?: T;
+                                backgroundImage?: T;
+                                fullHeight?: T;
+                                gradient?:
+                                  | T
+                                  | {
+                                      enabled?: T;
+                                      type?: T;
+                                      direction?: T;
+                                      position?: T;
+                                      startColor?: T;
+                                      endColor?: T;
+                                      opacity?: T;
+                                    };
+                                link?:
+                                  | T
+                                  | {
+                                      url?: T;
+                                      text?: T;
+                                      openInNewTab?: T;
+                                    };
+                                socialNetworks?:
+                                  | T
+                                  | {
+                                      facebook?: T;
+                                      instagram?: T;
+                                    };
+                                id?: T;
+                              };
+                          sectionId?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                  };
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
         hero?:
           | T
           | {

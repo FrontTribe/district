@@ -1186,6 +1186,185 @@ svg {
 
 /* Menu Wrapper Styles - Now using demo page header styling */
 
+/* Section Block Styles */
+.section-block {
+  position: relative;
+  overflow: hidden;
+
+  .section-content {
+    position: relative;
+    z-index: 10;
+
+    &--container {
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 0 20px;
+
+      @media (max-width: 768px) {
+        padding: 0 16px;
+      }
+
+      @media (max-width: 480px) {
+        padding: 0 12px;
+      }
+    }
+
+    &--full {
+      width: 100%;
+    }
+  }
+
+  .section-background-image,
+  .section-background-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
+
+    img,
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+  }
+
+  // Section overlays
+  &.section-overlay {
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    &--light::before {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    &--medium::before {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    &--dark::before {
+      background: rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  // Full height section
+  &.min-h-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+
+    .section-content {
+      width: 100%;
+    }
+  }
+}
+
+/* Text Block Styles */
+.text-block {
+  padding: 80px 20px;
+  background: rgb(0, 0, 0);
+}
+
+.text-content {
+  width: 100%;
+  text-align: center;
+}
+
+.text-heading {
+  font-size: 48px;
+  line-height: 1.2;
+  font-weight: bold;
+  font-family: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
+  margin: 0 0 40px 0;
+  color: rgb(1000, 1000, 1000);
+
+  @media (max-width: 768px) {
+    font-size: 36px;
+    margin-bottom: 30px;
+  }
+}
+
+.text-body {
+  font-size: 18px;
+  line-height: 1.6;
+  color: rgba(1000, 1000, 1000, 0.8);
+  text-align: left;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
+
+  // Rich text content styling
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
+    color: rgb(1000, 1000, 1000);
+    margin: 30px 0 20px 0;
+  }
+
+  p {
+    margin: 20px 0;
+  }
+
+  ul,
+  ol {
+    margin: 20px 0;
+    padding-left: 30px;
+  }
+
+  li {
+    margin: 10px 0;
+  }
+
+  a {
+    color: rgb(1000, 1000, 1000);
+    text-decoration: underline;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  blockquote {
+    border-left: 4px solid rgba(1000, 1000, 1000, 0.3);
+    padding-left: 20px;
+    margin: 30px 0;
+    font-style: italic;
+  }
+
+  code {
+    background: rgba(1000, 1000, 1000, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+
+  pre {
+    background: rgba(1000, 1000, 1000, 0.1);
+    padding: 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 20px 0;
+  }
+}
+
 /* Three Columns Block Styles - Now using demo page hero styling */
 
 /* Responsive design for three columns - Now using demo page hero styling */

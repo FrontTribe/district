@@ -101,7 +101,7 @@ const Pages: CollectionConfig = {
     {
       name: 'layout',
       type: 'blocks',
-      blocks: [Hero, Features, Text, ThreeColumns],
+      blocks: [Section, Hero, Features, Text, ThreeColumns],
       localized: true,
     },
   ],

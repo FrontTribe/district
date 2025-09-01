@@ -1,5 +1,6 @@
 import { Block } from 'payload'
 import React from 'react'
+import { RichText } from '@payloadcms/richtext-lexical/react'
 
 const Text: Block = {
   slug: 'text',
@@ -36,7 +37,9 @@ export const TextBlock: React.FC<{
     <section id={sectionId} className="text-block">
       <div className="text-content">
         <h2 className="text-heading">{heading}</h2>
-        <div className="text-body">{content}</div>
+        <div className="text-body">
+          <RichText data={content} />
+        </div>
       </div>
     </section>
   )

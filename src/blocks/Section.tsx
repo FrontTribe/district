@@ -1,169 +1,306 @@
-'use client'
-
-import React from 'react'
-import dynamic from 'next/dynamic'
 import { Block } from 'payload'
-import Hero from './Hero'
-import Features from './Features'
-
-const BlockRenderer = dynamic(
-  () => import('@/components/BlockRenderer').then((mod) => mod.BlockRenderer),
-  { ssr: false },
-)
+import React from 'react'
+import { Page } from '@/payload-types'
+import Hero from '@/blocks/Hero'
+import Features from '@/blocks/Features'
+import Text from '@/blocks/Text'
+import { ThreeColumns } from '@/blocks/ThreeColumns'
+import { HeroBlock } from '@/blocks/Hero'
+import { FeaturesBlock } from '@/blocks/Features'
+import { TextBlock } from '@/blocks/Text'
+import { ThreeColumnsBlock } from '@/blocks/ThreeColumns'
 
 const Section: Block = {
   slug: 'section',
   fields: [
     {
-      name: 'title',
+      name: 'isFullHeight',
+      type: 'checkbox',
+      label: 'Full Height Section',
+      defaultValue: false,
+      admin: {
+        description: 'Make this section take up the full viewport height',
+      },
+    },
+    {
+      name: 'container',
+      type: 'select',
+      label: 'Container Width',
+      options: [
+        { label: 'Full Width', value: 'full' },
+        { label: '1440px Max Width', value: 'container' },
+      ],
+      defaultValue: 'container',
+      admin: {
+        description: 'Choose the container width for section content',
+      },
+    },
+    {
+      name: 'backgroundColor',
       type: 'text',
-      label: 'Section Title',
+      label: 'Background Color',
+      admin: {
+        description: 'CSS color value (e.g., #000000, rgb(0,0,0), black)',
+      },
+    },
+    {
+      name: 'backgroundMedia',
+      type: 'group',
+      label: 'Background Media',
+      fields: [
+        {
+          name: 'type',
+          type: 'select',
+          label: 'Media Type',
+          options: [
+            { label: 'None', value: 'none' },
+            { label: 'Image', value: 'image' },
+            { label: 'Video', value: 'video' },
+          ],
+          defaultValue: 'none',
+        },
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          admin: {
+            condition: (data, siblingData) => siblingData?.type === 'image',
+          },
+        },
+        {
+          name: 'video',
+          type: 'upload',
+          relationTo: 'media',
+          admin: {
+            condition: (data, siblingData) => siblingData?.type === 'video',
+          },
+        },
+        {
+          name: 'overlay',
+          type: 'select',
+          label: 'Overlay',
+          options: [
+            { label: 'None', value: 'none' },
+            { label: 'Light', value: 'light' },
+            { label: 'Medium', value: 'medium' },
+            { label: 'Dark', value: 'dark' },
+          ],
+          defaultValue: 'none',
+          admin: {
+            condition: (data, siblingData) => siblingData?.type !== 'none',
+          },
+        },
+      ],
+    },
+    {
+      name: 'padding',
+      type: 'group',
+      label: 'Padding',
+      fields: [
+        {
+          name: 'top',
+          type: 'number',
+          label: 'Top (px)',
+          defaultValue: 40,
+        },
+        {
+          name: 'right',
+          type: 'number',
+          label: 'Right (px)',
+          defaultValue: 20,
+        },
+        {
+          name: 'bottom',
+          type: 'number',
+          label: 'Bottom (px)',
+          defaultValue: 40,
+        },
+        {
+          name: 'left',
+          type: 'number',
+          label: 'Left (px)',
+          defaultValue: 20,
+        },
+      ],
+    },
+    {
+      name: 'blocks',
+      type: 'blocks',
+      label: 'Section Content',
+      blocks: [Hero, Features, Text, ThreeColumns],
     },
     {
       name: 'sectionId',
       type: 'text',
       label: 'Section ID',
       admin: {
-        description: 'Unique ID for this section (used for menu navigation).',
+        description: 'Optional ID for this section (used for menu navigation)',
       },
-    },
-    {
-      name: 'backgroundColor',
-      type: 'select',
-      label: 'Background Color',
-      options: [
-        { label: 'Default', value: 'default' },
-        { label: 'Light Gray', value: 'light-gray' },
-        { label: 'Dark Gray', value: 'dark-gray' },
-        { label: 'Primary', value: 'primary' },
-        { label: 'Secondary', value: 'secondary' },
-      ],
-      defaultValue: 'default',
-    },
-    {
-      name: 'padding',
-      type: 'select',
-      label: 'Padding',
-      options: [
-        { label: 'Small', value: 'small' },
-        { label: 'Medium', value: 'medium' },
-        { label: 'Large', value: 'large' },
-        { label: 'Extra Large', value: 'xl' },
-      ],
-      defaultValue: 'medium',
-    },
-    {
-      name: 'height',
-      type: 'select',
-      label: 'Section Height',
-      options: [
-        { label: 'Auto', value: 'auto' },
-        { label: 'Small', value: 'small' },
-        { label: 'Medium', value: 'medium' },
-        { label: 'Large', value: 'large' },
-        { label: 'Full Screen', value: 'full' },
-        { label: 'Custom', value: 'custom' },
-      ],
-      defaultValue: 'auto',
-    },
-    {
-      name: 'customHeight',
-      type: 'text',
-      label: 'Custom Height',
-      admin: {
-        description: 'Custom height value (e.g., "500px", "50vh", "100%").',
-        condition: (_, siblingData) => siblingData?.height === 'custom',
-      },
-    },
-    {
-      name: 'blocks',
-      type: 'blocks',
-      label: 'Section Blocks',
-      minRows: 0,
-      blocks: [Hero, Features],
     },
   ],
 }
 
 export const SectionBlock: React.FC<{
-  title?: string
-  sectionId?: string
+  isFullHeight?: boolean
+  container?: 'full' | 'container'
   backgroundColor?: string
-  blocks?: any[]
-  padding?: string
-  height?: string
-  customHeight?: string
+  backgroundMedia?: {
+    type: 'none' | 'image' | 'video'
+    image?: string | any
+    video?: string | any
+    overlay?: 'none' | 'light' | 'medium' | 'dark'
+  }
+  padding?: {
+    top?: number
+    right?: number
+    bottom?: number
+    left?: number
+  }
+  blocks?: Page['layout']
+  sectionId?: string
 }> = ({
-  title,
-  sectionId,
-  backgroundColor = 'default',
+  isFullHeight = false,
+  container = 'container',
+  backgroundColor,
+  backgroundMedia,
+  padding = { top: 40, right: 20, bottom: 40, left: 20 },
   blocks,
-  padding = 'medium',
-  height = 'auto',
-  customHeight,
+  sectionId,
 }) => {
-  const getBackgroundClass = () => {
-    switch (backgroundColor) {
-      case 'light-gray':
-        return 'bg-gray-100'
-      case 'dark-gray':
-        return 'bg-gray-800 text-white'
-      case 'primary':
-        return 'bg-blue-600 text-white'
-      case 'secondary':
-        return 'bg-green-600 text-white'
-      default:
-        return 'bg-white text-black'
-    }
+  const sectionStyle: React.CSSProperties = {
+    paddingTop: `${padding.top}px`,
+    paddingRight: `${padding.right}px`,
+    paddingBottom: `${padding.bottom}px`,
+    paddingLeft: `${padding.left}px`,
+    backgroundColor: backgroundColor || undefined,
+    position: 'relative',
+    overflow: 'hidden',
   }
 
-  const getPaddingClass = () => {
-    switch (padding) {
-      case 'small':
-        return 'py-8'
-      case 'large':
-        return 'py-16'
-      case 'xl':
-        return 'py-24'
-      default:
-        return 'py-12'
-    }
+  if (isFullHeight) {
+    sectionStyle.minHeight = '100vh'
+    sectionStyle.display = 'flex'
+    sectionStyle.alignItems = 'center'
   }
 
-  const getHeightStyle = (): React.CSSProperties => {
-    if (height === 'custom' && customHeight) {
-      return { minHeight: customHeight }
+  const renderBackgroundMedia = () => {
+    if (!backgroundMedia || backgroundMedia.type === 'none') {
+      return null
     }
 
-    switch (height) {
-      case 'small':
-        return { minHeight: '200px' }
-      case 'medium':
-        return { minHeight: '400px' }
-      case 'large':
-        return { minHeight: '600px' }
-      case 'full':
-        return { minHeight: '100vh' }
-      default:
-        return {}
+    const overlayClass =
+      backgroundMedia.overlay && backgroundMedia.overlay !== 'none'
+        ? `section-overlay--${backgroundMedia.overlay}`
+        : ''
+
+    if (backgroundMedia.type === 'image' && backgroundMedia.image) {
+      const imageUrl =
+        typeof backgroundMedia.image === 'string'
+          ? backgroundMedia.image
+          : backgroundMedia.image.url
+
+      return (
+        <div className={`section-background-image ${overlayClass}`}>
+          <img
+            src={imageUrl}
+            alt=""
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              zIndex: 1,
+            }}
+          />
+        </div>
+      )
     }
+
+    if (backgroundMedia.type === 'video' && backgroundMedia.video) {
+      const videoUrl =
+        typeof backgroundMedia.video === 'string'
+          ? backgroundMedia.video
+          : backgroundMedia.video.url
+
+      return (
+        <div className={`section-background-video ${overlayClass}`}>
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              zIndex: 1,
+            }}
+          >
+            <source src={videoUrl} type="video/mp4" />
+          </video>
+        </div>
+      )
+    }
+
+    return null
+  }
+
+  const contentClassName =
+    container === 'full'
+      ? 'section-content section-content--full'
+      : 'section-content section-content--container'
+
+  return (
+    <section id={sectionId} className="section-block" style={sectionStyle}>
+      {renderBackgroundMedia()}
+      <div className={contentClassName} style={{ position: 'relative', zIndex: 10 }}>
+        {blocks && blocks.length > 0 && <SectionBlockRenderer blocks={blocks} />}
+      </div>
+    </section>
+  )
+}
+
+// Local block renderer to avoid circular dependency
+const SectionBlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null }> = ({
+  blocks,
+}) => {
+  if (!blocks || blocks.length === 0) {
+    return null
+  }
+
+  const blockComponents = {
+    hero: HeroBlock,
+    features: FeaturesBlock,
+    text: TextBlock,
+    'three-columns': ThreeColumnsBlock,
   }
 
   return (
-    <section
-      {...(sectionId ? { id: sectionId } : {})}
-      className={`section-block ${getBackgroundClass()} ${getPaddingClass()} scroll-mt-20`}
-      style={getHeightStyle()}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {title && (
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold">{title}</h2>
+    <div>
+      {blocks.map((block, index) => {
+        const { blockType } = block
+
+        if (blockType && blockType in blockComponents) {
+          const BlockComponent = blockComponents[blockType as keyof typeof blockComponents]
+          const key = block.id ? `${block.id}-${index}` : index
+          // @ts-expect-error
+          return <BlockComponent key={key} {...block} />
+        }
+
+        return (
+          <div key={index}>
+            The component for block type &quot;{blockType}&quot; does not exist.
           </div>
-        )}
-        <BlockRenderer blocks={Array.isArray(blocks) ? blocks : []} />
-      </div>
-    </section>
+        )
+      })}
+    </div>
   )
 }
 
