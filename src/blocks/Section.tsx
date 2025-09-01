@@ -14,128 +14,153 @@ const Section: Block = {
   slug: 'section',
   fields: [
     {
-      name: 'isFullHeight',
-      type: 'checkbox',
-      label: 'Full Height Section',
-      defaultValue: false,
-      admin: {
-        description: 'Make this section take up the full viewport height',
-      },
-    },
-    {
-      name: 'container',
-      type: 'select',
-      label: 'Container Width',
-      options: [
-        { label: 'Full Width', value: 'full' },
-        { label: '1440px Max Width', value: 'container' },
-      ],
-      defaultValue: 'container',
-      admin: {
-        description: 'Choose the container width for section content',
-      },
-    },
-    {
-      name: 'backgroundColor',
-      type: 'text',
-      label: 'Background Color',
-      admin: {
-        description: 'CSS color value (e.g., #000000, rgb(0,0,0), black)',
-      },
-    },
-    {
-      name: 'backgroundMedia',
-      type: 'group',
-      label: 'Background Media',
-      fields: [
+      type: 'tabs',
+      tabs: [
         {
-          name: 'type',
-          type: 'select',
-          label: 'Media Type',
-          options: [
-            { label: 'None', value: 'none' },
-            { label: 'Image', value: 'image' },
-            { label: 'Video', value: 'video' },
+          label: 'Content',
+          fields: [
+            {
+              name: 'blocks',
+              type: 'blocks',
+              label: 'Section Content',
+              blocks: [Hero, Features, Text, ThreeColumns],
+            },
           ],
-          defaultValue: 'none',
         },
         {
-          name: 'image',
-          type: 'upload',
-          relationTo: 'media',
-          admin: {
-            condition: (data, siblingData) => siblingData?.type === 'image',
-          },
-        },
-        {
-          name: 'video',
-          type: 'upload',
-          relationTo: 'media',
-          admin: {
-            condition: (data, siblingData) => siblingData?.type === 'video',
-          },
-        },
-        {
-          name: 'overlay',
-          type: 'select',
-          label: 'Overlay',
-          options: [
-            { label: 'None', value: 'none' },
-            { label: 'Light', value: 'light' },
-            { label: 'Medium', value: 'medium' },
-            { label: 'Dark', value: 'dark' },
+          label: 'Layout',
+          fields: [
+            {
+              name: 'isFullHeight',
+              type: 'checkbox',
+              label: 'Full Height Section',
+              defaultValue: false,
+              admin: {
+                description: 'Make this section take up the full viewport height',
+              },
+            },
+            {
+              name: 'container',
+              type: 'select',
+              label: 'Container Width',
+              options: [
+                { label: 'Full Width', value: 'full' },
+                { label: '1440px Max Width', value: 'container' },
+              ],
+              defaultValue: 'container',
+              admin: {
+                description: 'Choose the container width for section content',
+              },
+            },
+            {
+              name: 'padding',
+              type: 'group',
+              label: 'Padding',
+              fields: [
+                {
+                  name: 'top',
+                  type: 'number',
+                  label: 'Top (px)',
+                  defaultValue: 40,
+                },
+                {
+                  name: 'right',
+                  type: 'number',
+                  label: 'Right (px)',
+                  defaultValue: 20,
+                },
+                {
+                  name: 'bottom',
+                  type: 'number',
+                  label: 'Bottom (px)',
+                  defaultValue: 40,
+                },
+                {
+                  name: 'left',
+                  type: 'number',
+                  label: 'Left (px)',
+                  defaultValue: 20,
+                },
+              ],
+            },
           ],
-          defaultValue: 'none',
-          admin: {
-            condition: (data, siblingData) => siblingData?.type !== 'none',
-          },
+        },
+        {
+          label: 'Background',
+          fields: [
+            {
+              name: 'backgroundColor',
+              type: 'text',
+              label: 'Background Color',
+              admin: {
+                description: 'CSS color value (e.g., #000000, rgb(0,0,0), black)',
+              },
+            },
+            {
+              name: 'backgroundMedia',
+              type: 'group',
+              label: 'Background Media',
+              fields: [
+                {
+                  name: 'type',
+                  type: 'select',
+                  label: 'Media Type',
+                  options: [
+                    { label: 'None', value: 'none' },
+                    { label: 'Image', value: 'image' },
+                    { label: 'Video', value: 'video' },
+                  ],
+                  defaultValue: 'none',
+                },
+                {
+                  name: 'image',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    condition: (data, siblingData) => siblingData?.type === 'image',
+                  },
+                },
+                {
+                  name: 'video',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    condition: (data, siblingData) => siblingData?.type === 'video',
+                  },
+                },
+                {
+                  name: 'overlay',
+                  type: 'select',
+                  label: 'Overlay',
+                  options: [
+                    { label: 'None', value: 'none' },
+                    { label: 'Light', value: 'light' },
+                    { label: 'Medium', value: 'medium' },
+                    { label: 'Dark', value: 'dark' },
+                  ],
+                  defaultValue: 'none',
+                  admin: {
+                    condition: (data, siblingData) => siblingData?.type !== 'none',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Settings',
+          fields: [
+            {
+              name: 'sectionId',
+              type: 'text',
+              label: 'Section ID',
+              admin: {
+                description: 'Optional ID for this section (used for menu navigation)',
+              },
+            },
+          ],
         },
       ],
-    },
-    {
-      name: 'padding',
-      type: 'group',
-      label: 'Padding',
-      fields: [
-        {
-          name: 'top',
-          type: 'number',
-          label: 'Top (px)',
-          defaultValue: 40,
-        },
-        {
-          name: 'right',
-          type: 'number',
-          label: 'Right (px)',
-          defaultValue: 20,
-        },
-        {
-          name: 'bottom',
-          type: 'number',
-          label: 'Bottom (px)',
-          defaultValue: 40,
-        },
-        {
-          name: 'left',
-          type: 'number',
-          label: 'Left (px)',
-          defaultValue: 20,
-        },
-      ],
-    },
-    {
-      name: 'blocks',
-      type: 'blocks',
-      label: 'Section Content',
-      blocks: [Hero, Features, Text, ThreeColumns],
-    },
-    {
-      name: 'sectionId',
-      type: 'text',
-      label: 'Section ID',
-      admin: {
-        description: 'Optional ID for this section (used for menu navigation)',
-      },
     },
   ],
 }

@@ -198,30 +198,6 @@ export interface Page {
   layout?:
     | (
         | {
-            /**
-             * Make this section take up the full viewport height
-             */
-            isFullHeight?: boolean | null;
-            /**
-             * Choose the container width for section content
-             */
-            container?: ('full' | 'container') | null;
-            /**
-             * CSS color value (e.g., #000000, rgb(0,0,0), black)
-             */
-            backgroundColor?: string | null;
-            backgroundMedia?: {
-              type?: ('none' | 'image' | 'video') | null;
-              image?: (string | null) | Media;
-              video?: (string | null) | Media;
-              overlay?: ('none' | 'light' | 'medium' | 'dark') | null;
-            };
-            padding?: {
-              top?: number | null;
-              right?: number | null;
-              bottom?: number | null;
-              left?: number | null;
-            };
             blocks?:
               | (
                   | {
@@ -365,6 +341,30 @@ export interface Page {
                     }
                 )[]
               | null;
+            /**
+             * Make this section take up the full viewport height
+             */
+            isFullHeight?: boolean | null;
+            /**
+             * Choose the container width for section content
+             */
+            container?: ('full' | 'container') | null;
+            padding?: {
+              top?: number | null;
+              right?: number | null;
+              bottom?: number | null;
+              left?: number | null;
+            };
+            /**
+             * CSS color value (e.g., #000000, rgb(0,0,0), black)
+             */
+            backgroundColor?: string | null;
+            backgroundMedia?: {
+              type?: ('none' | 'image' | 'video') | null;
+              image?: (string | null) | Media;
+              video?: (string | null) | Media;
+              overlay?: ('none' | 'light' | 'medium' | 'dark') | null;
+            };
             /**
              * Optional ID for this section (used for menu navigation)
              */
@@ -762,25 +762,6 @@ export interface PagesSelect<T extends boolean = true> {
         section?:
           | T
           | {
-              isFullHeight?: T;
-              container?: T;
-              backgroundColor?: T;
-              backgroundMedia?:
-                | T
-                | {
-                    type?: T;
-                    image?: T;
-                    video?: T;
-                    overlay?: T;
-                  };
-              padding?:
-                | T
-                | {
-                    top?: T;
-                    right?: T;
-                    bottom?: T;
-                    left?: T;
-                  };
               blocks?:
                 | T
                 | {
@@ -857,6 +838,25 @@ export interface PagesSelect<T extends boolean = true> {
                           id?: T;
                           blockName?: T;
                         };
+                  };
+              isFullHeight?: T;
+              container?: T;
+              padding?:
+                | T
+                | {
+                    top?: T;
+                    right?: T;
+                    bottom?: T;
+                    left?: T;
+                  };
+              backgroundColor?: T;
+              backgroundMedia?:
+                | T
+                | {
+                    type?: T;
+                    image?: T;
+                    video?: T;
+                    overlay?: T;
                   };
               sectionId?: T;
               id?: T;
