@@ -6,6 +6,7 @@ import Link from 'next/link'
 import config from '@/payload.config'
 import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
+import { MainPageLoader } from '@/components/MainPageLoader'
 import { Page, Tenant } from '@/payload-types'
 import '../styles.scss'
 import { RefreshRouteOnSave } from '@/components/RefreshRouteOnSave'
@@ -107,7 +108,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   console.log('[Page] Footer data:', footerGlobal)
 
   return (
-    <>
+    <MainPageLoader>
       <RefreshRouteOnSave />
 
       {/* Menu Wrapper */}
@@ -189,6 +190,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             : undefined
         }
       />
-    </>
+    </MainPageLoader>
   )
 }
