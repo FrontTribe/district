@@ -18,7 +18,11 @@ export default function MainPageLanguageSwitcher({ locale }: MainPageLanguageSwi
     const segments = pathname.split('/')
     segments[1] = newLocale
     const newPath = segments.join('/')
-    router.push(newPath)
+
+    // Force a full page reload to ensure server-side content is fetched with the new locale
+    // This is necessary because the PageClient component uses useLivePreview which doesn't
+    // handle locale changes properly without a full server-side re-render
+    window.location.href = newPath
   }
 
   if (!localeLang.some((lang) => lang.code === currentLocale)) {

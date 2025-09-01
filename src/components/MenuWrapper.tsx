@@ -48,17 +48,16 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
       // Get the current path without the locale
       const pathWithoutLocale = pathname.replace(`/${locale}`, '')
 
-      // Navigate to the new locale while preserving the current page
-      if (pathWithoutLocale === '') {
-        // If we're on the main page, just go to the new locale
-        router.push(`/${newLocale}`)
-      } else {
-        // If we're on a specific page, preserve the page path
-        router.push(`/${newLocale}${pathWithoutLocale}`)
-      }
+      // Build the new URL
+      const newPath =
+        pathWithoutLocale === '' ? `/${newLocale}` : `/${newLocale}${pathWithoutLocale}`
+
+      // Force a full page reload to ensure server-side content is fetched with the new locale
+      // This is necessary because the PageClient component uses useLivePreview which doesn't
+      // handle locale changes properly without a full server-side re-render
+      window.location.href = newPath
     } catch (error) {
       console.error('Error changing language:', error)
-    } finally {
       setIsLanguageChanging(false)
     }
   }
@@ -76,6 +75,26 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
     }
   }
 
+  const handleLogoClick = (e: React.MouseEvent) => {
+    if (isTenantMenu) {
+      e.preventDefault()
+      // Try to find a hero section first
+      const heroElement = document.querySelector('section[id*="hero"], .hero-block, [id*="hero"]')
+      if (heroElement) {
+        heroElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        })
+      } else {
+        // If no hero section found, scroll to top
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        })
+      }
+    }
+  }
+
   const isTenantMenu = menuId === 'tenant-menu'
   const headerClass = isTenantMenu ? 'header header--tenant' : 'header'
   const contentClass = isTenantMenu ? 'header-content header-content--tenant' : 'header-content'
@@ -88,7 +107,7 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
           <>
             <div className="tenant-menu-left">
               <div className="logo">
-                <Link href="/">
+                <Link href="/" onClick={handleLogoClick}>
                   {logo ? (
                     <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
                   ) : logoText ? (
