@@ -6,6 +6,7 @@ import Text from '@/blocks/Text'
 import { ThreeColumns } from '@/blocks/ThreeColumns'
 import BotiqueIntro from '@/blocks/BotiqueIntro'
 import BoutiqueContact from '@/blocks/BoutiqueContact'
+import Rooms from '@/blocks/Rooms'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
@@ -103,7 +104,7 @@ const Pages: CollectionConfig = {
     {
       name: 'layout',
       type: 'blocks',
-      blocks: [Section, Hero, Features, Text, ThreeColumns, BotiqueIntro, BoutiqueContact],
+      blocks: [Section, Hero, Features, Text, ThreeColumns, BotiqueIntro, BoutiqueContact, Rooms],
       localized: true,
     },
   ],

@@ -386,6 +386,36 @@ export interface Page {
                       blockName?: string | null;
                       blockType: 'boutique-contact';
                     }
+                  | {
+                      eyebrow?: string | null;
+                      heading: string;
+                      subheading?: string | null;
+                      cta?: {
+                        label?: string | null;
+                        href?: string | null;
+                      };
+                      /**
+                       * Add up to 4 rooms: Premium, Deluxe, Suite, Apartment
+                       */
+                      rooms?:
+                        | {
+                            title: string;
+                            description?: string | null;
+                            badges?:
+                              | {
+                                  text?: string | null;
+                                  id?: string | null;
+                                }[]
+                              | null;
+                            image: string | Media;
+                            id?: string | null;
+                          }[]
+                        | null;
+                      sectionId?: string | null;
+                      id?: string | null;
+                      blockName?: string | null;
+                      blockType: 'rooms';
+                    }
                 )[]
               | null;
             /**
@@ -601,6 +631,36 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'boutique-contact';
+          }
+        | {
+            eyebrow?: string | null;
+            heading: string;
+            subheading?: string | null;
+            cta?: {
+              label?: string | null;
+              href?: string | null;
+            };
+            /**
+             * Add up to 4 rooms: Premium, Deluxe, Suite, Apartment
+             */
+            rooms?:
+              | {
+                  title: string;
+                  description?: string | null;
+                  badges?:
+                    | {
+                        text?: string | null;
+                        id?: string | null;
+                      }[]
+                    | null;
+                  image: string | Media;
+                  id?: string | null;
+                }[]
+              | null;
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'rooms';
           }
       )[]
     | null;
@@ -1175,6 +1235,36 @@ export interface PagesSelect<T extends boolean = true> {
                           id?: T;
                           blockName?: T;
                         };
+                    rooms?:
+                      | T
+                      | {
+                          eyebrow?: T;
+                          heading?: T;
+                          subheading?: T;
+                          cta?:
+                            | T
+                            | {
+                                label?: T;
+                                href?: T;
+                              };
+                          rooms?:
+                            | T
+                            | {
+                                title?: T;
+                                description?: T;
+                                badges?:
+                                  | T
+                                  | {
+                                      text?: T;
+                                      id?: T;
+                                    };
+                                image?: T;
+                                id?: T;
+                              };
+                          sectionId?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
                   };
               isFullHeight?: T;
               container?: T;
@@ -1316,6 +1406,36 @@ export interface PagesSelect<T extends boolean = true> {
               email?: T;
               phone?: T;
               form?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        rooms?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              subheading?: T;
+              cta?:
+                | T
+                | {
+                    label?: T;
+                    href?: T;
+                  };
+              rooms?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    badges?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    image?: T;
+                    id?: T;
+                  };
               sectionId?: T;
               id?: T;
               blockName?: T;
