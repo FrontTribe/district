@@ -269,6 +269,15 @@ div {
                 transform: scaleX(1);
               }
             }
+
+            &.is-active {
+              color: #ffffff;
+              text-shadow: 0 0 18px rgba(255, 255, 255, 0.2);
+
+              &::after {
+                transform: scaleX(1);
+              }
+            }
           }
         }
       }

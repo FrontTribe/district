@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import EnhancedLanguageSwitcher from './EnhancedLanguageSwitcher'
@@ -38,6 +38,65 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
   const router = useRouter()
   const pathname = usePathname()
   const [isLanguageChanging, setIsLanguageChanging] = useState(false)
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const isTenantMenu = menuId === 'tenant-menu'
+
+  // Observe sections and mark active menu item when in view (tenant menu only)
+  useEffect(() => {
+    if (!isTenantMenu) return
+
+    const targets = (menuItems || [])
+      .map((item) => item.scrollTarget)
+      .filter((id): id is string => Boolean(id))
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => Boolean(el))
+
+    if (targets.length === 0) return
+
+    // Disconnect any previous observer
+    if (observerRef.current) {
+      observerRef.current.disconnect()
+    }
+
+    const visibilityById = new Map<string, number>()
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const el = entry.target as HTMLElement
+          const id = el.id
+          // Use intersection ratio as visibility metric
+          visibilityById.set(id, entry.isIntersecting ? entry.intersectionRatio : 0)
+        }
+
+        // Pick the most visible section
+        let bestId: string | null = null
+        let bestRatio = 0
+        visibilityById.forEach((ratio, id) => {
+          if (ratio > bestRatio) {
+            bestRatio = ratio
+            bestId = id
+          }
+        })
+        if (bestId && bestId !== activeSectionId) setActiveSectionId(bestId)
+      },
+      {
+        // Focus around the center-ish of the viewport
+        root: null,
+        rootMargin: '-30% 0px -40% 0px',
+        threshold: [0, 0.25, 0.5, 0.75, 1],
+      },
+    )
+
+    targets.forEach((el) => observer.observe(el))
+    observerRef.current = observer
+
+    return () => {
+      observer.disconnect()
+      observerRef.current = null
+    }
+  }, [menuItems, menuId, activeSectionId])
 
   const handleLanguageChange = async (newLocale: string) => {
     if (newLocale === locale) return // Don't switch if it's the same language
@@ -95,7 +154,6 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
     }
   }
 
-  const isTenantMenu = menuId === 'tenant-menu'
   const headerClass = isTenantMenu ? 'header header--tenant' : 'header'
   const contentClass = isTenantMenu ? 'header-content header-content--tenant' : 'header-content'
 
@@ -129,7 +187,11 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
                           target={item.external ? '_blank' : undefined}
                           rel={item.external ? 'noopener noreferrer' : undefined}
                           onClick={(e) => handleMenuClick(item, e)}
-                          className="tenant-menu-link"
+                          className={`tenant-menu-link${
+                            item.scrollTarget && activeSectionId === item.scrollTarget
+                              ? ' is-active'
+                              : ''
+                          }`}
                         >
                           {item.label}
                         </Link>
