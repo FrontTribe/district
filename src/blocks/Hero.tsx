@@ -156,9 +156,14 @@ export const HeroBlock: React.FC<{
   return (
     <section id={sectionId} className={sectionClasses.join(' ')}>
       {renderBackgroundMedia()}
+      <div className="hero-bottom-gradient" aria-hidden="true" />
       <div className="hero-content" style={{ position: 'relative', zIndex: 10 }}>
         <h1 className="hero-heading">{heading}</h1>
         {subheading && <p className="hero-subheading">{subheading}</p>}
+      </div>
+      <div className="hero-scroll-indicator" role="presentation">
+        <span className="scroll-text">Scroll to explore</span>
+        <span className="scroll-dot" />
       </div>
     </section>
   )

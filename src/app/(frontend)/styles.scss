@@ -240,11 +240,10 @@ div {
 
         .tenant-menu-item {
           .tenant-menu-link {
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            // text-transform: uppercase;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             padding: 0.5rem 0;
@@ -1145,6 +1144,69 @@ svg {
     height: 100%;
     object-fit: cover;
     object-position: center;
+  }
+}
+
+// Hero bottom gradient overlay (green -> transparent upwards)
+.hero-bottom-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50vh; // 50% of viewport height
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(
+    0deg,
+    rgba(5, 30, 36, 1) 0%,
+    // deep green
+    rgba(5, 30, 36, 0.85) 20%,
+    rgba(5, 30, 36, 0.6) 40%,
+    rgba(5, 30, 36, 0.3) 60%,
+    rgba(5, 30, 36, 0.12) 80%,
+    rgba(5, 30, 36, 0) 100%
+  );
+}
+
+// Scroll to explore indicator at bottom center
+.hero-scroll-indicator {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.hero-scroll-indicator .scroll-text {
+  font-family: var(--font-marcellus), 'Marcellus', serif;
+}
+
+.hero-scroll-indicator .scroll-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  animation: hero-dot-bounce 1.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes hero-dot-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-8px);
+    opacity: 1;
   }
 }
 
