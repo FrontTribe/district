@@ -5,6 +5,7 @@ import { FeaturesBlock } from '@/blocks/Features'
 import { SectionBlock } from '@/blocks/Section'
 import { ThreeColumnsBlock } from '@/blocks/ThreeColumns'
 import { BotiqueIntroBlock } from '@/blocks/BotiqueIntro'
+import { BoutiqueContactBlock } from '@/blocks/BoutiqueContact'
 
 const blockComponents = {
   section: SectionBlock,
@@ -12,6 +13,7 @@ const blockComponents = {
   features: FeaturesBlock,
   'three-columns': ThreeColumnsBlock,
   'botique-intro': BotiqueIntroBlock,
+  'boutique-contact': BoutiqueContactBlock,
 }
 
 type Block = NonNullable<Page['layout']>[number]

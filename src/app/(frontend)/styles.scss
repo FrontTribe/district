@@ -1613,3 +1613,129 @@ svg {
     }
   }
 }
+
+/* Boutique Contact Block */
+.boutique-contact {
+  background: #051e24;
+  padding: 100px 0;
+
+  .boutique-contact__grid {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 0.5fr 1fr;
+    grid-template-areas:
+      'header header'
+      'left right';
+    gap: 80px 200px;
+    align-items: start;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+  }
+
+  .bc-header {
+    grid-area: header;
+  }
+
+  .bc-left {
+    grid-area: left;
+    color: #fff;
+  }
+
+  .bc-eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.8;
+    margin-bottom: 18px;
+  }
+
+  .bc-heading {
+    margin: 0 0 24px 0;
+    font-family: var(--font-marcellus), 'Marcellus', serif;
+    font-weight: 400;
+    color: #fff;
+    line-height: 1.1;
+
+    .bc-heading-line {
+      display: block;
+      font-size: clamp(42px, 4.6vw, 72px);
+    }
+  }
+
+  .bc-contact {
+    margin-top: 24px;
+    display: grid;
+    gap: 8px;
+    a {
+      color: #ffb869;
+      text-decoration: none;
+    }
+    .bc-phone {
+      opacity: 0.9;
+    }
+  }
+
+  .bc-right {
+    grid-area: right;
+  }
+
+  .bc-form {
+    width: 100%;
+  }
+
+  .bc-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 24px;
+
+    @media (max-width: 800px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .bc-input,
+  .bc-textarea,
+  .bc-select {
+    width: 100%;
+    padding: 16px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: #ffffff;
+    color: #000000;
+    outline: none;
+  }
+
+  .bc-input::placeholder,
+  .bc-textarea::placeholder {
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  .bc-textarea {
+    min-height: 220px;
+    grid-column: 1 / -1;
+  }
+
+  .bc-submit {
+    margin-top: 22px;
+    padding: 14px 28px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    background: #fff;
+    color: #000;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .bc-error {
+    color: #ff6b6b;
+    margin-top: 4px;
+  }
+  .bc-success {
+    color: #8cff9a;
+  }
+}

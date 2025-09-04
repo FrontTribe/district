@@ -373,6 +373,19 @@ export interface Page {
                       blockName?: string | null;
                       blockType: 'botique-intro';
                     }
+                  | {
+                      headingEyebrow?: string | null;
+                      heading: string;
+                      leftText?: string | null;
+                      address?: string | null;
+                      email?: string | null;
+                      phone?: string | null;
+                      form: string | Form;
+                      sectionId?: string | null;
+                      id?: string | null;
+                      blockName?: string | null;
+                      blockType: 'boutique-contact';
+                    }
                 )[]
               | null;
             /**
@@ -576,6 +589,19 @@ export interface Page {
             blockName?: string | null;
             blockType: 'botique-intro';
           }
+        | {
+            headingEyebrow?: string | null;
+            heading: string;
+            leftText?: string | null;
+            address?: string | null;
+            email?: string | null;
+            phone?: string | null;
+            form: string | Form;
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'boutique-contact';
+          }
       )[]
     | null;
   meta?: {
@@ -589,102 +615,6 @@ export interface Page {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
-}
-/**
- * Manage navigation menus for tenants and main domain
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "menu".
- */
-export interface Menu {
-  id: string;
-  /**
-   * Unique identifier for this menu type. Main Menu gets centered logo styling, Tenant Menu gets standard top-left styling.
-   */
-  identifier: 'main-menu' | 'tenant-menu';
-  /**
-   * Internal title for this menu (e.g., "Hotel ABC Menu", "Restaurant XYZ Menu")
-   */
-  title: string;
-  tenant?: (string | null) | Tenant;
-  menuItems?:
-    | {
-        label: string;
-        /**
-         * URL or path for this menu item (required even if using scroll target)
-         */
-        link: string;
-        /**
-         * Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.
-         */
-        scrollTarget?: string | null;
-        external?: boolean | null;
-        children?:
-          | {
-              label: string;
-              /**
-               * URL or path for this menu item (required even if using scroll target)
-               */
-              link: string;
-              /**
-               * Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.
-               */
-              scrollTarget?: string | null;
-              external?: boolean | null;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  logo?: (string | null) | Media;
-  logoText?: string | null;
-  /**
-   * Choose how the menu should be positioned on the page
-   */
-  positioning?: ('fixed' | 'absolute' | 'relative') | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Manage footer content for tenants and main domain
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "footer".
- */
-export interface Footer {
-  id: string;
-  /**
-   * Internal title for this footer (e.g., "Hotel ABC Footer", "Restaurant XYZ Footer")
-   */
-  title: string;
-  tenant?: (string | null) | Tenant;
-  columns?:
-    | {
-        title: string;
-        links?:
-          | {
-              label: string;
-              link: string;
-              external?: boolean | null;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  bottomSection?: {
-    copyright?: string | null;
-    socialLinks?:
-      | {
-          platform?: ('facebook' | 'twitter' | 'instagram' | 'linkedin' | 'youtube') | null;
-          url: string;
-          id?: string | null;
-        }[]
-      | null;
-  };
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -857,6 +787,102 @@ export interface Form {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Manage navigation menus for tenants and main domain
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu".
+ */
+export interface Menu {
+  id: string;
+  /**
+   * Unique identifier for this menu type. Main Menu gets centered logo styling, Tenant Menu gets standard top-left styling.
+   */
+  identifier: 'main-menu' | 'tenant-menu';
+  /**
+   * Internal title for this menu (e.g., "Hotel ABC Menu", "Restaurant XYZ Menu")
+   */
+  title: string;
+  tenant?: (string | null) | Tenant;
+  menuItems?:
+    | {
+        label: string;
+        /**
+         * URL or path for this menu item (required even if using scroll target)
+         */
+        link: string;
+        /**
+         * Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.
+         */
+        scrollTarget?: string | null;
+        external?: boolean | null;
+        children?:
+          | {
+              label: string;
+              /**
+               * URL or path for this menu item (required even if using scroll target)
+               */
+              link: string;
+              /**
+               * Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.
+               */
+              scrollTarget?: string | null;
+              external?: boolean | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  logo?: (string | null) | Media;
+  logoText?: string | null;
+  /**
+   * Choose how the menu should be positioned on the page
+   */
+  positioning?: ('fixed' | 'absolute' | 'relative') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Manage footer content for tenants and main domain
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "footer".
+ */
+export interface Footer {
+  id: string;
+  /**
+   * Internal title for this footer (e.g., "Hotel ABC Footer", "Restaurant XYZ Footer")
+   */
+  title: string;
+  tenant?: (string | null) | Tenant;
+  columns?:
+    | {
+        title: string;
+        links?:
+          | {
+              label: string;
+              link: string;
+              external?: boolean | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  bottomSection?: {
+    copyright?: string | null;
+    socialLinks?:
+      | {
+          platform?: ('facebook' | 'twitter' | 'instagram' | 'linkedin' | 'youtube') | null;
+          url: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -1135,6 +1161,20 @@ export interface PagesSelect<T extends boolean = true> {
                           id?: T;
                           blockName?: T;
                         };
+                    'boutique-contact'?:
+                      | T
+                      | {
+                          headingEyebrow?: T;
+                          heading?: T;
+                          leftText?: T;
+                          address?: T;
+                          email?: T;
+                          phone?: T;
+                          form?: T;
+                          sectionId?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
                   };
               isFullHeight?: T;
               container?: T;
@@ -1262,6 +1302,20 @@ export interface PagesSelect<T extends boolean = true> {
                     bottomLeft?: T;
                     bottomRight?: T;
                   };
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'boutique-contact'?:
+          | T
+          | {
+              headingEyebrow?: T;
+              heading?: T;
+              leftText?: T;
+              address?: T;
+              email?: T;
+              phone?: T;
+              form?: T;
               sectionId?: T;
               id?: T;
               blockName?: T;
