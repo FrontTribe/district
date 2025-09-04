@@ -14,7 +14,9 @@ import { BotiqueIntroBlock } from '@/blocks/BotiqueIntro'
 import BoutiqueContact from '@/blocks/BoutiqueContact'
 import { BoutiqueContactBlock } from '@/blocks/BoutiqueContact'
 import Rooms from '@/blocks/Rooms'
+import Image from '@/blocks/Image'
 import { RoomsBlock } from '@/blocks/Rooms'
+import { ImageBlock } from '@/blocks/Image'
 
 const Section: Block = {
   slug: 'section',
@@ -29,7 +31,16 @@ const Section: Block = {
               name: 'blocks',
               type: 'blocks',
               label: 'Section Content',
-              blocks: [Hero, Features, Text, ThreeColumns, BotiqueIntro, BoutiqueContact, Rooms],
+              blocks: [
+                Hero,
+                Features,
+                Text,
+                ThreeColumns,
+                BotiqueIntro,
+                BoutiqueContact,
+                Rooms,
+                Image,
+              ],
             },
           ],
         },
@@ -315,6 +326,7 @@ const SectionBlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null
     'botique-intro': BotiqueIntroBlock,
     'boutique-contact': BoutiqueContactBlock,
     rooms: RoomsBlock,
+    image: ImageBlock,
   }
 
   return (

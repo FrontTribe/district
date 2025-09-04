@@ -91,7 +91,7 @@ export default buildConfig({
     seoPlugin({
       collections: ['pages'],
       uploadsCollection: 'media',
-      generateTitle: ({ doc }) => `Website.com — ${doc.title}`,
+      generateTitle: ({ doc }) => `District — ${doc.title}`,
       generateDescription: ({ doc }) => doc.excerpt,
     }),
     formBuilderPlugin({

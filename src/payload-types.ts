@@ -416,6 +416,17 @@ export interface Page {
                       blockName?: string | null;
                       blockType: 'rooms';
                     }
+                  | {
+                      media: string | Media;
+                      alt?: string | null;
+                      caption?: string | null;
+                      layout?: ('full' | 'contained') | null;
+                      align?: ('left' | 'center' | 'right') | null;
+                      sectionId?: string | null;
+                      id?: string | null;
+                      blockName?: string | null;
+                      blockType: 'image';
+                    }
                 )[]
               | null;
             /**
@@ -1261,6 +1272,18 @@ export interface PagesSelect<T extends boolean = true> {
                                 image?: T;
                                 id?: T;
                               };
+                          sectionId?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    image?:
+                      | T
+                      | {
+                          media?: T;
+                          alt?: T;
+                          caption?: T;
+                          layout?: T;
+                          align?: T;
                           sectionId?: T;
                           id?: T;
                           blockName?: T;

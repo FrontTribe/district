@@ -1223,6 +1223,66 @@ svg {
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* Image Block */
+.image-block {
+  padding: 40px 20px;
+  background: rgb(0, 0, 0);
+
+  &--full {
+    padding: 0;
+    .image-block__inner {
+      max-width: none;
+      padding: 0;
+    }
+    .image-block__img {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      object-fit: cover;
+      object-position: center;
+    }
+  }
+
+  &--contained {
+    .image-block__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+  }
+
+  &--align-left {
+    .image-block__inner {
+      display: flex;
+      justify-content: flex-start;
+    }
+  }
+  &--align-center {
+    .image-block__inner {
+      display: flex;
+      justify-content: center;
+    }
+  }
+  &--align-right {
+    .image-block__inner {
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+
+  .image-block__img {
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  }
+
+  .image-block__caption {
+    margin-top: 12px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+  }
+}
+
 .hero-overlay--medium::before {
   content: '';
   position: absolute;
