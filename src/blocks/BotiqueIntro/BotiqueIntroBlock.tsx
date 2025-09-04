@@ -37,6 +37,7 @@ export const BotiqueIntroBlock: React.FC<Props> = ({
     return m.url
   }
 
+  const sectionRef = useRef<HTMLElement | null>(null)
   const topRightRef = useRef<HTMLDivElement | null>(null)
   const bottomLeftRef = useRef<HTMLDivElement | null>(null)
   const bottomRightRef = useRef<HTMLDivElement | null>(null)
@@ -44,11 +45,47 @@ export const BotiqueIntroBlock: React.FC<Props> = ({
   useEffect(() => {
     if (typeof window === 'undefined') return
     gsap.registerPlugin(ScrollTrigger)
+    const ctx = gsap.context(() => {
+      const q = gsap.utils.selector(sectionRef)
 
-    const animations: gsap.core.Tween[] = []
+      // Text fade-in
+      const textTargets = q(
+        '.botique-intro__eyebrow, .botique-intro__heading-line, .botique-intro__body, .botique-intro__cta',
+      )
+      gsap.set(textTargets, { opacity: 0, y: 20 })
+      gsap.to(textTargets, {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        stagger: 0.12,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: sectionRef.current!,
+          start: 'top 80%',
+          toggleActions: 'play none none reverse',
+        },
+      })
 
-    if (topRightRef.current) {
-      animations.push(
+      // Image reveal helpers
+      const reveal = (wrap: HTMLDivElement | null) => {
+        if (!wrap) return
+        const imgEl = wrap.querySelector('img')
+        if (!imgEl) return
+        gsap.set(imgEl, { clipPath: 'inset(0 100% 0 0)', willChange: 'clip-path' })
+        gsap.to(imgEl, {
+          clipPath: 'inset(0 0% 0 0)',
+          duration: 1,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: wrap,
+            start: 'top 85%',
+            once: true,
+          } as any,
+        })
+      }
+
+      // Parallax + reveal for each image
+      if (topRightRef.current) {
         gsap.to(topRightRef.current, {
           yPercent: typeof parallax?.topRight === 'number' ? parallax.topRight : -15,
           ease: 'none',
@@ -58,12 +95,11 @@ export const BotiqueIntroBlock: React.FC<Props> = ({
             end: 'bottom top',
             scrub: true,
           },
-        }) as any,
-      )
-    }
+        })
+        reveal(topRightRef.current)
+      }
 
-    if (bottomLeftRef.current) {
-      animations.push(
+      if (bottomLeftRef.current) {
         gsap.to(bottomLeftRef.current, {
           yPercent: typeof parallax?.bottomLeft === 'number' ? parallax.bottomLeft : 10,
           ease: 'none',
@@ -73,12 +109,11 @@ export const BotiqueIntroBlock: React.FC<Props> = ({
             end: 'bottom top',
             scrub: true,
           },
-        }) as any,
-      )
-    }
+        })
+        reveal(bottomLeftRef.current)
+      }
 
-    if (bottomRightRef.current) {
-      animations.push(
+      if (bottomRightRef.current) {
         gsap.to(bottomRightRef.current, {
           yPercent: typeof parallax?.bottomRight === 'number' ? parallax.bottomRight : -8,
           ease: 'none',
@@ -88,18 +123,16 @@ export const BotiqueIntroBlock: React.FC<Props> = ({
             end: 'bottom top',
             scrub: true,
           },
-        }) as any,
-      )
-    }
+        })
+        reveal(bottomRightRef.current)
+      }
+    }, sectionRef)
 
-    return () => {
-      animations.forEach((a) => a.kill())
-      ScrollTrigger.getAll().forEach((st) => st.kill())
-    }
+    return () => ctx.revert()
   }, [])
 
   return (
-    <section id={sectionId} className="botique-intro">
+    <section ref={sectionRef} id={sectionId} className="botique-intro">
       <div className="botique-intro__grid">
         <div className="botique-intro__text">
           {eyebrow && <span className="botique-intro__eyebrow">{eyebrow}</span>}
