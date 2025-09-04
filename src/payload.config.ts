@@ -6,6 +6,8 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 import { seoPlugin } from '@payloadcms/plugin-seo'
+import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
+import { localeLang } from './utils/locale'
 
 import Tenants from './collections/tenants'
 import Users from './collections/Users'
@@ -13,7 +15,6 @@ import Pages from './collections/pages'
 import Media from './collections/Media'
 import Menu from './collections/Menu'
 import Footer from './collections/Footer'
-import { localeLang } from './utils/locale'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -92,6 +93,18 @@ export default buildConfig({
       uploadsCollection: 'media',
       generateTitle: ({ doc }) => `Website.com — ${doc.title}`,
       generateDescription: ({ doc }) => doc.excerpt,
+    }),
+    formBuilderPlugin({
+      formOverrides: {
+        admin: {
+          group: 'Forms',
+        },
+      },
+      formSubmissionOverrides: {
+        admin: {
+          group: 'Forms',
+        },
+      },
     }),
   ],
 })
