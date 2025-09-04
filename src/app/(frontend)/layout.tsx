@@ -1,23 +1,7 @@
 import type { Metadata } from 'next'
-import { Space_Grotesk, Libre_Baskerville, Marcellus } from 'next/font/google'
+import { Marcellus } from 'next/font/google'
 import './styles.scss'
 import LenisProvider from '@/components/LenisProvider'
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  display: 'swap',
-  variable: '--font-space-grotesk',
-  preload: true,
-})
-
-const libreBaskerville = Libre_Baskerville({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  display: 'swap',
-  variable: '--font-libre-baskerville',
-  preload: true,
-})
 
 const marcellus = Marcellus({
   subsets: ['latin'],
@@ -34,11 +18,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${spaceGrotesk.variable} ${libreBaskerville.variable} ${marcellus.variable}`}
-    >
-      <body className={spaceGrotesk.className}>
+    <html lang="en" className={marcellus.variable}>
+      <body className={marcellus.className}>
         <LenisProvider>
           <div className="min-h-screen flex flex-col">{children}</div>
         </LenisProvider>
