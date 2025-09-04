@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Space_Grotesk, Libre_Baskerville, Marcellus } from 'next/font/google'
 import './styles.scss'
+import LenisProvider from '@/components/LenisProvider'
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -38,7 +39,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${spaceGrotesk.variable} ${libreBaskerville.variable} ${marcellus.variable}`}
     >
       <body className={spaceGrotesk.className}>
-        <div className="min-h-screen flex flex-col">{children}</div>
+        <LenisProvider>
+          <div className="min-h-screen flex flex-col">{children}</div>
+        </LenisProvider>
       </body>
     </html>
   )

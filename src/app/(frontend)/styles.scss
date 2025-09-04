@@ -1474,7 +1474,7 @@ svg {
 /* Botique Intro Block */
 .botique-intro {
   background: #051e24;
-  padding: 80px 0;
+  padding: 120px 0;
 
   @media (max-width: 1024px) {
     padding: 60px 0;
@@ -1599,7 +1599,8 @@ svg {
     justify-self: start;
     max-width: 380px;
     height: 500px;
-    margin-top: 100px;
+    margin-top: 120px;
+    margin-left: 40px;
 
     img {
       height: 100%;
