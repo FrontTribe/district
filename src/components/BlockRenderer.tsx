@@ -4,12 +4,14 @@ import { HeroBlock } from '@/blocks/Hero'
 import { FeaturesBlock } from '@/blocks/Features'
 import { SectionBlock } from '@/blocks/Section'
 import { ThreeColumnsBlock } from '@/blocks/ThreeColumns'
+import { BotiqueIntroBlock } from '@/blocks/BotiqueIntro'
 
 const blockComponents = {
   section: SectionBlock,
   hero: HeroBlock,
   features: FeaturesBlock,
   'three-columns': ThreeColumnsBlock,
+  'botique-intro': BotiqueIntroBlock,
 }
 
 type Block = NonNullable<Page['layout']>[number]

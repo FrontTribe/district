@@ -345,6 +345,22 @@ export interface Page {
                       blockName?: string | null;
                       blockType: 'three-columns';
                     }
+                  | {
+                      eyebrow?: string | null;
+                      heading: string;
+                      body?: string | null;
+                      cta?: {
+                        label?: string | null;
+                        href?: string | null;
+                      };
+                      mediaTopRight?: (string | null) | Media;
+                      mediaBottomLeft?: (string | null) | Media;
+                      mediaBottomRight?: (string | null) | Media;
+                      sectionId?: string | null;
+                      id?: string | null;
+                      blockName?: string | null;
+                      blockType: 'botique-intro';
+                    }
                 )[]
               | null;
             /**
@@ -523,6 +539,22 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'three-columns';
+          }
+        | {
+            eyebrow?: string | null;
+            heading: string;
+            body?: string | null;
+            cta?: {
+              label?: string | null;
+              href?: string | null;
+            };
+            mediaTopRight?: (string | null) | Media;
+            mediaBottomLeft?: (string | null) | Media;
+            mediaBottomRight?: (string | null) | Media;
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'botique-intro';
           }
       )[]
     | null;
@@ -858,6 +890,25 @@ export interface PagesSelect<T extends boolean = true> {
                           id?: T;
                           blockName?: T;
                         };
+                    'botique-intro'?:
+                      | T
+                      | {
+                          eyebrow?: T;
+                          heading?: T;
+                          body?: T;
+                          cta?:
+                            | T
+                            | {
+                                label?: T;
+                                href?: T;
+                              };
+                          mediaTopRight?: T;
+                          mediaBottomLeft?: T;
+                          mediaBottomRight?: T;
+                          sectionId?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
                   };
               isFullHeight?: T;
               container?: T;
@@ -959,6 +1010,25 @@ export interface PagesSelect<T extends boolean = true> {
                         };
                     id?: T;
                   };
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'botique-intro'?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              body?: T;
+              cta?:
+                | T
+                | {
+                    label?: T;
+                    href?: T;
+                  };
+              mediaTopRight?: T;
+              mediaBottomLeft?: T;
+              mediaBottomRight?: T;
               sectionId?: T;
               id?: T;
               blockName?: T;

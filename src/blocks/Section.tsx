@@ -9,6 +9,8 @@ import { HeroBlock } from '@/blocks/Hero'
 import { FeaturesBlock } from '@/blocks/Features'
 import { TextBlock } from '@/blocks/Text'
 import { ThreeColumnsBlock } from '@/blocks/ThreeColumns'
+import BotiqueIntro from '@/blocks/BotiqueIntro'
+import { BotiqueIntroBlock } from '@/blocks/BotiqueIntro'
 
 const Section: Block = {
   slug: 'section',
@@ -23,7 +25,7 @@ const Section: Block = {
               name: 'blocks',
               type: 'blocks',
               label: 'Section Content',
-              blocks: [Hero, Features, Text, ThreeColumns],
+              blocks: [Hero, Features, Text, ThreeColumns, BotiqueIntro],
             },
           ],
         },
@@ -306,6 +308,7 @@ const SectionBlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null
     features: FeaturesBlock,
     text: TextBlock,
     'three-columns': ThreeColumnsBlock,
+    'botique-intro': BotiqueIntroBlock,
   }
 
   return (

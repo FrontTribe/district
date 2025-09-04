@@ -4,6 +4,7 @@ import Features from '@/blocks/Features'
 import Section from '@/blocks/Section'
 import Text from '@/blocks/Text'
 import { ThreeColumns } from '@/blocks/ThreeColumns'
+import BotiqueIntro from '@/blocks/BotiqueIntro'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
@@ -101,7 +102,7 @@ const Pages: CollectionConfig = {
     {
       name: 'layout',
       type: 'blocks',
-      blocks: [Section, Hero, Features, Text, ThreeColumns],
+      blocks: [Section, Hero, Features, Text, ThreeColumns, BotiqueIntro],
       localized: true,
     },
   ],
