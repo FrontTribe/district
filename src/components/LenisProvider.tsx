@@ -2,6 +2,8 @@
 
 import React, { useEffect } from 'react'
 import Lenis from 'lenis'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 type Props = {
   children?: React.ReactNode
@@ -11,6 +13,12 @@ type Props = {
 // It renders no DOM and simply mounts/unmounts the Lenis instance.
 export default function LenisProvider({ children }: Props) {
   useEffect(() => {
+    // Register GSAP plugin once
+    if (typeof window !== 'undefined' && (gsap as any).registeredScrollTrigger !== true) {
+      gsap.registerPlugin(ScrollTrigger)
+      ;(gsap as any).registeredScrollTrigger = true
+    }
+
     const lenis = new Lenis({
       // Defaults that feel close to design expectations; adjustable later
       duration: 1.2,
@@ -19,6 +27,20 @@ export default function LenisProvider({ children }: Props) {
       smoothTouch: false,
       wheelMultiplier: 1,
       touchMultiplier: 1.2,
+    })
+
+    // Sync Lenis with ScrollTrigger
+    lenis.on('scroll', ScrollTrigger.update)
+
+    ScrollTrigger.scrollerProxy(document.body, {
+      scrollTop(value) {
+        return arguments.length ? lenis.scrollTo(value as number) : window.scrollY
+      },
+      getBoundingClientRect() {
+        return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight }
+      },
+      // pinType detects if body uses transform for scrolling (it doesn't with Lenis on body)
+      pinType: document.body.style.transform ? 'transform' : 'fixed',
     })
 
     function raf(time: number) {
@@ -32,6 +54,7 @@ export default function LenisProvider({ children }: Props) {
       // cleanup
       // @ts-expect-error destroy exists in runtime
       if (typeof (lenis as any)?.destroy === 'function') (lenis as any).destroy()
+      ScrollTrigger.killAll()
     }
   }, [])
 

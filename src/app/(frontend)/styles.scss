@@ -1088,7 +1088,7 @@ svg {
 .hero-block {
   min-height: 100vh;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   text-align: center;
   background: rgb(0, 0, 0);
@@ -1101,12 +1101,11 @@ svg {
 }
 
 .hero-heading {
-  font-size: 160px;
+  font-size: clamp(160px, 10vw, 200px);
   line-height: 1.2;
   font-family: var(--font-marcellus), 'Marcellus', serif;
   margin: 0 0 30px 0;
   color: rgb(1000, 1000, 1000);
-  text-transform: uppercase;
 
   @media (max-width: 1024px) {
     font-size: 48px;

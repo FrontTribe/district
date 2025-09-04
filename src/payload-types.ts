@@ -356,6 +356,14 @@ export interface Page {
                       mediaTopRight?: (string | null) | Media;
                       mediaBottomLeft?: (string | null) | Media;
                       mediaBottomRight?: (string | null) | Media;
+                      /**
+                       * Adjust vertical parallax in percent of the element height. Negative moves up, positive moves down.
+                       */
+                      parallax?: {
+                        topRight?: number | null;
+                        bottomLeft?: number | null;
+                        bottomRight?: number | null;
+                      };
                       sectionId?: string | null;
                       id?: string | null;
                       blockName?: string | null;
@@ -551,6 +559,14 @@ export interface Page {
             mediaTopRight?: (string | null) | Media;
             mediaBottomLeft?: (string | null) | Media;
             mediaBottomRight?: (string | null) | Media;
+            /**
+             * Adjust vertical parallax in percent of the element height. Negative moves up, positive moves down.
+             */
+            parallax?: {
+              topRight?: number | null;
+              bottomLeft?: number | null;
+              bottomRight?: number | null;
+            };
             sectionId?: string | null;
             id?: string | null;
             blockName?: string | null;
@@ -905,6 +921,13 @@ export interface PagesSelect<T extends boolean = true> {
                           mediaTopRight?: T;
                           mediaBottomLeft?: T;
                           mediaBottomRight?: T;
+                          parallax?:
+                            | T
+                            | {
+                                topRight?: T;
+                                bottomLeft?: T;
+                                bottomRight?: T;
+                              };
                           sectionId?: T;
                           id?: T;
                           blockName?: T;
@@ -1029,6 +1052,13 @@ export interface PagesSelect<T extends boolean = true> {
               mediaTopRight?: T;
               mediaBottomLeft?: T;
               mediaBottomRight?: T;
+              parallax?:
+                | T
+                | {
+                    topRight?: T;
+                    bottomLeft?: T;
+                    bottomRight?: T;
+                  };
               sectionId?: T;
               id?: T;
               blockName?: T;
