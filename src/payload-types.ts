@@ -203,6 +203,12 @@ export interface Page {
                   | {
                       heading: string;
                       subheading?: string | null;
+                      backgroundMedia?: {
+                        type?: ('none' | 'image' | 'video') | null;
+                        image?: (string | null) | Media;
+                        video?: (string | null) | Media;
+                        overlay?: ('none' | 'light' | 'medium' | 'dark') | null;
+                      };
                       /**
                        * Optional ID for this section (used for menu navigation)
                        */
@@ -376,6 +382,12 @@ export interface Page {
         | {
             heading: string;
             subheading?: string | null;
+            backgroundMedia?: {
+              type?: ('none' | 'image' | 'video') | null;
+              image?: (string | null) | Media;
+              video?: (string | null) | Media;
+              overlay?: ('none' | 'light' | 'medium' | 'dark') | null;
+            };
             /**
              * Optional ID for this section (used for menu navigation)
              */
@@ -770,6 +782,14 @@ export interface PagesSelect<T extends boolean = true> {
                       | {
                           heading?: T;
                           subheading?: T;
+                          backgroundMedia?:
+                            | T
+                            | {
+                                type?: T;
+                                image?: T;
+                                video?: T;
+                                overlay?: T;
+                              };
                           sectionId?: T;
                           id?: T;
                           blockName?: T;
@@ -867,6 +887,14 @@ export interface PagesSelect<T extends boolean = true> {
           | {
               heading?: T;
               subheading?: T;
+              backgroundMedia?:
+                | T
+                | {
+                    type?: T;
+                    image?: T;
+                    video?: T;
+                    overlay?: T;
+                  };
               sectionId?: T;
               id?: T;
               blockName?: T;

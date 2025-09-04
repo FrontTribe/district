@@ -5,10 +5,12 @@
 /* Ensure Space Grotesk is used throughout */
 html {
   font-family: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
+  background-color: #051e24;
 }
 
 body {
   font-family: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
+  background-color: #051e24;
 }
 
 // Demo Page Styles - 3 Column Grid Layout (transferred from demo/styles.scss)
@@ -92,7 +94,7 @@ div {
 
 .demo-page {
   min-height: 100vh;
-  background: #000000;
+  background: #051e24;
   color: #ffffff;
   overflow-x: hidden;
 }
@@ -1089,21 +1091,23 @@ svg {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 40px 20px;
   background: rgb(0, 0, 0);
+  position: relative;
+  overflow: hidden;
 }
 
 .hero-content {
-  max-width: 800px;
+  // max-width: 800px;
 }
 
 .hero-heading {
-  font-size: 64px;
+  font-size: 140px;
   line-height: 1.2;
   font-weight: bold;
   font-family: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
   margin: 0 0 30px 0;
   color: rgb(1000, 1000, 1000);
+  text-transform: uppercase;
 
   @media (max-width: 1024px) {
     font-size: 48px;
@@ -1125,6 +1129,63 @@ svg {
   @media (max-width: 768px) {
     font-size: 18px;
   }
+}
+
+// Hero background media wrappers
+.hero-background-image,
+.hero-background-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
+
+  img,
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+}
+
+// Hero overlays
+.hero-overlay--light::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hero-overlay--medium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.hero-overlay--dark::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.6);
 }
 
 /* Features Block Styles */
