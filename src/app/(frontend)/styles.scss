@@ -240,9 +240,7 @@ div {
 
         .tenant-menu-item {
           .tenant-menu-link {
-            font-family: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 500;
+            font-size: 1rem;
             color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
             text-transform: uppercase;
@@ -416,7 +414,6 @@ div {
     align-items: center;
     gap: 0.75rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-family: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
     text-transform: uppercase;
     font-weight: 600;
 
@@ -1098,6 +1095,8 @@ svg {
 
 .hero-content {
   // max-width: 800px;
+  // content intentionally left commented; remove empty rule warning
+  display: block;
 }
 
 .hero-heading {
@@ -1803,6 +1802,8 @@ svg {
 
   .room-card {
     // background: #f5efe6;
+    position: relative;
+    cursor: pointer;
   }
 
   .room-media {
@@ -1814,14 +1815,66 @@ svg {
     width: 100%;
     height: 800px;
     display: block;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  .room-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.5) 100%);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .room-book-now {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    padding: 10px 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #111;
+    background: #fff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  // CSS hover fallback in case JS events are unavailable
+  .room-card:hover .room-media img {
+    transform: scale(1.06);
+  }
+  .room-card:hover .room-overlay {
+    opacity: 1;
+  }
+  .room-card:hover .room-book-now {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .room-card:hover .room-title .title-base {
+    transform: translateY(-100%);
+  }
+  .room-card:hover .room-title .title-overlay {
+    transform: translateY(0);
   }
 
   .room-badges {
     position: absolute;
-    top: 16px;
-    left: 16px;
+    top: 32px;
+    left: 32px;
     display: flex;
     gap: 10px;
+    z-index: 3;
   }
 
   .room-badge {
@@ -1835,6 +1888,7 @@ svg {
 
   .room-info {
     // padding: 18px 8px 30px 8px;
+    display: contents;
   }
 
   .room-title {
@@ -1847,7 +1901,34 @@ svg {
     right: 0;
     text-align: left;
     margin: 0;
-    padding: 16px;
+    padding: 32px;
+    pointer-events: none;
+
+    .title-mask {
+      display: inline-block;
+      position: relative;
+      overflow: hidden;
+      line-height: 1.1;
+    }
+
+    .title-base,
+    .title-overlay {
+      display: block;
+      will-change: transform;
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .title-base {
+      transform: translateY(0);
+    }
+
+    .title-overlay {
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: #fff;
+      transform: translateY(100%);
+    }
   }
 
   .room-desc {
