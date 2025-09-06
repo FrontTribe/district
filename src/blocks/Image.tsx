@@ -1,5 +1,6 @@
 import { Block } from 'payload'
 import React from 'react'
+import ImageAnimated from '@/blocks/ImageAnimated'
 
 const Image: Block = {
   slug: 'image',
@@ -71,16 +72,16 @@ export const ImageBlock: React.FC<{
     <section id={sectionId} className={wrapperClass.join(' ')}>
       <div className="image-block__inner">
         {url && (
-          <img
-            className="image-block__img"
+          <ImageAnimated
             src={url}
             alt={alt || ''}
             width={width}
             height={height}
-            loading="lazy"
+            caption={caption}
+            className="image-block__img"
           />
         )}
-        {caption && <figcaption className="image-block__caption">{caption}</figcaption>}
+        {!url && caption && <figcaption className="image-block__caption">{caption}</figcaption>}
       </div>
     </section>
   )

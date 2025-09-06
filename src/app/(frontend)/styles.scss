@@ -5,12 +5,10 @@
 /* Ensure Space Grotesk is used throughout */
 html {
   font-family: var(--font-space-marcellus), 'Marcellus', serif;
-  background-color: #051e24;
 }
 
 body {
   font-family: var(--font-space-marcellus), 'Marcellus', serif;
-  background-color: #051e24;
 }
 
 // Demo Page Styles - 3 Column Grid Layout (transferred from demo/styles.scss)
@@ -875,7 +873,6 @@ div {
 html {
   font-size: 18px;
   line-height: 32px;
-  background: rgb(0, 0, 0);
   -webkit-font-smoothing: antialiased;
   scroll-behavior: smooth;
 }
@@ -1235,13 +1232,13 @@ svg {
 /* Image Block */
 .image-block {
   padding: 40px 20px;
-  background: rgb(0, 0, 0);
 
   &--full {
     padding: 0;
     .image-block__inner {
       max-width: none;
       padding: 0;
+      overflow: hidden; // ensure reveal/scale stays inside
     }
     .image-block__img {
       width: 100vw;
@@ -1257,6 +1254,7 @@ svg {
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 20px;
+      overflow: hidden; // mask scaling
     }
   }
 
