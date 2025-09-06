@@ -1,6 +1,7 @@
 import { Block } from 'payload'
 import React from 'react'
 import ImageAnimated from '@/blocks/ImageAnimated'
+import { getOptimizedImageUrl } from '@/utils/getOptimizedImageUrl'
 
 const Image: Block = {
   slug: 'image',
@@ -59,7 +60,7 @@ export const ImageBlock: React.FC<{
   align?: 'left' | 'center' | 'right'
   sectionId?: string
 }> = ({ media, alt, caption, layout = 'contained', align = 'center', sectionId }) => {
-  const url = typeof media === 'string' ? media : media?.url
+  const url = getOptimizedImageUrl(media, { widthHint: layout === 'full' ? 1920 : 1200 })
   const width = typeof media === 'string' ? undefined : media?.width
   const height = typeof media === 'string' ? undefined : media?.height
 

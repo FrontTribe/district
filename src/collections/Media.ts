@@ -81,6 +81,30 @@ const Media: CollectionConfig = {
   ],
   upload: {
     staticDir: 'media',
+    // Only allow images for now; add video/* if needed later
+    mimeTypes: ['image/*'],
+    adminThumbnail: 'xs',
+    resizeOptions: {
+      withoutEnlargement: true,
+      fit: 'cover',
+      position: 'center',
+    },
+    // Universal, reusable renditions (width-based + common aspect crops)
+    imageSizes: [
+      // Width-only, preserve aspect ratio
+      { name: 'xs', width: 480 },
+      { name: 'sm', width: 768 },
+      { name: 'md', width: 1024 },
+      { name: 'lg', width: 1440 },
+      { name: 'xl', width: 1920 },
+      { name: 'xxl', width: 2560 },
+
+      // Common crops for cards/avatars/hero banners
+      { name: 'square', width: 1200, height: 1200, position: 'center' },
+      { name: 'portrait34', width: 1200, height: 1600, position: 'center' }, // 3:4
+      { name: 'landscape43', width: 1600, height: 1200, position: 'center' }, // 4:3
+      { name: 'landscape169', width: 1920, height: 1080, position: 'center' }, // 16:9
+    ],
   },
 }
 

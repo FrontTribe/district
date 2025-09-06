@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { getOptimizedImageUrl } from '@/utils/getOptimizedImageUrl'
 
 type RooftopImage = {
   media: any
@@ -156,7 +157,7 @@ export const RooftopBlock: React.FC<{
         <div className="rooftop-marquee">
           <div className="rooftop-track" ref={trackRef}>
             {loopImages.map((item, index) => {
-              const src = typeof item.media === 'string' ? item.media : item.media?.url
+              const src = getOptimizedImageUrl(item.media, { widthHint: 560, aspect: 'portrait34' })
               return (
                 <figure className="rooftop-card" key={index}>
                   {src && <img src={src} alt={item.alt || ''} loading="lazy" />}

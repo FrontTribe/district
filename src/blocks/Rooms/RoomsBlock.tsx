@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { getOptimizedImageUrl } from '@/utils/getOptimizedImageUrl'
 
 type Badge = { text?: string }
 type Room = {
@@ -96,7 +97,7 @@ export const RoomsBlock: React.FC<Props> = ({
     }
   }, [])
 
-  const getUrl = (m: any) => (typeof m === 'string' ? m : m?.url)
+  const getUrl = (m: any) => getOptimizedImageUrl(m, { widthHint: 1200, aspect: 'portrait34' })
 
   return (
     <section ref={sectionRef} id={sectionId} className="rooms-block">
