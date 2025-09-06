@@ -17,6 +17,10 @@ import Rooms from '@/blocks/Rooms'
 import Image from '@/blocks/Image'
 import { RoomsBlock } from '@/blocks/Rooms'
 import { ImageBlock } from '@/blocks/Image'
+import Rooftop from '@/blocks/Rooftop'
+import RooftopFeatures from '@/blocks/RooftopFeatures'
+import { RooftopBlock } from '@/blocks/Rooftop'
+import { RooftopFeaturesBlock } from '@/blocks/RooftopFeatures'
 
 const Section: Block = {
   slug: 'section',
@@ -40,6 +44,8 @@ const Section: Block = {
                 BoutiqueContact,
                 Rooms,
                 Image,
+                Rooftop,
+                RooftopFeatures,
               ],
             },
           ],
@@ -327,6 +333,8 @@ const SectionBlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null
     'boutique-contact': BoutiqueContactBlock,
     rooms: RoomsBlock,
     image: ImageBlock,
+    rooftop: RooftopBlock,
+    'rooftop-features': RooftopFeaturesBlock,
   }
 
   return (

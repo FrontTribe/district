@@ -427,6 +427,40 @@ export interface Page {
                       blockName?: string | null;
                       blockType: 'image';
                     }
+                  | {
+                      heading: string;
+                      images?:
+                        | {
+                            media: string | Media;
+                            alt?: string | null;
+                            caption?: string | null;
+                            id?: string | null;
+                          }[]
+                        | null;
+                      /**
+                       * Higher = slower. Animation speeds up temporarily with scroll velocity.
+                       */
+                      baseDuration?: number | null;
+                      sectionId?: string | null;
+                      id?: string | null;
+                      blockName?: string | null;
+                      blockType: 'rooftop';
+                    }
+                  | {
+                      heading: string;
+                      features?:
+                        | {
+                            icon?: string | null;
+                            title: string;
+                            description?: string | null;
+                            id?: string | null;
+                          }[]
+                        | null;
+                      sectionId?: string | null;
+                      id?: string | null;
+                      blockName?: string | null;
+                      blockType: 'rooftop-features';
+                    }
                 )[]
               | null;
             /**
@@ -672,6 +706,40 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'rooms';
+          }
+        | {
+            heading: string;
+            images?:
+              | {
+                  media: string | Media;
+                  alt?: string | null;
+                  caption?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Higher = slower. Animation speeds up temporarily with scroll velocity.
+             */
+            baseDuration?: number | null;
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'rooftop';
+          }
+        | {
+            heading: string;
+            features?:
+              | {
+                  icon?: string | null;
+                  title: string;
+                  description?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'rooftop-features';
           }
       )[]
     | null;
@@ -1288,6 +1356,39 @@ export interface PagesSelect<T extends boolean = true> {
                           id?: T;
                           blockName?: T;
                         };
+                    rooftop?:
+                      | T
+                      | {
+                          heading?: T;
+                          images?:
+                            | T
+                            | {
+                                media?: T;
+                                alt?: T;
+                                caption?: T;
+                                id?: T;
+                              };
+                          baseDuration?: T;
+                          sectionId?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    'rooftop-features'?:
+                      | T
+                      | {
+                          heading?: T;
+                          features?:
+                            | T
+                            | {
+                                icon?: T;
+                                title?: T;
+                                description?: T;
+                                id?: T;
+                              };
+                          sectionId?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
                   };
               isFullHeight?: T;
               container?: T;
@@ -1457,6 +1558,39 @@ export interface PagesSelect<T extends boolean = true> {
                           id?: T;
                         };
                     image?: T;
+                    id?: T;
+                  };
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        rooftop?:
+          | T
+          | {
+              heading?: T;
+              images?:
+                | T
+                | {
+                    media?: T;
+                    alt?: T;
+                    caption?: T;
+                    id?: T;
+                  };
+              baseDuration?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'rooftop-features'?:
+          | T
+          | {
+              heading?: T;
+              features?:
+                | T
+                | {
+                    icon?: T;
+                    title?: T;
+                    description?: T;
                     id?: T;
                   };
               sectionId?: T;

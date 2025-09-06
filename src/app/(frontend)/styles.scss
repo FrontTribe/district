@@ -1279,11 +1279,6 @@ svg {
     }
   }
 
-  .image-block__img {
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  }
-
   .image-block__caption {
     margin-top: 12px;
     text-align: center;
@@ -1746,8 +1741,7 @@ svg {
 
 /* Boutique Contact Block */
 .boutique-contact {
-  background: #051e24;
-  padding: 100px 0;
+  background: transparent;
 
   .boutique-contact__grid {
     max-width: 1440px;
@@ -2066,5 +2060,137 @@ svg {
     color: rgba(0, 0, 0, 0.7);
     margin: 0;
     font-style: italic;
+  }
+}
+
+/* Rooftop Block */
+.rooftop-block {
+  color: #ffffff;
+  padding: 120px 0 40px;
+
+  .rooftop-inner {
+    // max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .rooftop-heading {
+    margin: 0 0 30px 0;
+    font-family: var(--font-marcellus), 'Marcellus', serif;
+    font-weight: 400;
+    font-size: clamp(48px, 7vw, 160px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+
+  .rooftop-marquee {
+    position: relative;
+    overflow: hidden;
+    margin-top: 100px;
+  }
+
+  .rooftop-track {
+    display: flex;
+    // gap: 18px;
+    will-change: transform;
+  }
+
+  .rooftop-card {
+    position: relative;
+    flex: 0 0 auto;
+    width: min(34vw, 560px);
+    height: min(40vw, 680px);
+    overflow: hidden;
+  }
+
+  .rooftop-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .rooftop-card__caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 14px 16px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.9);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(5, 30, 36, 0.7) 100%);
+  }
+}
+
+/* Rooftop Features */
+.rooftop-features-block {
+  background: transparent;
+  margin-top: 100px;
+
+  .rooftop-features__inner {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .rooftop-features__heading {
+    font-family: var(--font-marcellus), 'Marcellus', serif;
+    font-size: clamp(40px, 5vw, 88px);
+    line-height: 1.05;
+    margin: 0 0 40px 0;
+    color: white;
+  }
+
+  .rooftop-features__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 32px 0;
+
+    @media (max-width: 1100px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .rf-item {
+    padding: 26px 16px;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+
+    &:last-child {
+      border-right: 0;
+    }
+  }
+
+  .rf-icon {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .rf-title {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .rf-desc {
+    margin: 0;
+    opacity: 0.8;
+    line-height: 1.5;
+    color: white;
   }
 }

@@ -8,6 +8,8 @@ import { BotiqueIntroBlock } from '@/blocks/BotiqueIntro'
 import { BoutiqueContactBlock } from '@/blocks/BoutiqueContact'
 import { RoomsBlock } from '@/blocks/Rooms'
 import { ImageBlock } from '@/blocks/Image'
+import { RooftopBlock } from '@/blocks/Rooftop'
+import { RooftopFeaturesBlock } from '@/blocks/RooftopFeatures'
 
 const blockComponents = {
   section: SectionBlock,
@@ -18,6 +20,8 @@ const blockComponents = {
   'boutique-contact': BoutiqueContactBlock,
   rooms: RoomsBlock,
   image: ImageBlock,
+  rooftop: RooftopBlock,
+  'rooftop-features': RooftopFeaturesBlock,
 }
 
 type Block = NonNullable<Page['layout']>[number]
