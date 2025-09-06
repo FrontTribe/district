@@ -19,6 +19,7 @@ export const RooftopBlock: React.FC<{
   const trackRef = useRef<HTMLDivElement | null>(null)
   const marqueeTween = useRef<gsap.core.Tween | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const headingRef = useRef<HTMLHeadingElement | null>(null)
 
   // Duplicate images for seamless loop
   const loopImages = useMemo(() => [...images, ...images], [images])
@@ -108,10 +109,49 @@ export const RooftopBlock: React.FC<{
     }
   }, [images, baseDuration])
 
+  useEffect(() => {
+    // heading and card reveal on enter
+    if ((gsap as any).registeredScrollTrigger !== true) {
+      gsap.registerPlugin(ScrollTrigger)
+      ;(gsap as any).registeredScrollTrigger = true
+    }
+
+    const ctx = gsap.context(() => {
+      if (headingRef.current) {
+        gsap.from(headingRef.current, {
+          y: 24,
+          opacity: 0,
+          duration: 0.9,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: headingRef.current, start: 'top 85%', once: true },
+        })
+      }
+
+      if (trackRef.current) {
+        const cards = trackRef.current.querySelectorAll('.rooftop-card')
+        gsap.set(cards, { opacity: 0, y: 16 })
+        gsap.to(cards, {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          stagger: 0.08,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: trackRef.current, start: 'top 90%', once: true },
+        })
+        // ensure triggers are aware after layout/tween init
+        requestAnimationFrame(() => ScrollTrigger.refresh())
+      }
+    }, containerRef.current || undefined)
+
+    return () => ctx.revert()
+  }, [])
+
   return (
     <section id={sectionId} className="rooftop-block" ref={containerRef}>
       <div className="rooftop-inner">
-        <h2 className="rooftop-heading">{heading}</h2>
+        <h2 className="rooftop-heading" ref={headingRef}>
+          {heading}
+        </h2>
 
         <div className="rooftop-marquee">
           <div className="rooftop-track" ref={trackRef}>
