@@ -60,17 +60,31 @@ export const RoomsBlock: React.FC<Props> = ({
         const bookNow = element.querySelector('.room-book-now')
         const titleBase = element.querySelector('.room-title .title-base')
         const titleOverlay = element.querySelector('.room-title .title-overlay')
-        if (img) gsap.set(img, { clipPath: 'inset(0 0 0 100%)' })
+        if (img)
+          gsap.set(img, {
+            clipPath: 'inset(0 100% 0 0)',
+            scale: 1.12,
+            transformOrigin: '50% 50%',
+            willChange: 'clip-path, transform',
+          })
         if (overlay) gsap.set(overlay, { autoAlpha: 0 })
         if (bookNow) gsap.set(bookNow, { autoAlpha: 0, y: 12 })
         if (titleOverlay) gsap.set(titleOverlay, { yPercent: 100 })
         if (titleBase) gsap.set(titleBase, { yPercent: 0 })
+        const titleEl = element.querySelector('.room-title')
+        const badgeEls = element.querySelectorAll('.room-badge')
+        if (titleEl) gsap.set(titleEl, { opacity: 0, y: 14 })
+        if (badgeEls && badgeEls.length) gsap.set(badgeEls, { opacity: 0, y: 10 })
+
         gsap
           .timeline({
             scrollTrigger: { trigger: element, start: 'top 85%', once: true },
           })
           .to(element, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0)
-          .to(img, { clipPath: 'inset(0 0 0 0)', duration: 1, ease: 'power2.out' }, 0)
+          .to(img, { clipPath: 'inset(0 0% 0 0)', duration: 1.1, ease: 'power3.out' }, 0)
+          .to(img, { scale: 1, duration: 1.1, ease: 'power3.out' }, 0)
+          .to(titleEl, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.9)
+          .to(badgeEls, { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: 'power2.out' }, 1.0)
 
         const hoverTl = gsap.timeline({ paused: true })
         if (img) hoverTl.to(img, { scale: 1.06, duration: 0.6, ease: roomEase }, 0)
