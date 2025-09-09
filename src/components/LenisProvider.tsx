@@ -24,7 +24,6 @@ export default function LenisProvider({ children }: Props) {
       duration: 1.2,
       easing: (t: number) => 1 - Math.pow(1 - t, 3),
       smoothWheel: true,
-      smoothTouch: false,
       wheelMultiplier: 1,
       touchMultiplier: 1.2,
     })
@@ -51,8 +50,6 @@ export default function LenisProvider({ children }: Props) {
     requestAnimationFrame(raf)
 
     return () => {
-      // cleanup
-      // @ts-expect-error destroy exists in runtime
       if (typeof (lenis as any)?.destroy === 'function') (lenis as any).destroy()
       ScrollTrigger.killAll()
     }

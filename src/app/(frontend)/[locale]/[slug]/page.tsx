@@ -118,12 +118,23 @@ export default async function Page({ params }: PageProps) {
               links:
                 column.links?.map((link) => ({
                   label: link.label,
-                  url: link.url,
+                  link: link.link,
                   external: link.external || false,
                 })) || [],
             })) || []
           }
-          copyright={footerGlobal?.copyright || ''}
+          bottomSection={
+            footerGlobal?.bottomSection
+              ? {
+                  copyright: footerGlobal.bottomSection?.copyright ?? undefined,
+                  socialLinks:
+                    footerGlobal.bottomSection?.socialLinks?.map((s) => ({
+                      platform: s.platform as string,
+                      url: s.url,
+                    })) || [],
+                }
+              : undefined
+          }
         />
       )}
     </>
