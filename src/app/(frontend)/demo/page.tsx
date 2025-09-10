@@ -140,10 +140,7 @@ export default function DemoPage() {
       <section className="hero">
         <div className="hero-video">
           <video autoPlay muted loop playsInline preload="none" className="u-video-embed">
-            <source
-              src="https://room-studio.b-cdn.net/MAIN%20PAGE_final_2%20(1).mp4"
-              type="video/mp4"
-            />
+            <source src="./hero-video.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         </div>
