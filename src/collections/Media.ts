@@ -80,10 +80,11 @@ const Media: CollectionConfig = {
     },
   ],
   upload: {
-    staticDir: 'media',
-    // Only allow images for now; add video/* if needed later
+    disableLocalStorage: true,
     mimeTypes: ['image/*'],
-    adminThumbnail: 'xs',
+    adminThumbnail: ({ doc }) => {
+      return `https://${process.env.S3_BUCKET}.s3.${process.env.S3_REGION}.amazonaws.com/${doc.filename}`
+    },
     resizeOptions: {
       withoutEnlargement: true,
       fit: 'cover',
