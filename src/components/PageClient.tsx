@@ -7,7 +7,7 @@ import { BlockRenderer } from './BlockRenderer'
 export default function PageClient({ page: initialPage }: { page: PageType }) {
   const { data } = useLivePreview<PageType>({
     initialData: initialPage,
-    serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
+    serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
     depth: 2,
   })
 
