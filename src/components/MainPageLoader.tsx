@@ -5,6 +5,7 @@ import { gsap } from 'gsap'
 
 interface MainPageLoaderProps {
   children: React.ReactNode
+  isMainDomain?: boolean
 }
 
 // Utility function to reset loader (for testing/debugging)
@@ -20,12 +21,21 @@ if (typeof window !== 'undefined') {
   ;(window as any).resetDistrictLoader = resetLoader
 }
 
-export const MainPageLoader: React.FC<MainPageLoaderProps> = ({ children }) => {
+export const MainPageLoader: React.FC<MainPageLoaderProps> = ({
+  children,
+  isMainDomain = true,
+}) => {
   const loadingRef = useRef<HTMLDivElement>(null)
   const progressBarRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
+    // Only show loader on main domain
+    if (!isMainDomain) {
+      setIsLoading(false)
+      return
+    }
+
     // Check if loader has already been shown in this session
     const hasShownLoader =
       typeof window !== 'undefined' ? sessionStorage.getItem('district-loader-shown') : null

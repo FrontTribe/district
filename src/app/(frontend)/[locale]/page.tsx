@@ -108,7 +108,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   console.log('[Page] Footer data:', footerGlobal)
 
   return (
-    <MainPageLoader>
+    <MainPageLoader isMainDomain={!subdomain}>
       <RefreshRouteOnSave />
 
       {/* Menu Wrapper */}
