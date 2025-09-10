@@ -9,6 +9,10 @@ import { seoPlugin } from '@payloadcms/plugin-seo'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { localeLang } from './utils/locale'
 
+// storage
+import { s3Storage } from '@payloadcms/storage-s3'
+
+// collections
 import Tenants from './collections/tenants'
 import Users from './collections/Users'
 import Pages from './collections/pages'
@@ -104,6 +108,19 @@ export default buildConfig({
         admin: {
           group: 'Forms',
         },
+      },
+    }),
+    s3Storage({
+      collections: {
+        media: true,
+      },
+      bucket: process.env.S3_BUCKET || '',
+      config: {
+        credentials: {
+          accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+        },
+        region: process.env.S3_REGION,
       },
     }),
   ],
