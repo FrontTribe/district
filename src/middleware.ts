@@ -18,23 +18,24 @@ export function middleware(request: NextRequest) {
     const parts = cleanHost.split('.')
     if (parts.length >= 2) subdomain = parts[0]
   }
-  // 2. Dev environment (dev subdomain)
+  // 2. Dev environment (dev.district.hr)
   else if (
     cleanHost.startsWith('dev.') &&
     mainDomain &&
     cleanHost.endsWith(mainDomain.replace(/^www\./, ''))
   ) {
     const subdomainEndIndex = cleanHost.length - mainDomain.length - 1
-    subdomain = cleanHost.slice(0, subdomainEndIndex) // 'dev'
+    subdomain = cleanHost.slice(0, subdomainEndIndex) // → "dev"
   }
-  // 3. Production subdomains
-  else if (mainDomain) {
-    if (cleanHost === mainDomain) {
-      subdomain = 'district'
-    } else if (cleanHost.endsWith(`.${mainDomain}`)) {
-      const subdomainEndIndex = cleanHost.length - mainDomain.length - 1
-      subdomain = cleanHost.slice(0, subdomainEndIndex)
-    }
+  // 3. Production root (new.district.hr)
+  else if (mainDomain && cleanHost === mainDomain) {
+    subdomain = 'district'
+  } else if (mainDomain && cleanHost.endsWith(`.${mainDomain}`)) {
+    const subdomainEndIndex = cleanHost.length - mainDomain.length - 1
+    subdomain = cleanHost.slice(0, subdomainEndIndex)
+  } else if (cleanHost.endsWith('.tenants.district.hr')) {
+    const subdomainEndIndex = cleanHost.length - '.tenants.district.hr'.length
+    subdomain = cleanHost.slice(0, subdomainEndIndex)
   }
 
   if (subdomain) {
