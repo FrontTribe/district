@@ -3,34 +3,31 @@ import { NextRequest, NextResponse } from 'next/server'
 export function middleware(request: NextRequest) {
   const headers = new Headers(request.headers)
   const host = request.headers.get('host')
+  const mainDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'new.district.hr'
+  const defaultTenant = 'district'
 
-  const mainDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN
-
-  if (!host) return NextResponse.next()
+  if (!host) {
+    return NextResponse.next()
+  }
 
   const cleanHost = host.replace('www.', '').split(':')[0]
   console.log(`[Middleware] Clean host: ${cleanHost}`)
 
   let subdomain = ''
 
-  // 1. Local development
-  if (cleanHost.includes('.test') || cleanHost.includes('localhost')) {
+  // Handle local development environments
+  if (cleanHost === 'localhost') {
+    subdomain = defaultTenant
+  } else if (cleanHost.includes('.test') || cleanHost.includes('localhost')) {
     const parts = cleanHost.split('.')
-    if (parts.length >= 2) subdomain = parts[0]
+    if (parts.length >= 2) {
+      subdomain = parts[0]
+    }
   }
-  // 2. Dev environment (dev subdomain)
-  else if (
-    cleanHost.startsWith('dev.') &&
-    mainDomain &&
-    cleanHost.endsWith(mainDomain.replace(/^www\./, ''))
-  ) {
-    const subdomainEndIndex = cleanHost.length - mainDomain.length - 1
-    subdomain = cleanHost.slice(0, subdomainEndIndex) // 'dev'
-  }
-  // 3. Production subdomains
+  // Handle production and staging environments
   else if (mainDomain) {
     if (cleanHost === mainDomain) {
-      subdomain = 'district'
+      subdomain = defaultTenant
     } else if (cleanHost.endsWith(`.${mainDomain}`)) {
       const subdomainEndIndex = cleanHost.length - mainDomain.length - 1
       subdomain = cleanHost.slice(0, subdomainEndIndex)
@@ -50,5 +47,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|assets|media).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|assets|media|api).*)'],
 }
