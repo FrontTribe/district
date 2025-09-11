@@ -9,6 +9,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Test SSH Connection
+        run: |
+          ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "echo ✅ Connected to server"
+
       - name: Checkout Repo
         uses: actions/checkout@v3
 
