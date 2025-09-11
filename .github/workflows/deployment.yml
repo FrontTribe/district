@@ -1,0 +1,50 @@
+name: Deploy District Project
+
+on:
+  push:
+    branches: [main, development]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          persist-credentials: false
+
+      - name: Setup SSH Key for Server
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Test SSH Connection
+        run: ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "echo ✅ Connected to server"
+
+      - name: Deploy to Server
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$BRANCH_NAME" = "main" ]; then
+            ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "
+              set -e
+              cd /var/www/district-prod
+              git fetch origin main
+              git reset --hard origin/main
+              npm ci --production
+              npm run build
+              pm2 restart district-prod
+            "
+          elif [ "$BRANCH_NAME" = "development" ]; then
+            ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "
+              set -e
+              cd /var/www/district-dev
+              git fetch origin development
+              git reset --hard origin/development
+              npm install
+              npm run build
+              pm2 restart district-dev
+            "
+          fi
