@@ -30,7 +30,7 @@ export function middleware(request: NextRequest) {
   // 3. Production subdomains
   else if (mainDomain) {
     if (cleanHost === mainDomain) {
-      subdomain = 'shifuit'
+      subdomain = 'district'
     } else if (cleanHost.endsWith(`.${mainDomain}`)) {
       const subdomainEndIndex = cleanHost.length - mainDomain.length - 1
       subdomain = cleanHost.slice(0, subdomainEndIndex)
