@@ -33,7 +33,7 @@ jobs:
               cd /var/www/district-prod
               git fetch origin main
               git reset --hard origin/main
-              npm ci --production
+              npm i -f
               npm run build
               pm2 restart district-prod
             "
@@ -43,7 +43,7 @@ jobs:
               cd /var/www/district-dev
               git fetch origin development
               git reset --hard origin/development
-              npm install
+              npm i -f
               npm run build
               pm2 restart district-dev
             "
