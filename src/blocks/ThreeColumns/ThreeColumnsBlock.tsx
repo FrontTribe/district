@@ -64,30 +64,34 @@ export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, s
     }
   }
 
+  console.log(`[ThreeColumnsBlock] Rendering with columns:`, columns)
+
   return (
     <section ref={sectionRef} id={sectionId} className="hero">
       {/* Hero Section - 3 Column Grid Layout (Full Width) */}
       <div className="hero-text-overlay">
-        <div className="hero-text-container">
+        <div className="hero-text-container grid grid-cols-1 md:grid-cols-3 gap-6">
           {columns?.map((column, index) => (
             <div
               key={index}
-              className="hero-column"
+              className="hero-column relative p-4"
               onMouseEnter={() => handleColumnHover(index)}
               onMouseLeave={() => handleColumnLeave(index)}
             >
               {/* Background Image */}
               {column.backgroundImage && (
-                <div className="hero-video">
+                <div className="hero-video w-full h-64 overflow-hidden rounded">
                   <img
                     src={column.backgroundImage.url}
                     alt={column.backgroundImage.alt || column.title}
-                    className="u-video-embed"
+                    className="w-full h-full object-cover"
                   />
                 </div>
               )}
 
-              <h2 className="hero-title">{column.title}</h2>
+              <h2 className="hero-title mt-4">{column.title}</h2>
+              <p className="hero-subtitle">{column.subtitle}</p>
+
               <div className="social-links">
                 {column.socialNetworks?.instagram && <span className="social-text">instagram</span>}
                 {column.socialNetworks?.instagram && column.socialNetworks?.facebook && (
@@ -95,7 +99,8 @@ export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, s
                 )}
                 {column.socialNetworks?.facebook && <span className="social-text">facebook</span>}
               </div>
-              <div className="see-more-container">
+
+              <div className="see-more-container mt-2">
                 <a
                   href={column.link.url}
                   className="see-more-link"
@@ -105,6 +110,7 @@ export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, s
                   {column.link.text}
                 </a>
               </div>
+
               <div
                 ref={(el) => {
                   lineRefs.current[index] = el
