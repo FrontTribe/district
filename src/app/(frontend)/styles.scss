@@ -19,7 +19,7 @@ body {
   font-size: 18px;
   line-height: 32px;
   margin: 0;
-  color: rgb(1000, 1000, 1000);
+  color: rgb(255, 255, 255);
 
   @media (max-width: 1024px) {
     font-size: 15px;
@@ -991,7 +991,7 @@ div {
   line-height: 1.2;
   font-family: var(--font-marcellus), 'Marcellus', serif;
   margin: 0 0 30px 0;
-  color: rgb(1000, 1000, 1000);
+  color: rgb(255, 255, 255);
   overflow: hidden;
 
   @media (max-width: 1024px) {
@@ -1007,7 +1007,7 @@ div {
   font-size: 24px;
   line-height: 1.6;
   margin: 0;
-  color: rgba(1000, 1000, 1000, 0.8);
+  color: rgba(255, 255, 255, 0.8);
   max-width: 600px;
   margin: 0 auto;
 
@@ -1210,7 +1210,7 @@ div {
   font-weight: bold;
   font-family: var(--font-marcellus), 'Marcellus', serif;
   margin: 0 0 60px 0;
-  color: rgb(1000, 1000, 1000);
+  color: rgb(255, 255, 255);
 
   @media (max-width: 768px) {
     font-size: 36px;
@@ -1227,9 +1227,9 @@ div {
 
 .feature-item {
   padding: 40px 30px;
-  background: rgba(1000, 1000, 1000, 0.05);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  border: 1px solid rgba(1000, 1000, 1000, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
 }
 
@@ -1239,14 +1239,14 @@ div {
   font-weight: bold;
   font-family: var(--font-marcellus), 'Marcellus', serif;
   margin: 0 0 20px 0;
-  color: rgb(1000, 1000, 1000);
+  color: rgb(255, 255, 255);
 }
 
 .feature-description {
   font-size: 16px;
   line-height: 1.6;
   margin: 0;
-  color: rgba(1000, 1000, 1000, 0.8);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* Menu Wrapper Styles - Now using demo page header styling */
@@ -1374,7 +1374,7 @@ div {
   font-weight: bold;
   font-family: var(--font-marcellus), 'Marcellus', serif;
   margin: 0 0 40px 0;
-  color: rgb(1000, 1000, 1000);
+  color: rgb(255, 255, 255);
 
   @media (max-width: 768px) {
     font-size: 36px;
@@ -1385,7 +1385,7 @@ div {
 .text-body {
   font-size: 18px;
   line-height: 1.6;
-  color: rgba(1000, 1000, 1000, 0.8);
+  color: rgba(255, 255, 255, 0.8);
   text-align: left;
 
   @media (max-width: 768px) {
@@ -1400,7 +1400,7 @@ div {
   h5,
   h6 {
     font-family: var(--font-marcellus), 'Marcellus', serif;
-    color: rgb(1000, 1000, 1000);
+    color: rgb(255, 255, 255);
     margin: 30px 0 20px 0;
   }
 
@@ -1419,7 +1419,7 @@ div {
   }
 
   a {
-    color: rgb(1000, 1000, 1000);
+    color: rgb(255, 255, 255);
     text-decoration: underline;
 
     &:hover {
@@ -1428,21 +1428,21 @@ div {
   }
 
   blockquote {
-    border-left: 4px solid rgba(1000, 1000, 1000, 0.3);
+    border-left: 4px solid rgba(255, 255, 255, 0.3);
     padding-left: 20px;
     margin: 30px 0;
     font-style: italic;
   }
 
   code {
-    background: rgba(1000, 1000, 1000, 0.1);
+    background: rgba(255, 255, 255, 0.1);
     padding: 2px 6px;
     border-radius: 4px;
     font-family: monospace;
   }
 
   pre {
-    background: rgba(1000, 1000, 1000, 0.1);
+    background: rgba(255, 255, 255, 0.1);
     padding: 20px;
     border-radius: 8px;
     overflow-x: auto;

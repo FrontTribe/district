@@ -57,7 +57,7 @@ export const ImageGridBlock: React.FC<Props> = ({
       }
 
       // Apply reveal animation to all images
-      const imageElements = q('.image-grid__img')
+      const imageElements = q('.image-grid__img') as HTMLImageElement[]
       imageElements.forEach((img: HTMLImageElement) => {
         revealImage(img)
       })

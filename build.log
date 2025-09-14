@@ -1,0 +1,44 @@
+
+> multi-tenet-cms@1.0.0 build
+> cross-env NODE_OPTIONS="--no-deprecation --max-old-space-size=8000" next build
+
+   ▲ Next.js 15.4.4
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 13.0s
+   Linting and checking validity of types ...
+ ⨯ ESLint: Cannot read config file: /Users/kresimirgalic/Projects/payload-cms/node_modules/.pnpm/eslint-config-next@15.4.4_eslint@9.34.0_typescript@5.7.3/node_modules/eslint-config-next/index.js Error: Failed to patch ESLint because the calling module was not recognized. If you are using a newer ESLint version that may be unsupported, please create a GitHub issue: https://github.com/microsoft/rushstack/issues Referenced from: /Users/kresimirgalic/Projects/payload-cms/node_modules/.pnpm/eslint-config-next@15.4.4_eslint@9.34.0_typescript@5.7.3/node_modules/eslint-config-next/core-web-vitals.js
+   Collecting page data ...
+   Generating static pages (0/10) ...
+   Generating static pages (2/10) 
+   Generating static pages (4/10) 
+   Generating static pages (7/10) 
+ ✓ Generating static pages (10/10)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                      136 B         102 kB
+├ ○ /_not-found                             1 kB         103 kB
+├ ƒ /[locale]                             1.3 kB         167 kB
+├ ƒ /[locale]/[slug]                       252 B         166 kB
+├ ƒ /admin/[[...segments]]                 452 B         738 kB
+├ ƒ /api/[...slug]                         246 B         156 kB
+├ ƒ /api/draft                             136 B         102 kB
+├ ƒ /api/form-submissions                  231 B         156 kB
+├ ƒ /api/graphql                           231 B         156 kB
+├ ƒ /api/graphql-playground                246 B         156 kB
+├ ○ /demo                                1.67 kB         131 kB
+└ ƒ /my-route                              231 B         156 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/2bc64ec3-0df4be523ae44e15.js  54.1 kB
+  ├ chunks/4606-ce5818a906dbe2cd.js      44.3 kB
+  └ other shared chunks (total)           3.3 kB
+
+
+ƒ Middleware                             33.7 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
