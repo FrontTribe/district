@@ -556,6 +556,41 @@ export interface Page {
                       blockName?: string | null;
                       blockType: 'intro';
                     }
+                  | {
+                      /**
+                       * Main title displayed in the center
+                       */
+                      title: string;
+                      /**
+                       * Subtitle text displayed below the title
+                       */
+                      subtitle: string;
+                      /**
+                       * Optional button text (e.g., "Reservieren")
+                       */
+                      buttonText?: string | null;
+                      /**
+                       * URL for the button (if button text is provided)
+                       */
+                      buttonUrl?: string | null;
+                      images?:
+                        | {
+                            image: string | Media;
+                            /**
+                             * Choose the position and aspect ratio for this image
+                             */
+                            position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+                            id?: string | null;
+                          }[]
+                        | null;
+                      /**
+                       * Optional ID for this section (used for menu navigation)
+                       */
+                      sectionId?: string | null;
+                      id?: string | null;
+                      blockName?: string | null;
+                      blockType: 'image-grid';
+                    }
                 )[]
               | null;
             /**
@@ -1592,6 +1627,24 @@ export interface PagesSelect<T extends boolean = true> {
                       | T
                       | {
                           content?: T;
+                          sectionId?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    'image-grid'?:
+                      | T
+                      | {
+                          title?: T;
+                          subtitle?: T;
+                          buttonText?: T;
+                          buttonUrl?: T;
+                          images?:
+                            | T
+                            | {
+                                image?: T;
+                                position?: T;
+                                id?: T;
+                              };
                           sectionId?: T;
                           id?: T;
                           blockName?: T;
