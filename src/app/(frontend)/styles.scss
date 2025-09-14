@@ -1278,6 +1278,21 @@ div {
     &--full {
       width: 100%;
     }
+
+    &--narrow {
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 0 20px;
+
+      @media (max-width: 768px) {
+        padding: 0 16px;
+      }
+
+      @media (max-width: 480px) {
+        padding: 0 12px;
+      }
+    }
   }
 
   .section-background-image,
@@ -2071,5 +2086,55 @@ div {
     opacity: 0.8;
     line-height: 1.5;
     color: white;
+  }
+}
+
+/* Intro Block Styles */
+.intro {
+  padding: 80px 0;
+  background: transparent;
+
+  @media (max-width: 768px) {
+    padding: 60px 0;
+  }
+}
+
+.intro__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.intro__content {
+  font-family: var(--font-space-marcellus), 'Marcellus', serif;
+  font-size: 60px;
+  line-height: 1.2;
+  color: #000;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  @media (max-width: 1024px) {
+    font-size: 48px;
+    line-height: 1.2;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 36px;
+    line-height: 1.2;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 28px;
+    line-height: 1.2;
+  }
+}
+
+.intro__line {
+  display: block;
+  margin-bottom: 0.5em;
+
+  &:last-child {
+    margin-bottom: 0;
   }
 }

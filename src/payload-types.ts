@@ -543,6 +543,19 @@ export interface Page {
                       blockName?: string | null;
                       blockType: 'rooftop-features';
                     }
+                  | {
+                      /**
+                       * Enter the intro text that will be displayed centered in black
+                       */
+                      content: string;
+                      /**
+                       * Optional ID for this section (used for menu navigation)
+                       */
+                      sectionId?: string | null;
+                      id?: string | null;
+                      blockName?: string | null;
+                      blockType: 'intro';
+                    }
                 )[]
               | null;
             /**
@@ -552,7 +565,7 @@ export interface Page {
             /**
              * Choose the container width for section content
              */
-            container?: ('full' | 'container') | null;
+            container?: ('full' | 'container' | 'narrow') | null;
             padding?: {
               top?: number | null;
               right?: number | null;
@@ -1571,6 +1584,14 @@ export interface PagesSelect<T extends boolean = true> {
                                 description?: T;
                                 id?: T;
                               };
+                          sectionId?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    intro?:
+                      | T
+                      | {
+                          content?: T;
                           sectionId?: T;
                           id?: T;
                           blockName?: T;

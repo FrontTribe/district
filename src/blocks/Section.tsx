@@ -21,6 +21,8 @@ import Rooftop from '@/blocks/Rooftop'
 import RooftopFeatures from '@/blocks/RooftopFeatures'
 import { RooftopBlock } from '@/blocks/Rooftop'
 import { RooftopFeaturesBlock } from '@/blocks/RooftopFeatures'
+import { Intro } from '@/blocks/Intro'
+import { IntroBlock } from '@/blocks/Intro'
 
 const Section: Block = {
   slug: 'section',
@@ -46,6 +48,7 @@ const Section: Block = {
                 Image,
                 Rooftop,
                 RooftopFeatures,
+                Intro,
               ],
             },
           ],
@@ -69,6 +72,7 @@ const Section: Block = {
               options: [
                 { label: 'Full Width', value: 'full' },
                 { label: '1440px Max Width', value: 'container' },
+                { label: 'Narrow (800px Max Width)', value: 'narrow' },
               ],
               defaultValue: 'container',
               admin: {
@@ -190,7 +194,7 @@ const Section: Block = {
 
 export const SectionBlock: React.FC<{
   isFullHeight?: boolean
-  container?: 'full' | 'container'
+  container?: 'full' | 'container' | 'narrow'
   backgroundColor?: string
   backgroundMedia?: {
     type: 'none' | 'image' | 'video'
@@ -298,7 +302,9 @@ export const SectionBlock: React.FC<{
   const contentClassName =
     container === 'full'
       ? 'section-content section-content--full'
-      : 'section-content section-content--container'
+      : container === 'narrow'
+        ? 'section-content section-content--narrow'
+        : 'section-content section-content--container'
 
   // Build section classes including overlay
   const sectionClasses = ['section-block']
@@ -335,6 +341,7 @@ const SectionBlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null
     image: ImageBlock,
     rooftop: RooftopBlock,
     'rooftop-features': RooftopFeaturesBlock,
+    intro: IntroBlock,
   }
 
   return (
