@@ -6,25 +6,16 @@ import { BlockRenderer } from './BlockRenderer'
 import { useEffect, useState } from 'react'
 
 export default function PageClient({ page: initialPage }: { page: PageType }) {
-  const [isConnected, setIsConnected] = useState(true)
   const [hasRendered, setHasRendered] = useState(false)
 
-  const { data, isConnected: livePreviewConnected } = useLivePreview<PageType>({
+  const { data, isLoading } = useLivePreview<PageType>({
     initialData: initialPage,
     serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
     depth: 2,
   })
 
-  // Track connection status
-  useEffect(() => {
-    setIsConnected(livePreviewConnected)
-    if (!livePreviewConnected) {
-      console.warn('[PageClient] Live preview disconnected, falling back to initial data')
-    }
-  }, [livePreviewConnected])
-
-  // Use the live preview data if available and connected, otherwise fall back to initial data
-  const pageData = data && isConnected ? data : initialPage
+  // Use the live preview data if available, otherwise fall back to initial data
+  const pageData = data || initialPage
 
   // Track if we've successfully rendered content
   useEffect(() => {
@@ -38,12 +29,12 @@ export default function PageClient({ page: initialPage }: { page: PageType }) {
     console.log('[PageClient] Page data:', {
       hasInitialData: !!initialPage,
       hasLiveData: !!data,
-      isConnected,
+      isLoading,
       hasLayout: !!pageData?.layout,
       layoutLength: pageData?.layout?.length || 0,
       hasRendered,
     })
-  }, [initialPage, data, isConnected, pageData, hasRendered])
+  }, [initialPage, data, isLoading, pageData, hasRendered])
 
   // If we have no data at all, don't render anything
   if (!pageData) {
