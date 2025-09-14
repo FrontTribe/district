@@ -38,22 +38,28 @@ export const ImageGridBlock: React.FC<Props> = ({
     const ctx = gsap.context(() => {
       const q = gsap.utils.selector(sectionRef)
 
-      // Set initial states
-      gsap.set(q('.image-grid__image'), { opacity: 0, scale: 0.8 })
+      // Set initial states for content
       gsap.set(q('.image-grid__content'), { opacity: 0, y: 30 })
 
-      // Animate images with stagger
-      gsap.to(q('.image-grid__image'), {
-        opacity: 1,
-        scale: 1,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: sectionRef.current!,
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
-        },
+      // Left-to-right reveal animation for images
+      const revealImage = (imgElement: HTMLImageElement) => {
+        gsap.set(imgElement, { clipPath: 'inset(0 100% 0 0)', willChange: 'clip-path' })
+        gsap.to(imgElement, {
+          clipPath: 'inset(0 0% 0 0)',
+          duration: 1,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: imgElement.closest('.image-grid__image'),
+            start: 'top 85%',
+            once: true,
+          },
+        })
+      }
+
+      // Apply reveal animation to all images
+      const imageElements = q('.image-grid__img')
+      imageElements.forEach((img: HTMLImageElement) => {
+        revealImage(img)
       })
 
       // Animate content
