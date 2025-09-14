@@ -65,7 +65,7 @@ export default async function Page({ params }: PageProps) {
   }
 
   // Fetch menu and footer for the current tenant
-  const tenantId = currentTenant?.id || null
+  const tenantId = currentTenant?.id ? String(currentTenant.id) : null
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
 
   return (
@@ -89,7 +89,10 @@ export default async function Page({ params }: PageProps) {
             })) || []
           }
           logo={
-            menuGlobal?.logo && typeof menuGlobal.logo !== 'string' && menuGlobal.logo.url
+            menuGlobal?.logo &&
+            typeof menuGlobal.logo === 'object' &&
+            'url' in menuGlobal.logo &&
+            menuGlobal.logo.url
               ? {
                   url: menuGlobal.logo.url,
                   alt: menuGlobal.logo.alt || 'Logo',

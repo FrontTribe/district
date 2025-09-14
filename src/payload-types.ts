@@ -575,7 +575,7 @@ export interface Page {
                       buttonUrl?: string | null;
                       images?:
                         | {
-                            image: string | Media;
+                            image: number | Media;
                             /**
                              * Choose the position and aspect ratio for this image
                              */
