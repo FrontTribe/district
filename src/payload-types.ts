@@ -94,7 +94,7 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   globals: {};
   globalsSelect: {};
@@ -132,9 +132,9 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
   role: 'superadmin' | 'tenant-admin';
-  tenant?: (string | null) | Tenant;
+  tenant?: (number | null) | Tenant;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -160,7 +160,7 @@ export interface User {
  * via the `definition` "tenants".
  */
 export interface Tenant {
-  id: string;
+  id: number;
   name: string;
   subdomain: string;
   updatedAt: string;
@@ -173,9 +173,9 @@ export interface Tenant {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
   alt: string;
-  tenant?: (string | null) | Tenant;
+  tenant?: (number | null) | Tenant;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -277,10 +277,10 @@ export interface Media {
  * via the `definition` "pages".
  */
 export interface Page {
-  id: string;
+  id: number;
   title: string;
   slug: string;
-  tenant?: (string | null) | Tenant;
+  tenant?: (number | null) | Tenant;
   layout?:
     | (
         | {
@@ -291,8 +291,8 @@ export interface Page {
                       subheading?: string | null;
                       backgroundMedia?: {
                         type?: ('none' | 'image' | 'video') | null;
-                        image?: (string | null) | Media;
-                        video?: (string | null) | Media;
+                        image?: (number | null) | Media;
+                        video?: (number | null) | Media;
                         overlay?: ('none' | 'light' | 'medium' | 'dark') | null;
                       };
                       /**
@@ -353,7 +353,7 @@ export interface Page {
                             /**
                              * Optional background image for this column
                              */
-                            backgroundImage?: (string | null) | Media;
+                            backgroundImage?: (number | null) | Media;
                             /**
                              * Make this column take the full viewport height
                              */
@@ -439,9 +439,9 @@ export interface Page {
                         label?: string | null;
                         href?: string | null;
                       };
-                      mediaTopRight?: (string | null) | Media;
-                      mediaBottomLeft?: (string | null) | Media;
-                      mediaBottomRight?: (string | null) | Media;
+                      mediaTopRight?: (number | null) | Media;
+                      mediaBottomLeft?: (number | null) | Media;
+                      mediaBottomRight?: (number | null) | Media;
                       /**
                        * Adjust vertical parallax in percent of the element height. Negative moves up, positive moves down.
                        */
@@ -462,7 +462,7 @@ export interface Page {
                       address?: string | null;
                       email?: string | null;
                       phone?: string | null;
-                      form: string | Form;
+                      form: number | Form;
                       sectionId?: string | null;
                       id?: string | null;
                       blockName?: string | null;
@@ -489,7 +489,7 @@ export interface Page {
                                   id?: string | null;
                                 }[]
                               | null;
-                            image: string | Media;
+                            image: number | Media;
                             id?: string | null;
                           }[]
                         | null;
@@ -499,7 +499,7 @@ export interface Page {
                       blockType: 'rooms';
                     }
                   | {
-                      media: string | Media;
+                      media: number | Media;
                       alt?: string | null;
                       caption?: string | null;
                       layout?: ('full' | 'contained') | null;
@@ -513,7 +513,7 @@ export interface Page {
                       heading: string;
                       images?:
                         | {
-                            media: string | Media;
+                            media: number | Media;
                             alt?: string | null;
                             caption?: string | null;
                             id?: string | null;
@@ -613,8 +613,8 @@ export interface Page {
             backgroundColor?: string | null;
             backgroundMedia?: {
               type?: ('none' | 'image' | 'video') | null;
-              image?: (string | null) | Media;
-              video?: (string | null) | Media;
+              image?: (number | null) | Media;
+              video?: (number | null) | Media;
               overlay?: ('none' | 'light' | 'medium' | 'dark') | null;
             };
             /**
@@ -630,8 +630,8 @@ export interface Page {
             subheading?: string | null;
             backgroundMedia?: {
               type?: ('none' | 'image' | 'video') | null;
-              image?: (string | null) | Media;
-              video?: (string | null) | Media;
+              image?: (number | null) | Media;
+              video?: (number | null) | Media;
               overlay?: ('none' | 'light' | 'medium' | 'dark') | null;
             };
             /**
@@ -692,7 +692,7 @@ export interface Page {
                   /**
                    * Optional background image for this column
                    */
-                  backgroundImage?: (string | null) | Media;
+                  backgroundImage?: (number | null) | Media;
                   /**
                    * Make this column take the full viewport height
                    */
@@ -778,9 +778,9 @@ export interface Page {
               label?: string | null;
               href?: string | null;
             };
-            mediaTopRight?: (string | null) | Media;
-            mediaBottomLeft?: (string | null) | Media;
-            mediaBottomRight?: (string | null) | Media;
+            mediaTopRight?: (number | null) | Media;
+            mediaBottomLeft?: (number | null) | Media;
+            mediaBottomRight?: (number | null) | Media;
             /**
              * Adjust vertical parallax in percent of the element height. Negative moves up, positive moves down.
              */
@@ -801,7 +801,7 @@ export interface Page {
             address?: string | null;
             email?: string | null;
             phone?: string | null;
-            form: string | Form;
+            form: number | Form;
             sectionId?: string | null;
             id?: string | null;
             blockName?: string | null;
@@ -828,7 +828,7 @@ export interface Page {
                         id?: string | null;
                       }[]
                     | null;
-                  image: string | Media;
+                  image: number | Media;
                   id?: string | null;
                 }[]
               | null;
@@ -841,7 +841,7 @@ export interface Page {
             heading: string;
             images?:
               | {
-                  media: string | Media;
+                  media: number | Media;
                   alt?: string | null;
                   caption?: string | null;
                   id?: string | null;
@@ -879,7 +879,7 @@ export interface Page {
     /**
      * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
      */
-    image?: (string | null) | Media;
+    image?: (number | null) | Media;
   };
   updatedAt: string;
   createdAt: string;
@@ -890,7 +890,7 @@ export interface Page {
  * via the `definition` "forms".
  */
 export interface Form {
-  id: string;
+  id: number;
   title: string;
   fields?:
     | (
@@ -1066,7 +1066,7 @@ export interface Form {
  * via the `definition` "menu".
  */
 export interface Menu {
-  id: string;
+  id: number;
   /**
    * Unique identifier for this menu type. Main Menu gets centered logo styling, Tenant Menu gets standard top-left styling.
    */
@@ -1075,7 +1075,7 @@ export interface Menu {
    * Internal title for this menu (e.g., "Hotel ABC Menu", "Restaurant XYZ Menu")
    */
   title: string;
-  tenant?: (string | null) | Tenant;
+  tenant?: (number | null) | Tenant;
   menuItems?:
     | {
         label: string;
@@ -1106,7 +1106,7 @@ export interface Menu {
         id?: string | null;
       }[]
     | null;
-  logo?: (string | null) | Media;
+  logo?: (number | null) | Media;
   logoText?: string | null;
   /**
    * Choose how the menu should be positioned on the page
@@ -1122,12 +1122,12 @@ export interface Menu {
  * via the `definition` "footer".
  */
 export interface Footer {
-  id: string;
+  id: number;
   /**
    * Internal title for this footer (e.g., "Hotel ABC Footer", "Restaurant XYZ Footer")
    */
   title: string;
-  tenant?: (string | null) | Tenant;
+  tenant?: (number | null) | Tenant;
   columns?:
     | {
         title: string;
@@ -1160,8 +1160,8 @@ export interface Footer {
  * via the `definition` "form-submissions".
  */
 export interface FormSubmission {
-  id: string;
-  form: string | Form;
+  id: number;
+  form: number | Form;
   submissionData?:
     | {
         field: string;
@@ -1177,44 +1177,44 @@ export interface FormSubmission {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
       } | null)
     | ({
         relationTo: 'tenants';
-        value: string | Tenant;
+        value: number | Tenant;
       } | null)
     | ({
         relationTo: 'pages';
-        value: string | Page;
+        value: number | Page;
       } | null)
     | ({
         relationTo: 'menu';
-        value: string | Menu;
+        value: number | Menu;
       } | null)
     | ({
         relationTo: 'footer';
-        value: string | Footer;
+        value: number | Footer;
       } | null)
     | ({
         relationTo: 'forms';
-        value: string | Form;
+        value: number | Form;
       } | null)
     | ({
         relationTo: 'form-submissions';
-        value: string | FormSubmission;
+        value: number | FormSubmission;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -1224,10 +1224,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -1247,7 +1247,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
