@@ -9,6 +9,8 @@ import BoutiqueContact from '@/blocks/BoutiqueContact'
 import Rooms from '@/blocks/Rooms'
 import Rooftop from '@/blocks/Rooftop'
 import RooftopFeatures from '@/blocks/RooftopFeatures'
+import Location from '@/blocks/Location/Location'
+import ConceptBarMenu from '@/blocks/ConceptBarMenu'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
@@ -117,6 +119,8 @@ const Pages: CollectionConfig = {
         Rooms,
         Rooftop,
         RooftopFeatures,
+        Location,
+        ConceptBarMenu,
       ],
       localized: true,
     },
