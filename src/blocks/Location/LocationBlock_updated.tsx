@@ -60,15 +60,6 @@ export const LocationBlock: React.FC<Props> = ({
     const isValidLng = lng >= -180 && lng <= 180
     const hasDecimals = lat.toString().includes('.') && lng.toString().includes('.')
 
-    console.log('LocationBlock: Coordinate validation:', {
-      lat,
-      lng,
-      isValidLat,
-      isValidLng,
-      hasDecimals,
-      isValid: isValidLat && isValidLng && hasDecimals,
-    })
-
     return isValidLat && isValidLng && hasDecimals
   }
 

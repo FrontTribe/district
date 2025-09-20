@@ -36,7 +36,6 @@ async function fetchPage(slug: string, locale: AllowedLocale): Promise<PageType 
 
     return pageQuery.docs[0] || null
   } catch (error) {
-    console.error('Error fetching page data:', error)
     return null
   }
 }
@@ -113,31 +112,11 @@ export default async function Page({ params }: PageProps) {
       </div>
 
       {/* Footer - only show for tenant pages */}
-      {currentTenant && (
+      {currentTenant && footerGlobal && (
         <Footer
-          columns={
-            footerGlobal?.columns?.map((column) => ({
-              title: column.title,
-              links:
-                column.links?.map((link) => ({
-                  label: link.label,
-                  link: link.link,
-                  external: link.external || false,
-                })) || [],
-            })) || []
-          }
-          bottomSection={
-            footerGlobal?.bottomSection
-              ? {
-                  copyright: footerGlobal.bottomSection?.copyright ?? undefined,
-                  socialLinks:
-                    footerGlobal.bottomSection?.socialLinks?.map((s) => ({
-                      platform: s.platform as string,
-                      url: s.url,
-                    })) || [],
-                }
-              : undefined
-          }
+          leftContent={footerGlobal.leftContent}
+          rightContent={footerGlobal.rightContent}
+          bottomContent={footerGlobal.bottomContent}
         />
       )}
     </>

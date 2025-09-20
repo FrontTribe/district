@@ -321,21 +321,7 @@ export interface Page {
                       blockType: 'features';
                     }
                   | {
-                      content: {
-                        root: {
-                          type: string;
-                          children: {
-                            type: string;
-                            version: number;
-                            [k: string]: unknown;
-                          }[];
-                          direction: ('ltr' | 'rtl') | null;
-                          format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-                          indent: number;
-                          version: number;
-                        };
-                        [k: string]: unknown;
-                      };
+                      content: string;
                       /**
                        * Choose the font size for the text content
                        */
@@ -406,7 +392,10 @@ export interface Page {
                               opacity?: number | null;
                             };
                             link: {
-                              url: string;
+                              /**
+                               * Select the tenant to link to. URL will be generated automatically based on environment.
+                               */
+                              tenant: number | Tenant;
                               text: string;
                               openInNewTab?: boolean | null;
                             };
@@ -663,21 +652,7 @@ export interface Page {
             blockType: 'features';
           }
         | {
-            content: {
-              root: {
-                type: string;
-                children: {
-                  type: string;
-                  version: number;
-                  [k: string]: unknown;
-                }[];
-                direction: ('ltr' | 'rtl') | null;
-                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-                indent: number;
-                version: number;
-              };
-              [k: string]: unknown;
-            };
+            content: string;
             /**
              * Choose the font size for the text content
              */
@@ -748,7 +723,10 @@ export interface Page {
                     opacity?: number | null;
                   };
                   link: {
-                    url: string;
+                    /**
+                     * Select the tenant to link to. URL will be generated automatically based on environment.
+                     */
+                    tenant: number | Tenant;
                     text: string;
                     openInNewTab?: boolean | null;
                   };
@@ -876,6 +854,108 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'rooftop-features';
+          }
+        | {
+            /**
+             * Main title for the location section
+             */
+            title: string;
+            /**
+             * Short description about the location
+             */
+            description?: string | null;
+            /**
+             * Full address for the location
+             */
+            address: string;
+            coordinates: {
+              /**
+               * Latitude coordinate for the map pin
+               */
+              lat: number;
+              /**
+               * Longitude coordinate for the map pin
+               */
+              lng: number;
+            };
+            workingHours?:
+              | {
+                  day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+                  isOpen?: boolean | null;
+                  /**
+                   * Format: HH:MM (e.g., 09:00)
+                   */
+                  openTime?: string | null;
+                  /**
+                   * Format: HH:MM (e.g., 18:00)
+                   */
+                  closeTime?: string | null;
+                  isClosed?: boolean | null;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Optional ID for this section (used for menu navigation)
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'location';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            popularBadgeText: string;
+            menuCategories?:
+              | {
+                  categoryName: string;
+                  categoryDescription?: string | null;
+                  categoryImage: number | Media;
+                  menuItems?:
+                    | {
+                        itemName: string;
+                        itemDescription?: string | null;
+                        itemPrice?: string | null;
+                        isPopular?: boolean | null;
+                        id?: string | null;
+                      }[]
+                    | null;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Optional ID for this section (used for navigation)
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'concept-bar-menu';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            description: string;
+            buttonText: string;
+            buttonUrl: string;
+            badgeText: string;
+            features?:
+              | {
+                  featureText: string;
+                  id?: string | null;
+                }[]
+              | null;
+            ctaNote: string;
+            /**
+             * Optional background image for the block
+             */
+            backgroundImage?: (number | null) | Media;
+            /**
+             * Optional ID for this section (used for navigation)
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'job-opportunity';
           }
       )[]
     | null;
@@ -1134,29 +1214,39 @@ export interface Footer {
    */
   title: string;
   tenant?: (number | null) | Tenant;
-  columns?:
-    | {
-        title: string;
-        links?:
-          | {
-              label: string;
-              link: string;
-              external?: boolean | null;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  bottomSection?: {
-    copyright?: string | null;
-    socialLinks?:
+  leftContent: {
+    heading: string;
+    subheading?: string | null;
+  };
+  rightContent: {
+    contact: {
+      heading: string;
+      email: string;
+      phone?: string | null;
+      /**
+       * Enter without @ symbol (e.g., legendslounge)
+       */
+      instagram?: string | null;
+    };
+    address: {
+      heading: string;
+      venue: string;
+      street: string;
+      city: string;
+      country: string;
+    };
+  };
+  bottomContent: {
+    copyright: string;
+    links?:
       | {
-          platform?: ('facebook' | 'twitter' | 'instagram' | 'linkedin' | 'youtube') | null;
+          text: string;
           url: string;
+          openInNewTab?: boolean | null;
           id?: string | null;
         }[]
       | null;
+    madeBy: string;
   };
   updatedAt: string;
   createdAt: string;
@@ -1498,7 +1588,7 @@ export interface PagesSelect<T extends boolean = true> {
                                 link?:
                                   | T
                                   | {
-                                      url?: T;
+                                      tenant?: T;
                                       text?: T;
                                       openInNewTab?: T;
                                     };
@@ -1744,7 +1834,7 @@ export interface PagesSelect<T extends boolean = true> {
                     link?:
                       | T
                       | {
-                          url?: T;
+                          tenant?: T;
                           text?: T;
                           openInNewTab?: T;
                         };
@@ -1863,6 +1953,80 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        location?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              address?: T;
+              coordinates?:
+                | T
+                | {
+                    lat?: T;
+                    lng?: T;
+                  };
+              workingHours?:
+                | T
+                | {
+                    day?: T;
+                    isOpen?: T;
+                    openTime?: T;
+                    closeTime?: T;
+                    isClosed?: T;
+                    id?: T;
+                  };
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'concept-bar-menu'?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              popularBadgeText?: T;
+              menuCategories?:
+                | T
+                | {
+                    categoryName?: T;
+                    categoryDescription?: T;
+                    categoryImage?: T;
+                    menuItems?:
+                      | T
+                      | {
+                          itemName?: T;
+                          itemDescription?: T;
+                          itemPrice?: T;
+                          isPopular?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                  };
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'job-opportunity'?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              description?: T;
+              buttonText?: T;
+              buttonUrl?: T;
+              badgeText?: T;
+              features?:
+                | T
+                | {
+                    featureText?: T;
+                    id?: T;
+                  };
+              ctaNote?: T;
+              backgroundImage?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
       };
   meta?:
     | T
@@ -1914,31 +2078,46 @@ export interface MenuSelect<T extends boolean = true> {
 export interface FooterSelect<T extends boolean = true> {
   title?: T;
   tenant?: T;
-  columns?:
+  leftContent?:
     | T
     | {
-        title?: T;
-        links?:
+        heading?: T;
+        subheading?: T;
+      };
+  rightContent?:
+    | T
+    | {
+        contact?:
           | T
           | {
-              label?: T;
-              link?: T;
-              external?: T;
-              id?: T;
+              heading?: T;
+              email?: T;
+              phone?: T;
+              instagram?: T;
             };
-        id?: T;
+        address?:
+          | T
+          | {
+              heading?: T;
+              venue?: T;
+              street?: T;
+              city?: T;
+              country?: T;
+            };
       };
-  bottomSection?:
+  bottomContent?:
     | T
     | {
         copyright?: T;
-        socialLinks?:
+        links?:
           | T
           | {
-              platform?: T;
+              text?: T;
               url?: T;
+              openInNewTab?: T;
               id?: T;
             };
+        madeBy?: T;
       };
   updatedAt?: T;
   createdAt?: T;

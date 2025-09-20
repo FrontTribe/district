@@ -28,22 +28,17 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   const headersList = requestHeaders
   const subdomain = headersList.get('x-tenant-subdomain')
-  console.log(`[Page] Received Subdomain from header: ${subdomain}`)
 
   // Get current tenant based on subdomain
   let currentTenant: Tenant | null = null
   if (subdomain) {
     currentTenant = await getTenantBySubdomain(subdomain)
-    console.log(`[Page] Found tenant for subdomain ${subdomain}:`, currentTenant)
-  } else {
-    console.log('[Page] No subdomain found in headers')
   }
 
   // Fetch pages with blocks for the current tenant
   let pages: Page[] = []
   if (currentTenant) {
     try {
-      console.log(`[Page] Fetching pages for tenant ID: ${currentTenant.id}`)
       const pagesResponse = await payload.find({
         collection: 'pages',
         depth: 2, // Include nested relationships
@@ -63,14 +58,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           ],
         },
       })
-      console.log(`[Page] Found ${pagesResponse.docs.length} published pages for tenant`)
-      console.log(`[Page] Pages data:`, pagesResponse.docs)
       pages = pagesResponse.docs as Page[]
     } catch (error) {
-      console.error('Error fetching pages:', error)
+      // Error fetching pages
     }
   } else {
-    console.log('[Page] No current tenant, fetching only main domain pages (no tenant assigned)')
     try {
       const mainPagesResponse = await payload.find({
         collection: 'pages',
@@ -92,20 +84,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           ],
         },
       })
-      console.log(`[Page] Found ${mainPagesResponse.docs.length} main domain pages`)
-      console.log(`[Page] Main pages data:`, mainPagesResponse.docs)
       pages = mainPagesResponse.docs as Page[]
     } catch (error) {
-      console.error('Error fetching main domain pages:', error)
+      // Error fetching main domain pages
     }
   }
 
   // Fetch menu and footer for the current tenant
   const tenantId = currentTenant?.id ? String(currentTenant.id) : null
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
-
-  console.log('[Page] Menu data:', menuGlobal)
-  console.log('[Page] Footer data:', footerGlobal)
 
   return (
     <MainPageLoader isMainDomain={!subdomain}>
@@ -168,31 +155,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </div>
 
       {/* Footer */}
-      <Footer
-        columns={
-          footerGlobal?.columns?.map((column) => ({
-            title: column.title,
-            links:
-              column.links?.map((link) => ({
-                label: link.label,
-                link: link.link,
-                external: link.external || false,
-              })) || [],
-          })) || []
-        }
-        bottomSection={
-          footerGlobal?.bottomSection
-            ? {
-                copyright: footerGlobal.bottomSection.copyright || undefined,
-                socialLinks:
-                  footerGlobal.bottomSection.socialLinks?.map((social) => ({
-                    platform: social.platform || 'facebook',
-                    url: social.url,
-                  })) || [],
-              }
-            : undefined
-        }
-      />
+      {footerGlobal && (
+        <Footer
+          leftContent={footerGlobal.leftContent}
+          rightContent={footerGlobal.rightContent}
+          bottomContent={footerGlobal.bottomContent}
+        />
+      )}
     </MainPageLoader>
   )
 }
