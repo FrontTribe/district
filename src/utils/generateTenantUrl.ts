@@ -18,9 +18,12 @@ export function generateTenantUrl(subdomain: string): string {
   }
 
   // Check for development environment
-  const isDev =
-    (typeof window !== 'undefined' && window.location.hostname.includes('.dev.')) ||
-    process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'
+  const isDev = 
+    (typeof window !== 'undefined' && 
+     (window.location.hostname.includes('.dev.') || 
+      window.location.hostname.includes('dev.district.hr'))) ||
+    process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev' ||
+    process.env.NODE_ENV === 'development'
 
   if (isDev) {
     return `https://${subdomain}.dev.district.hr`
@@ -49,9 +52,12 @@ export function getEnvironment(): 'local' | 'dev' | 'prod' {
   }
 
   // Check for development environment
-  const isDev =
-    (typeof window !== 'undefined' && window.location.hostname.includes('.dev.')) ||
-    process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'
+  const isDev = 
+    (typeof window !== 'undefined' && 
+     (window.location.hostname.includes('.dev.') || 
+      window.location.hostname.includes('dev.district.hr'))) ||
+    process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev' ||
+    process.env.NODE_ENV === 'development'
 
   if (isDev) {
     return 'dev'

@@ -30,9 +30,12 @@ export function useEnvironment(): 'local' | 'dev' | 'prod' {
     }
 
     // Check for development environment
-    const isDev =
-      (typeof window !== 'undefined' && window.location.hostname.includes('.dev.')) ||
-      process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev'
+    const isDev = 
+      (typeof window !== 'undefined' && 
+       (window.location.hostname.includes('.dev.') || 
+        window.location.hostname.includes('dev.district.hr'))) ||
+      process.env.NEXT_PUBLIC_ENVIRONMENT === 'dev' ||
+      process.env.NODE_ENV === 'development'
 
     if (isDev) {
       return 'dev'
