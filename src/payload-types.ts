@@ -321,7 +321,6 @@ export interface Page {
                       blockType: 'features';
                     }
                   | {
-                      heading: string;
                       content: {
                         root: {
                           type: string;
@@ -337,6 +336,10 @@ export interface Page {
                         };
                         [k: string]: unknown;
                       };
+                      /**
+                       * Choose the font size for the text content
+                       */
+                      fontSize?: ('small' | 'medium' | 'large' | 'xl') | null;
                       /**
                        * Optional ID for this section (used for menu navigation)
                        */
@@ -660,7 +663,6 @@ export interface Page {
             blockType: 'features';
           }
         | {
-            heading: string;
             content: {
               root: {
                 type: string;
@@ -676,6 +678,10 @@ export interface Page {
               };
               [k: string]: unknown;
             };
+            /**
+             * Choose the font size for the text content
+             */
+            fontSize?: ('small' | 'medium' | 'large' | 'xl') | null;
             /**
              * Optional ID for this section (used for menu navigation)
              */
@@ -1462,8 +1468,8 @@ export interface PagesSelect<T extends boolean = true> {
                     text?:
                       | T
                       | {
-                          heading?: T;
                           content?: T;
+                          fontSize?: T;
                           sectionId?: T;
                           id?: T;
                           blockName?: T;
@@ -1708,8 +1714,8 @@ export interface PagesSelect<T extends boolean = true> {
         text?:
           | T
           | {
-              heading?: T;
               content?: T;
+              fontSize?: T;
               sectionId?: T;
               id?: T;
               blockName?: T;
