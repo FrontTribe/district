@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ThreeColumnsBlockProps } from './types'
+import { generateTenantUrl } from '@/utils/generateTenantUrl'
 
 export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, sectionId }) => {
   // Refs for animations
@@ -102,7 +103,7 @@ export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, s
 
               <div className="see-more-container mt-2">
                 <a
-                  href={column.link.url}
+                  href={generateTenantUrl(column.link.tenant.subdomain)}
                   className="see-more-link"
                   target={column.link.openInNewTab ? '_blank' : undefined}
                   rel={column.link.openInNewTab ? 'noopener noreferrer' : undefined}

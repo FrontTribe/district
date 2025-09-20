@@ -147,10 +147,15 @@ const ThreeColumns: Block = {
           label: 'Link',
           fields: [
             {
-              name: 'url',
-              type: 'text',
-              label: 'URL',
+              name: 'tenant',
+              type: 'relationship',
+              relationTo: 'tenants',
+              label: 'Tenant',
               required: true,
+              admin: {
+                description:
+                  'Select the tenant to link to. URL will be generated automatically based on environment.',
+              },
             },
             {
               name: 'text',

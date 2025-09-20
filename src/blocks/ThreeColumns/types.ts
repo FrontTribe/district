@@ -34,7 +34,11 @@ export interface ThreeColumnsColumn {
     opacity?: number
   }
   link: {
-    url: string
+    tenant: {
+      id: string
+      subdomain: string
+      name: string
+    }
     text: string
     openInNewTab?: boolean
   }
