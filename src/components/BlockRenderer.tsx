@@ -12,6 +12,7 @@ import { RooftopBlock } from '@/blocks/Rooftop'
 import { RooftopFeaturesBlock } from '@/blocks/RooftopFeatures'
 import { LocationBlock } from '@/blocks/Location'
 import { ConceptBarMenuBlock } from '@/blocks/ConceptBarMenu'
+import { JobOpportunityBlock } from '@/blocks/JobOpportunity'
 
 const blockComponents = {
   section: SectionBlock,
@@ -26,6 +27,7 @@ const blockComponents = {
   'rooftop-features': RooftopFeaturesBlock,
   location: LocationBlock,
   'concept-bar-menu': ConceptBarMenuBlock,
+  'job-opportunity': JobOpportunityBlock,
 }
 
 type Block = NonNullable<Page['layout']>[number]

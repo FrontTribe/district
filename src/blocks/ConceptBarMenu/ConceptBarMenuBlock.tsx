@@ -9,6 +9,7 @@ import './ConceptBarMenu.scss'
 export const ConceptBarMenuBlock: React.FC<ConceptBarMenuBlockProps> = ({
   title,
   subtitle,
+  popularBadgeText,
   menuCategories,
   sectionId,
 }) => {
@@ -218,11 +219,11 @@ export const ConceptBarMenuBlock: React.FC<ConceptBarMenuBlockProps> = ({
                           <h4 className="concept-bar__item-name">
                             {item.itemName}
                             {item.isPopular && (
-                              <span className="concept-bar__popular-badge">Popular</span>
+                              <span className="concept-bar__popular-badge">{popularBadgeText}</span>
                             )}
                           </h4>
                           {item.itemPrice && (
-                            <span className="concept-bar__item-price">{item.itemPrice}</span>
+                            <span className="concept-bar__item-price">€{item.itemPrice}</span>
                           )}
                         </div>
                         {item.itemDescription && (

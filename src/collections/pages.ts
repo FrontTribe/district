@@ -11,6 +11,7 @@ import Rooftop from '@/blocks/Rooftop'
 import RooftopFeatures from '@/blocks/RooftopFeatures'
 import Location from '@/blocks/Location/Location'
 import ConceptBarMenu from '@/blocks/ConceptBarMenu'
+import JobOpportunity from '@/blocks/JobOpportunity'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
@@ -121,6 +122,7 @@ const Pages: CollectionConfig = {
         RooftopFeatures,
         Location,
         ConceptBarMenu,
+        JobOpportunity,
       ],
       localized: true,
     },

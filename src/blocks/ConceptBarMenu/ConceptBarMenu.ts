@@ -8,17 +8,28 @@ const ConceptBarMenu: Block = {
       type: 'text',
       label: 'Menu Title',
       required: true,
+      localized: true,
     },
     {
       name: 'subtitle',
       type: 'textarea',
       label: 'Menu Subtitle',
+      localized: true,
+    },
+    {
+      name: 'popularBadgeText',
+      type: 'text',
+      label: 'Popular Badge Text',
+      required: true,
+      defaultValue: 'Popular',
+      localized: true,
     },
     {
       name: 'menuCategories',
       type: 'array',
       label: 'Menu Categories',
       minRows: 1,
+      localized: true,
       fields: [
         {
           name: 'categoryName',
@@ -42,6 +53,7 @@ const ConceptBarMenu: Block = {
           name: 'menuItems',
           type: 'array',
           label: 'Menu Items',
+          localized: true,
           fields: [
             {
               name: 'itemName',

@@ -19,6 +19,7 @@ export interface MenuCategory {
 export interface ConceptBarMenuBlockProps {
   title: string
   subtitle?: string
+  popularBadgeText: string
   menuCategories: MenuCategory[]
   sectionId?: string
 }
