@@ -31,7 +31,10 @@ export const ImageGridBlock: React.FC<Props> = ({
   sectionId,
 }) => {
   const sectionRef = useRef<HTMLElement | null>(null)
+  const marqueeRef = useRef<HTMLDivElement | null>(null)
+  const marqueeTween = useRef<gsap.core.Tween | null>(null)
 
+  // Create marquee animation for mobile
   useEffect(() => {
     if (typeof window === 'undefined') return
     gsap.registerPlugin(ScrollTrigger)
@@ -39,49 +42,151 @@ export const ImageGridBlock: React.FC<Props> = ({
     const ctx = gsap.context(() => {
       const q = gsap.utils.selector(sectionRef)
 
-      // Set initial states for content
-      gsap.set(q('.image-grid__content'), { opacity: 0, y: 30 })
+      // Desktop grid animations
+      if (window.innerWidth > 768) {
+        // Set initial states for content
+        gsap.set(q('.image-grid__content'), { opacity: 0, y: 30 })
 
-      // Left-to-right reveal animation for images
-      const revealImage = (imgElement: HTMLImageElement) => {
-        gsap.set(imgElement, { clipPath: 'inset(0 100% 0 0)', willChange: 'clip-path' })
-        gsap.to(imgElement, {
-          clipPath: 'inset(0 0% 0 0)',
-          duration: 1,
+        // Left-to-right reveal animation for images
+        const revealImage = (imgElement: HTMLImageElement) => {
+          gsap.set(imgElement, { clipPath: 'inset(0 100% 0 0)', willChange: 'clip-path' })
+          gsap.to(imgElement, {
+            clipPath: 'inset(0 0% 0 0)',
+            duration: 1,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: imgElement.closest('.image-grid__image'),
+              start: 'top 85%',
+              once: true,
+            },
+          })
+        }
+
+        // Apply reveal animation to all images
+        const imageElements = q('.image-grid__img') as HTMLImageElement[]
+        imageElements.forEach((img: HTMLImageElement) => {
+          revealImage(img)
+        })
+
+        // Animate content
+        gsap.to(q('.image-grid__content'), {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          delay: 0.4,
           ease: 'power2.out',
           scrollTrigger: {
-            trigger: imgElement.closest('.image-grid__image'),
-            start: 'top 85%',
-            once: true,
+            trigger: sectionRef.current!,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse',
           },
         })
+      } else {
+        // Mobile marquee animation
+        const createMarquee = () => {
+          if (!marqueeRef.current) {
+            console.log('No marquee ref found')
+            return
+          }
+
+          const track = marqueeRef.current
+          const cards = track.querySelectorAll('.image-grid__card')
+          console.log('Found cards:', cards.length)
+
+          if (cards.length === 0) {
+            console.log('No cards found')
+            return
+          }
+
+          // Clear any existing animation
+          marqueeTween.current?.kill()
+
+          // Set up the track for horizontal scrolling
+          gsap.set(track, {
+            display: 'flex',
+            width: 'max-content',
+            x: 0,
+          })
+
+          // Calculate total width needed
+          const cardWidth = cards[0].getBoundingClientRect().width
+          const gap = 16
+          const totalWidth = (cardWidth + gap) * cards.length
+          console.log('Card width:', cardWidth, 'Total width:', totalWidth)
+
+          // Duplicate cards for seamless loop
+          const cloneCards = Array.from(cards).map((card) => card.cloneNode(true) as HTMLElement)
+          cloneCards.forEach((clone) => track.appendChild(clone))
+
+          // Create infinite scroll animation with proper loop
+          marqueeTween.current = gsap.fromTo(
+            track,
+            { x: 0 },
+            {
+              x: -totalWidth,
+              duration: 20,
+              ease: 'none',
+              repeat: -1,
+              immediateRender: true,
+            },
+          )
+
+          console.log('Marquee animation created')
+        }
+
+        // Wait for images to load
+        const imgs = Array.from(
+          marqueeRef.current?.querySelectorAll('img') || [],
+        ) as HTMLImageElement[]
+        const pending = imgs.filter((img) => !img.complete).length
+
+        if (pending === 0) {
+          requestAnimationFrame(() => requestAnimationFrame(createMarquee))
+        } else {
+          let remaining = pending
+          const onLoad = () => {
+            remaining -= 1
+            if (remaining <= 0) requestAnimationFrame(() => requestAnimationFrame(createMarquee))
+          }
+          imgs.forEach((img) => img.addEventListener('load', onLoad, { once: true }))
+        }
+
+        // Animate content for mobile
+        gsap.to(q('.image-grid__content'), {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          delay: 0.4,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: sectionRef.current!,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse',
+          },
+        })
+
+        // Handle resize for marquee
+        const handleResize = () => {
+          if (window.innerWidth <= 768 && marqueeRef.current) {
+            createMarquee()
+          }
+        }
+
+        window.addEventListener('resize', handleResize)
+
+        return () => {
+          window.removeEventListener('resize', handleResize)
+        }
       }
-
-      // Apply reveal animation to all images
-      const imageElements = q('.image-grid__img') as HTMLImageElement[]
-      imageElements.forEach((img: HTMLImageElement) => {
-        revealImage(img)
-      })
-
-      // Animate content
-      gsap.to(q('.image-grid__content'), {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        delay: 0.4,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: sectionRef.current!,
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
-        },
-      })
     }, sectionRef)
 
-    return () => ctx.revert()
-  }, [])
+    return () => {
+      ctx.revert()
+      marqueeTween.current?.kill()
+    }
+  }, [images])
 
-  // Group images by position
+  // Group images by position for desktop
   const imagesByPosition = images.reduce(
     (acc, image) => {
       acc[image.position] = image
@@ -92,8 +197,9 @@ export const ImageGridBlock: React.FC<Props> = ({
 
   return (
     <section ref={sectionRef} id={sectionId} className="image-grid">
-      <div className="image-grid__container">
-        {/* Top Left Image (16:9) */}
+      {/* Desktop Grid Layout */}
+      <div className="image-grid__container image-grid__container--desktop">
+        {/* Top Left Image */}
         {imagesByPosition['top-left'] && (
           <div className="image-grid__image image-grid__image--top-left">
             <img
@@ -104,7 +210,7 @@ export const ImageGridBlock: React.FC<Props> = ({
           </div>
         )}
 
-        {/* Top Right Image (9:16) */}
+        {/* Top Right Image */}
         {imagesByPosition['top-right'] && (
           <div className="image-grid__image image-grid__image--top-right">
             <img
@@ -115,7 +221,7 @@ export const ImageGridBlock: React.FC<Props> = ({
           </div>
         )}
 
-        {/* Bottom Left Image (9:16) */}
+        {/* Bottom Left Image */}
         {imagesByPosition['bottom-left'] && (
           <div className="image-grid__image image-grid__image--bottom-left">
             <img
@@ -126,7 +232,7 @@ export const ImageGridBlock: React.FC<Props> = ({
           </div>
         )}
 
-        {/* Bottom Right Image (16:9) */}
+        {/* Bottom Right Image */}
         {imagesByPosition['bottom-right'] && (
           <div className="image-grid__image image-grid__image--bottom-right">
             <img
@@ -139,6 +245,28 @@ export const ImageGridBlock: React.FC<Props> = ({
 
         {/* Center Content */}
         <div className="image-grid__content">
+          <h2 className="image-grid__title">{title}</h2>
+          <p className="image-grid__subtitle">{subtitle}</p>
+          {buttonText && buttonUrl && (
+            <a href={buttonUrl} className="image-grid__button">
+              {buttonText}
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Marquee Layout */}
+      <div className="image-grid__container image-grid__container--mobile">
+        <div className="image-grid__marquee" ref={marqueeRef}>
+          {images.map((item, index) => (
+            <div key={index} className="image-grid__card">
+              <img src={item.image.url} alt={item.image.alt || ''} className="image-grid__img" />
+            </div>
+          ))}
+        </div>
+
+        {/* Content below marquee on mobile */}
+        <div className="image-grid__content image-grid__content--mobile">
           <h2 className="image-grid__title">{title}</h2>
           <p className="image-grid__subtitle">{subtitle}</p>
           {buttonText && buttonUrl && (

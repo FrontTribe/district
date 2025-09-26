@@ -950,6 +950,17 @@ export interface Page {
              */
             backgroundImage?: (number | null) | Media;
             /**
+             * Add decorative images that will be positioned randomly around the content
+             */
+            decorativeImages?:
+              | {
+                  image: number | Media;
+                  aspectRatio: '16:9' | '9:16';
+                  position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center-left' | 'center-right';
+                  id?: string | null;
+                }[]
+              | null;
+            /**
              * Optional ID for this section (used for navigation)
              */
             sectionId?: string | null;
@@ -2023,6 +2034,14 @@ export interface PagesSelect<T extends boolean = true> {
                   };
               ctaNote?: T;
               backgroundImage?: T;
+              decorativeImages?:
+                | T
+                | {
+                    image?: T;
+                    aspectRatio?: T;
+                    position?: T;
+                    id?: T;
+                  };
               sectionId?: T;
               id?: T;
               blockName?: T;

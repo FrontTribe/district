@@ -2,6 +2,10 @@
   max-width: 800px;
   margin: 8rem auto;
 
+  @media (max-width: 768px) {
+    margin: 0 auto;
+  }
+
   .text-content {
     .text-body {
       text-align: center;

@@ -8,7 +8,8 @@
   background: transparent;
   overflow: hidden;
 
-  .image-grid__container {
+  // Desktop Grid Layout
+  .image-grid__container--desktop {
     position: relative;
     width: 100%;
     height: 100vh;
@@ -16,6 +17,10 @@
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: 0;
+
+    @media (max-width: 768px) {
+      display: none;
+    }
   }
 
   .image-grid__image {
@@ -52,6 +57,49 @@
     }
   }
 
+  // Mobile Marquee Layout
+  .image-grid__container--mobile {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100vh;
+    padding: 60px 0;
+
+    @media (max-width: 768px) {
+      display: flex;
+    }
+  }
+
+  .image-grid__marquee {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 50vh;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+
+    @media (max-width: 480px) {
+      height: 40vh;
+      margin-bottom: 30px;
+    }
+  }
+
+  .image-grid__card {
+    position: relative;
+    flex: 0 0 auto;
+    width: min(70vw, 300px);
+    height: 100%;
+    margin-right: 16px;
+    overflow: hidden;
+    border-radius: 8px;
+
+    @media (max-width: 480px) {
+      width: min(80vw, 250px);
+      margin-right: 12px;
+    }
+  }
+
   .image-grid__img {
     width: 100%;
     height: 100%;
@@ -69,9 +117,6 @@
     left: 0;
     right: 0;
     margin: 0 auto;
-    // top: 50%;
-    // left: 50%;
-    // transform: translate(-50%, -50%);
     z-index: 10;
     text-align: center;
     max-width: 600px;
@@ -82,6 +127,18 @@
     justify-content: center;
     width: 100%;
     height: 100%;
+
+    &--mobile {
+      position: static;
+      max-width: 100%;
+      padding: 0 20px;
+      height: auto;
+      justify-content: flex-start;
+
+      @media (max-width: 480px) {
+        padding: 0 16px;
+      }
+    }
   }
 
   .image-grid__title {
@@ -92,6 +149,16 @@
     color: #ffffff;
     margin: 0 0 24px 0;
     letter-spacing: -0.02em;
+
+    @media (max-width: 768px) {
+      font-size: clamp(36px, 8vw, 56px);
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 480px) {
+      font-size: clamp(28px, 7vw, 42px);
+      margin-bottom: 16px;
+    }
   }
 
   .image-grid__subtitle {
@@ -103,6 +170,16 @@
     max-width: 500px;
     margin-left: auto;
     margin-right: auto;
+
+    @media (max-width: 768px) {
+      font-size: 16px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
   }
 
   .image-grid__button {
@@ -126,100 +203,26 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(107, 124, 50, 0.3);
     }
+
+    @media (max-width: 768px) {
+      padding: 14px 28px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 480px) {
+      padding: 12px 24px;
+      font-size: 12px;
+    }
   }
 
-  // Responsive Design
+  // Responsive Design for Desktop
   @media (max-width: 1024px) {
-    .image-grid__container {
+    .image-grid__container--desktop {
       height: 80vh;
     }
 
     .image-grid__content {
       max-width: 500px;
-    }
-
-    .image-grid__title {
-      font-size: clamp(36px, 5vw, 56px);
-    }
-
-    .image-grid__subtitle {
-      font-size: 16px;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .image-grid__container {
-      height: 70vh;
-    }
-
-    .image-grid__image {
-      &--top-left,
-      &--bottom-right {
-        width: 45%;
-      }
-
-      &--top-right,
-      &--bottom-left {
-        width: 30%;
-      }
-    }
-
-    .image-grid__content {
-      max-width: 400px;
-      padding: 0 16px;
-    }
-
-    .image-grid__title {
-      font-size: clamp(28px, 4vw, 42px);
-      margin-bottom: 20px;
-    }
-
-    .image-grid__subtitle {
-      font-size: 15px;
-      margin-bottom: 24px;
-    }
-
-    .image-grid__button {
-      padding: 14px 28px;
-      font-size: 13px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .image-grid__container {
-      height: 60vh;
-    }
-
-    .image-grid__image {
-      &--top-left,
-      &--bottom-right {
-        width: 40%;
-      }
-
-      &--top-right,
-      &--bottom-left {
-        width: 35%;
-      }
-    }
-
-    .image-grid__content {
-      max-width: 320px;
-      padding: 0 12px;
-    }
-
-    .image-grid__title {
-      font-size: clamp(24px, 3.5vw, 36px);
-      margin-bottom: 16px;
-    }
-
-    .image-grid__subtitle {
-      font-size: 14px;
-      margin-bottom: 20px;
-    }
-
-    .image-grid__button {
-      padding: 12px 24px;
-      font-size: 12px;
     }
   }
 }
