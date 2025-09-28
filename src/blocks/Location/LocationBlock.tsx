@@ -218,7 +218,7 @@ export const LocationBlock: React.FC<Props> = ({
         })
 
         // Add circular pin marker
-        const marker = new (window as any).google.maps.Marker({
+        const _marker = new (window as any).google.maps.Marker({
           position: { lat: coordinates.lat, lng: coordinates.lng },
           map: map,
           title: title,

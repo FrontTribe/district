@@ -1,7 +1,6 @@
 import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import React from 'react'
-import Link from 'next/link'
 
 import config from '@/payload.config'
 import { MenuWrapper } from '@/components/MenuWrapper'
@@ -59,7 +58,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         },
       })
       pages = pagesResponse.docs as Page[]
-    } catch (error) {
+    } catch (_error) {
       // Error fetching pages
     }
   } else {
@@ -85,7 +84,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         },
       })
       pages = mainPagesResponse.docs as Page[]
-    } catch (error) {
+    } catch (_error) {
       // Error fetching main domain pages
     }
   }

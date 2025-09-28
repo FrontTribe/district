@@ -10,7 +10,7 @@ interface MainPageLanguageSwitcherProps {
 
 export default function MainPageLanguageSwitcher({ locale }: MainPageLanguageSwitcherProps) {
   const pathname = usePathname()
-  const router = useRouter()
+  const _router = useRouter()
   const currentLocale = locale
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

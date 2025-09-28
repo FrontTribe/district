@@ -35,7 +35,7 @@ async function fetchPage(slug: string, locale: AllowedLocale): Promise<PageType 
     })
 
     return pageQuery.docs[0] || null
-  } catch (error) {
+  } catch (_error) {
     return null
   }
 }

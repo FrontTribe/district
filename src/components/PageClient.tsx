@@ -5,7 +5,7 @@ import { BlockRenderer } from './BlockRenderer'
 import { useEffect, useState } from 'react'
 
 export default function PageClient({ page: initialPage }: { page: PageType }) {
-  const [hasRendered, setHasRendered] = useState(false)
+  const [_hasRendered, setHasRendered] = useState(false)
 
   // Debug logging
   useEffect(() => {

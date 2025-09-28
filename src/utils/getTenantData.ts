@@ -26,7 +26,7 @@ export async function getTenantMenu(
     })
 
     return menuResponse.docs[0] || null
-  } catch (error) {
+  } catch (_error) {
     return null
   }
 }
@@ -55,7 +55,7 @@ export async function getTenantFooter(
     })
 
     return footerResponse.docs[0] || null
-  } catch (error) {
+  } catch (_error) {
     return null
   }
 }
@@ -78,7 +78,7 @@ export async function getTenantBySubdomain(subdomain: string): Promise<Tenant | 
     })
 
     return tenantResponse.docs[0] || null
-  } catch (error) {
+  } catch (_error) {
     return null
   }
 }

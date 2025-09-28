@@ -173,7 +173,7 @@ export const ConceptBarMenuBlock: React.FC<ConceptBarMenuBlockProps> = ({
     return () => ctx.revert()
   }, [menuCategories])
 
-  const handleCategoryClick = (index: number) => {
+  const _handleCategoryClick = (index: number) => {
     setActiveCategory(index)
     if (categoryRefs.current[index]) {
       categoryRefs.current[index]?.scrollIntoView({

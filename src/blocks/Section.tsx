@@ -356,7 +356,7 @@ const SectionBlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null
         if (blockType && blockType in blockComponents) {
           const BlockComponent = blockComponents[blockType as keyof typeof blockComponents]
           const key = block.id ? `${block.id}-${index}` : index
-          // @ts-expect-error
+          // @ts-expect-error - Block component props are dynamically typed based on block type
           return <BlockComponent key={key} {...block} />
         }
 

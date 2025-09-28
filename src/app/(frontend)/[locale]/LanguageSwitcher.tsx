@@ -8,7 +8,7 @@ interface LanguageSwitcherProps {
   slug: string
 }
 
-export default function LanguageSwitcher({ currentLocale, slug }: LanguageSwitcherProps) {
+export default function LanguageSwitcher({ currentLocale, slug: _slug }: LanguageSwitcherProps) {
   const pathname = usePathname()
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

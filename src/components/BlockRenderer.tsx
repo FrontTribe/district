@@ -30,7 +30,7 @@ const blockComponents = {
   'job-opportunity': JobOpportunityBlock,
 }
 
-type Block = NonNullable<Page['layout']>[number]
+type _Block = NonNullable<Page['layout']>[number]
 
 export const BlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null }> = ({
   blocks,
@@ -47,7 +47,7 @@ export const BlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null
         if (blockType && blockType in blockComponents) {
           const BlockComponent = blockComponents[blockType as keyof typeof blockComponents]
           const key = block.id ? `${block.id}-${index}` : index
-          // @ts-expect-error
+          // @ts-expect-error - Block component props are dynamically typed based on block type
           return <BlockComponent key={key} {...block} />
         }
 

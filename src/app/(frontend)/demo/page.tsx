@@ -16,7 +16,7 @@ export default function DemoPage() {
 
   useEffect(() => {
     // Initialize GSAP line animations
-    lineRefs.current.forEach((lineRef, index) => {
+    lineRefs.current.forEach((lineRef, _index) => {
       if (lineRef) {
         gsap.set(lineRef, { scaleX: 0, transformOrigin: 'left' })
       }

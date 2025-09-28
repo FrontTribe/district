@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import EnhancedLanguageSwitcher from './EnhancedLanguageSwitcher'
@@ -33,11 +33,11 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
   menuItems = [],
   logo,
   logoText,
-  positioning = 'fixed',
+  positioning: _positioning = 'fixed',
   locale,
   menuId = 'default',
 }) => {
-  const router = useRouter()
+  const _router = useRouter()
   const pathname = usePathname()
   const [isLanguageChanging, setIsLanguageChanging] = useState(false)
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null)

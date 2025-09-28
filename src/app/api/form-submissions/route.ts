@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ ok: true, id: doc.id })
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('Form submit error', e)
     return NextResponse.json({ error: 'Internal Error' }, { status: 500 })
   }

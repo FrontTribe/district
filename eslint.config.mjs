@@ -12,7 +12,8 @@ const compat = new FlatCompat({
 })
 
 const eslintConfig = [
-  // Use a more compatible approach for Next.js ESLint config
+  // Use Next.js ESLint config with compatibility
+  ...compat.extends('next/core-web-vitals'),
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
     plugins: {
@@ -32,7 +33,16 @@ const eslintConfig = [
       // Basic Next.js rules
       'react/no-unescaped-entities': 'off',
       '@next/next/no-page-custom-font': 'off',
-      '@typescript-eslint/ban-ts-comment': 'warn',
+      '@typescript-eslint/ban-ts-comment': [
+        'warn',
+        {
+          'ts-expect-error': 'allow-with-description',
+          'ts-ignore': 'allow-with-description',
+          'ts-nocheck': 'allow-with-description',
+          'ts-check': 'allow-with-description',
+          minimumDescriptionLength: 3,
+        },
+      ],
       '@typescript-eslint/no-empty-object-type': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [

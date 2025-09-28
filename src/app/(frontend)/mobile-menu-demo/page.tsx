@@ -54,7 +54,6 @@ export default function MobileMenuDemo() {
         logoText="Mobile Menu Demo"
         locale="en"
         menuId="demo-menu"
-        isTenantMenu={true}
       />
 
       <main className="demo-content">
