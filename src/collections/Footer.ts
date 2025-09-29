@@ -45,6 +45,7 @@ const Footer: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
       admin: {
         description:
           'Internal title for this footer (e.g., "Hotel ABC Footer", "Restaurant XYZ Footer")',
@@ -65,6 +66,7 @@ const Footer: CollectionConfig = {
       name: 'leftContent',
       type: 'group',
       label: 'Left Content',
+      localized: true,
       fields: [
         {
           name: 'heading',
@@ -85,11 +87,13 @@ const Footer: CollectionConfig = {
       name: 'rightContent',
       type: 'group',
       label: 'Right Content',
+      localized: true,
       fields: [
         {
           name: 'contact',
           type: 'group',
           label: 'Contact Information',
+          localized: true,
           fields: [
             {
               name: 'heading',
@@ -124,6 +128,7 @@ const Footer: CollectionConfig = {
           name: 'address',
           type: 'group',
           label: 'Address Information',
+          localized: true,
           fields: [
             {
               name: 'heading',
@@ -169,6 +174,7 @@ const Footer: CollectionConfig = {
       name: 'bottomContent',
       type: 'group',
       label: 'Bottom Content',
+      localized: true,
       fields: [
         {
           name: 'copyright',
