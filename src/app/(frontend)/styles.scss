@@ -2445,8 +2445,9 @@ div {
 
 /* Intro Block Styles */
 .intro {
-  padding: 80px 0;
-  background: transparent;
+  padding: 120px 0;
+  background-color: #051e24;
+  color: #fff;
 
   @media (max-width: 768px) {
     padding: 60px 0;
@@ -2462,9 +2463,8 @@ div {
 
 .intro__content {
   font-family: var(--font-space-marcellus), 'Marcellus', serif;
-  font-size: 60px;
+  font-size: 80px;
   line-height: 1.2;
-  color: #000;
   max-width: 1200px;
   margin: 0 auto;
 

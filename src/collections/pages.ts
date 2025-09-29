@@ -13,6 +13,8 @@ import Location from '@/blocks/Location/Location'
 import ConceptBarMenu from '@/blocks/ConceptBarMenu'
 import JobOpportunity from '@/blocks/JobOpportunity'
 import Image from '@/blocks/Image'
+import { Intro } from '@/blocks/Intro'
+import { ImageGrid } from '@/blocks/ImageGrid'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
@@ -123,6 +125,8 @@ const Pages: CollectionConfig = {
         ConceptBarMenu,
         JobOpportunity,
         Image,
+        Intro,
+        ImageGrid,
       ],
       localized: true,
       admin: {

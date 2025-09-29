@@ -13,6 +13,8 @@ import { RooftopFeaturesBlock } from '@/blocks/RooftopFeatures'
 import { LocationBlock } from '@/blocks/Location'
 import { ConceptBarMenuBlock } from '@/blocks/ConceptBarMenu'
 import { JobOpportunityBlock } from '@/blocks/JobOpportunity'
+import { ImageGridBlock } from '@/blocks/ImageGrid'
+import { IntroBlock } from '@/blocks/Intro'
 
 const blockComponents = {
   section: SectionBlock,
@@ -28,6 +30,8 @@ const blockComponents = {
   location: LocationBlock,
   'concept-bar-menu': ConceptBarMenuBlock,
   'job-opportunity': JobOpportunityBlock,
+  intro: IntroBlock,
+  'image-grid': ImageGridBlock,
 }
 
 type _Block = NonNullable<Page['layout']>[number]
