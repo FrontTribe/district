@@ -81,10 +81,12 @@ export const Footer: React.FC<FooterProps> = ({
           <div className="footer__main">
             {/* Left Content */}
             <div className="footer__left">
-              <h2
-                className="footer__heading"
-                dangerouslySetInnerHTML={{ __html: leftContent.heading }}
-              />
+              {leftContent?.heading && (
+                <h2
+                  className="footer__heading"
+                  dangerouslySetInnerHTML={{ __html: leftContent?.heading }}
+                />
+              )}
               {leftContent.subheading && (
                 <p className="footer__subheading">{leftContent.subheading}</p>
               )}
