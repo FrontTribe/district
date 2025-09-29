@@ -58,13 +58,15 @@ const Menu: CollectionConfig = {
         },
       ],
       admin: {
-        description: 'Unique identifier for this menu type. Main Menu gets centered logo styling, Tenant Menu gets standard top-left styling.',
+        description:
+          'Unique identifier for this menu type. Main Menu gets centered logo styling, Tenant Menu gets standard top-left styling.',
       },
     },
     {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
       admin: {
         description: 'Internal title for this menu (e.g., "Hotel ABC Menu", "Restaurant XYZ Menu")',
       },
@@ -83,16 +85,19 @@ const Menu: CollectionConfig = {
     {
       name: 'menuItems',
       type: 'array',
+      localized: true,
       fields: [
         {
           name: 'label',
           type: 'text',
           required: true,
+          localized: true,
         },
         {
           name: 'link',
           type: 'text',
           required: true,
+          localized: true,
           admin: {
             description: 'URL or path for this menu item (required even if using scroll target)',
           },
@@ -114,16 +119,19 @@ const Menu: CollectionConfig = {
         {
           name: 'children',
           type: 'array',
+          localized: true,
           fields: [
             {
               name: 'label',
               type: 'text',
               required: true,
+              localized: true,
             },
             {
               name: 'link',
               type: 'text',
               required: true,
+              localized: true,
               admin: {
                 description:
                   'URL or path for this menu item (required even if using scroll target)',
@@ -157,6 +165,7 @@ const Menu: CollectionConfig = {
       name: 'logoText',
       type: 'text',
       required: false,
+      localized: true,
     },
     {
       name: 'positioning',
