@@ -9,6 +9,7 @@ import { seoPlugin } from '@payloadcms/plugin-seo'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { localeLang } from './utils/locale'
 import { hr } from '@payloadcms/translations/languages/hr'
+import { en } from '@payloadcms/translations/languages/en'
 
 // storage
 import { s3Storage } from '@payloadcms/storage-s3'
@@ -94,7 +95,7 @@ export default buildConfig({
   },
   i18n: {
     fallbackLanguage: 'hr',
-    supportedLanguages: { hr },
+    supportedLanguages: { hr, en },
   },
   sharp,
   plugins: [
