@@ -51,7 +51,8 @@ export default function LenisProvider({ children }: Props) {
 
     return () => {
       if (typeof (lenis as any)?.destroy === 'function') (lenis as any).destroy()
-      ScrollTrigger.killAll()
+      // Don't kill all ScrollTriggers as it might interfere with other components
+      // ScrollTrigger.killAll()
     }
   }, [])
 

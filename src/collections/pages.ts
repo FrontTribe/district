@@ -12,6 +12,7 @@ import RooftopFeatures from '@/blocks/RooftopFeatures'
 import Location from '@/blocks/Location/Location'
 import ConceptBarMenu from '@/blocks/ConceptBarMenu'
 import JobOpportunity from '@/blocks/JobOpportunity'
+import Image from '@/blocks/Image'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
@@ -66,11 +67,6 @@ const Pages: CollectionConfig = {
       },
     ],
   },
-  versions: {
-    drafts: {
-      autosave: true,
-    },
-  },
   fields: [
     {
       name: 'title',
@@ -114,7 +110,6 @@ const Pages: CollectionConfig = {
       name: 'layout',
       type: 'blocks',
       blocks: [
-        Section,
         Hero,
         Features,
         Text,
@@ -127,8 +122,12 @@ const Pages: CollectionConfig = {
         Location,
         ConceptBarMenu,
         JobOpportunity,
+        Image,
       ],
       localized: true,
+      admin: {
+        initCollapsed: true,
+      },
     },
   ],
 }

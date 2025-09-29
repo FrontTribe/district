@@ -1,7 +1,7 @@
 import PageClient from '@/components/PageClient'
 import { getPayloadClient } from '@/utils/getPayloadClient'
 import { notFound } from 'next/navigation'
-import { draftMode, headers } from 'next/headers'
+import { headers } from 'next/headers'
 import type { Page as PageType, Tenant } from '@/payload-types'
 import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
@@ -19,7 +19,6 @@ type AllowedLocale = 'en' | 'hr' | 'de' | undefined
 
 async function fetchPage(slug: string, locale: AllowedLocale): Promise<PageType | null> {
   try {
-    const { isEnabled: isDraftMode } = await draftMode()
     const payload = await getPayloadClient()
 
     const pageQuery = await payload.find({
@@ -29,7 +28,6 @@ async function fetchPage(slug: string, locale: AllowedLocale): Promise<PageType 
           equals: slug,
         },
       },
-      draft: isDraftMode,
       depth: 2,
       locale, // <-- add locale here to fetch localized content
     })

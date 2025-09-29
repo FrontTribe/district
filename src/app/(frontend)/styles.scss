@@ -1418,6 +1418,7 @@ div {
 /* Image Block */
 .image-block {
   padding: 40px 20px;
+  background-color: #051e24;
 
   &--full {
     padding: 0;
@@ -1942,7 +1943,8 @@ div {
 
 /* Boutique Contact Block */
 .boutique-contact {
-  background: transparent;
+  background-color: #051e24;
+  padding: 120px 0;
 
   .boutique-contact__grid {
     max-width: 1440px;
@@ -2070,6 +2072,7 @@ div {
   // background: #f5efe6;
   // color: #7b0f0f;
   padding: 100px 0 80px;
+  background-color: #051e24;
 
   .rooms-heading-wrap {
     margin: 0 auto 80px auto;
@@ -2269,6 +2272,7 @@ div {
 .rooftop-block {
   color: #ffffff;
   padding: 120px 0 40px;
+  background-color: #051e24;
 
   @media (max-width: 768px) {
     padding: 0px 0 30px;
@@ -2371,7 +2375,8 @@ div {
 /* Rooftop Features */
 .rooftop-features-block {
   background: transparent;
-  margin-top: 100px;
+  padding-top: 100px;
+  background-color: #051e24;
 
   .rooftop-features__inner {
     max-width: 1440px;

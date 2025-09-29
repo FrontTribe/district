@@ -7,19 +7,20 @@ const Rooms: Block = {
       name: 'eyebrow',
       type: 'text',
       label: 'Eyebrow',
-      defaultValue: 'Explore More',
+      localized: true,
     },
     {
       name: 'heading',
       type: 'textarea',
       label: 'Heading (supports line breaks)',
       required: true,
-      defaultValue: 'More Rooms & Suites',
+      localized: true,
     },
     {
       name: 'subheading',
       type: 'textarea',
       label: 'Subheading',
+      localized: true,
     },
     {
       name: 'cta',
@@ -29,6 +30,7 @@ const Rooms: Block = {
         { name: 'label', type: 'text' },
         { name: 'href', type: 'text' },
       ],
+      localized: true,
     },
     {
       name: 'rooms',
@@ -36,22 +38,24 @@ const Rooms: Block = {
       label: 'Rooms',
       minRows: 1,
       maxRows: 4,
+      localized: true,
       fields: [
-        { name: 'title', type: 'text', required: true },
-        { name: 'description', type: 'textarea' },
+        { name: 'title', type: 'text', required: true, localized: true },
+        { name: 'description', type: 'textarea', localized: true },
         {
           name: 'badges',
           type: 'array',
           label: 'Badges (e.g., Double Bed, 2 Guests, 40m²-65m²)',
-          fields: [{ name: 'text', type: 'text' }],
+          localized: true,
+          fields: [{ name: 'text', type: 'text', localized: true }],
         },
-        { name: 'image', type: 'upload', relationTo: 'media', required: true },
+        { name: 'image', type: 'upload', relationTo: 'media', required: true, localized: true },
       ],
       admin: {
         description: 'Add up to 4 rooms: Premium, Deluxe, Suite, Apartment',
       },
     },
-    { name: 'sectionId', type: 'text', label: 'Section ID' },
+    { name: 'sectionId', type: 'text', label: 'Section ID', localized: true },
   ],
 }
 

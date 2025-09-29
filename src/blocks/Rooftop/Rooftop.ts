@@ -8,7 +8,7 @@ const Rooftop: Block = {
       type: 'textarea',
       label: 'Heading',
       required: true,
-      defaultValue: 'A Predictive, Personalised Health Platform — for People and Practitioners.',
+      localized: true,
     },
     {
       name: 'images',

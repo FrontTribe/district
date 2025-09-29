@@ -43,18 +43,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         depth: 2, // Include nested relationships
         locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
         where: {
-          and: [
-            {
-              tenant: {
-                equals: currentTenant.id,
-              },
-            },
-            {
-              _status: {
-                equals: 'published',
-              },
-            },
-          ],
+          tenant: {
+            equals: currentTenant.id,
+          },
         },
       })
       pages = pagesResponse.docs as Page[]
@@ -67,20 +58,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         collection: 'pages',
         depth: 2,
         locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
-
         where: {
-          and: [
-            {
-              _status: {
-                equals: 'published',
-              },
-            },
-            {
-              tenant: {
-                exists: false,
-              },
-            },
-          ],
+          tenant: {
+            exists: false,
+          },
         },
       })
       pages = mainPagesResponse.docs as Page[]
