@@ -83,12 +83,18 @@ const Pages: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
+      admin: {
+        position: 'sidebar',
+      },
     },
     {
       name: 'tenant',
       type: 'relationship',
       relationTo: 'tenants',
       required: false,
+      admin: {
+        position: 'sidebar',
+      },
       access: {
         read: () => true,
         create: ({ req }) => {
