@@ -66,6 +66,7 @@ const Menu: CollectionConfig = {
           name: 'label',
           type: 'text',
           required: true,
+          localized: true,
         },
         {
           name: 'link',
@@ -74,6 +75,7 @@ const Menu: CollectionConfig = {
           admin: {
             description: 'URL or path for this menu item (required even if using scroll target)',
           },
+          localized: true,
         },
         {
           name: 'scrollTarget',
@@ -97,11 +99,13 @@ const Menu: CollectionConfig = {
               name: 'label',
               type: 'text',
               required: true,
+              localized: true,
             },
             {
               name: 'link',
               type: 'text',
               required: true,
+              localized: true,
               admin: {
                 description:
                   'URL or path for this menu item (required even if using scroll target)',
