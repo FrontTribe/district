@@ -22,8 +22,6 @@ const Pages: CollectionConfig = {
   },
   access: {
     read: ({ req }) => {
-      console.log(req.user)
-
       if ((req.user as any)?.role === 'superadmin') {
         return true
       }

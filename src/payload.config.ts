@@ -8,6 +8,7 @@ import sharp from 'sharp'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { localeLang } from './utils/locale'
+import { hr } from '@payloadcms/translations/languages/hr'
 
 // storage
 import { s3Storage } from '@payloadcms/storage-s3'
@@ -88,8 +89,12 @@ export default buildConfig({
   }),
   localization: {
     locales: localeLang,
-    defaultLocale: 'en',
+    defaultLocale: 'hr',
     fallback: true,
+  },
+  i18n: {
+    fallbackLanguage: 'hr',
+    supportedLanguages: { hr },
   },
   sharp,
   plugins: [
