@@ -2,9 +2,13 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { getTranslation } from '@payloadcms/translations'
-import { useTranslation, useField } from '@payloadcms/ui'
+import { useTranslation, useField, SelectInput } from '@payloadcms/ui'
 
-type Option = { label: string | Record<string, string>; value: string }
+type Option<T = string> = {
+  label: string
+  value: T
+}
+
 type Props = {
   path: string
   label?: string | Record<string, string>
@@ -13,7 +17,6 @@ type Props = {
   unitTypesByProperty?: Record<string, Option[]>
 }
 
-// Create a cache for unit types data
 const unitTypesCache = {
   data: null as Record<string, Option[]> | null,
   promise: null as Promise<Record<string, Option[]>> | null,
@@ -45,31 +48,18 @@ const RentlioUnitTypeField: React.FC<Props> = ({
     [description, i18n],
   )
 
-    const loadUnitTypes = async (): Promise<Record<string, Option[]>> => {
-    if (unitTypesCache.promise) {
-      return unitTypesCache.promise
-    }
+  const loadUnitTypes = async (): Promise<Record<string, Option[]>> => {
+    if (unitTypesCache.promise) return unitTypesCache.promise
     unitTypesCache.promise = (async () => {
-      try {
-        const res = await fetch('/api/rentlio/options')
-        if (!res.ok) {
-          throw new Error(`Failed to fetch: ${res.status}`)
-        }
-
-        const data = await res.json()
-
-        if (data.unitTypesByProperty && typeof data.unitTypesByProperty === 'object') {
-          unitTypesCache.data = data.unitTypesByProperty
-          return data.unitTypesByProperty
-        } else {
-          throw new Error('Invalid data structure')
-        }
-      } catch (error) {
-        unitTypesCache.promise = null
-        throw error
+      const res = await fetch('/api/rentlio/options')
+      if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`)
+      const data = await res.json()
+      if (data.unitTypesByProperty && typeof data.unitTypesByProperty === 'object') {
+        unitTypesCache.data = data.unitTypesByProperty
+        return data.unitTypesByProperty
       }
+      throw new Error('Invalid data structure')
     })()
-
     return unitTypesCache.promise
   }
 
@@ -79,67 +69,25 @@ const RentlioUnitTypeField: React.FC<Props> = ({
       setIsLoading(false)
       return
     }
-
     if (unitTypesCache.data) {
       setResolvedMap(unitTypesCache.data)
       setIsLoading(false)
       return
     }
-
     setIsLoading(true)
     loadUnitTypes()
       .then((fetchedUnitTypes) => {
         setResolvedMap(fetchedUnitTypes)
         setIsLoading(false)
       })
-      .catch((_error) => {
-        setIsLoading(false)
-      })
+      .catch(() => setIsLoading(false))
   }, [unitTypesByProperty])
 
-  // Check for existing property selection on mount
-  useEffect(() => {
-    const checkForExistingProperty = () => {
-      const selectors = [
-        'select[name="rentlioPropertyId"]',
-        'select[id*="rentlioPropertyId"]',
-        'select[class*="rentlio"]',
-        'input[name="rentlioPropertyId"]'
-      ]
-      
-      for (const selector of selectors) {
-        const element = document.querySelector(selector) as HTMLSelectElement | HTMLInputElement
-        if (element && element.value) {
-          setSelectedPropertyId(element.value)
-          return true
-        }
-      }
-      
-      return false
-    }
-
-    // Check with multiple delays
-    const timeouts = [0, 100, 500]
-    const cleanupTimeouts: NodeJS.Timeout[] = []
-
-    timeouts.forEach((delay) => {
-      const timeout = setTimeout(() => {
-        checkForExistingProperty()
-      }, delay)
-      cleanupTimeouts.push(timeout)
-    })
-
-    return () => {
-      cleanupTimeouts.forEach(clearTimeout)
-    }
-  }, [])
-
-  // Listen for property change events
+  // Listen for property changes
   useEffect(() => {
     const handler = (e: Event) => {
       const customEvent = e as CustomEvent
       const newPropertyId = customEvent.detail?.propertyId || null
-      
       setSelectedPropertyId(newPropertyId)
 
       if (!newPropertyId) {
@@ -148,56 +96,54 @@ const RentlioUnitTypeField: React.FC<Props> = ({
       }
 
       const availableOptions = resolvedMap[newPropertyId] || []
-      if (value && !availableOptions.find((option) => option.value === value)) {
+      if (value && !availableOptions.find((opt) => opt.value === value)) {
         setValue(null)
       }
     }
-
     window.addEventListener('rentlio:propertyChanged', handler)
-
-    return () => {
-      window.removeEventListener('rentlio:propertyChanged', handler)
-    }
+    return () => window.removeEventListener('rentlio:propertyChanged', handler)
   }, [resolvedMap, value, setValue])
 
   const availableOptions = selectedPropertyId ? resolvedMap[selectedPropertyId] || [] : []
 
-  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const nextValue = event.target.value || null
+  const handleChange = (selected: Option | Option[]) => {
+    if (Array.isArray(selected)) return
+    const nextValue = selected?.value ?? null
     setValue(nextValue)
   }
 
   return (
     <div className="field-type rentlio-unit-type">
-      <label className="field-label" htmlFor={path}>
-        {translatedLabel}
-        {required ? ' *' : null}
-      </label>
-      <select
-        id={path}
-        value={value ?? ''}
-        onChange={handleChange}
-        className="field-input"
-        disabled={!selectedPropertyId || availableOptions.length === 0}
-      >
-        <option value="">
-          {!selectedPropertyId
+      <SelectInput
+        path={path}
+        name={path}
+        label={translatedLabel}
+        required={required}
+        value={value || undefined}
+        onChange={(selected) => {
+          if (Array.isArray(selected)) return
+          const nextValue = selected?.value ?? null
+          setValue(nextValue)
+        }}
+        options={availableOptions.map((option) => ({
+          label:
+            typeof option.label === 'string' ? option.label : getTranslation(option.label, i18n),
+          value: option.value,
+        }))}
+        isClearable
+        readOnly={!selectedPropertyId || isLoading}
+        placeholder={
+          !selectedPropertyId
             ? 'Select a property first'
-            : availableOptions.length > 0
-              ? 'Select unit type'
-              : isLoading
-                ? 'Loading Rentlio unit types...'
-                : 'No Rentlio unit types available'}
-        </option>
-        {availableOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {typeof option.label === 'string' ? option.label : getTranslation(option.label, i18n)}
-          </option>
-        ))}
-      </select>
-      {translatedDescription ? (
-        <div className="field-description">{translatedDescription}</div>
-      ) : null}
+            : isLoading
+              ? 'Loading Rentlio unit types...'
+              : availableOptions.length > 0
+                ? 'Select unit type'
+                : 'No Rentlio unit types available'
+        }
+      />
+
+      {translatedDescription && <div className="field-description">{translatedDescription}</div>}
     </div>
   )
 }

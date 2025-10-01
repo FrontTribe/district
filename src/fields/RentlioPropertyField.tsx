@@ -2,20 +2,24 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { getTranslation } from '@payloadcms/translations'
-import { useTranslation, useField } from '@payloadcms/ui'
+import { useTranslation, useField, SelectInput } from '@payloadcms/ui'
 
-type Option = { label: string | Record<string, string>; value: string }
+type Option<T = string> = {
+  label: string
+  value: T
+}
+
 type Props = {
   path: string
   label?: string | Record<string, string>
   description?: string | Record<string, string>
   required?: boolean
-  options?: Option[]
+  options?: Option<string>[] // note: Option<T>
 }
 
 const optionsCache = {
-  data: null as Option[] | null,
-  promise: null as Promise<Option[]> | null,
+  data: null as Option<string>[] | null,
+  promise: null as Promise<Option<string>[]> | null,
 }
 
 const RentlioPropertyField: React.FC<Props> = ({
@@ -27,7 +31,7 @@ const RentlioPropertyField: React.FC<Props> = ({
 }) => {
   const { value, setValue } = useField<string>({ path })
   const { i18n } = useTranslation()
-  const [resolvedOptions, setResolvedOptions] = useState<Option[]>(
+  const [resolvedOptions, setResolvedOptions] = useState<Option<string>[]>(
     options.length > 0 ? options : optionsCache.data || [],
   )
   const [isLoading, setIsLoading] = useState<boolean>(!options?.length && !optionsCache.data)
@@ -41,31 +45,18 @@ const RentlioPropertyField: React.FC<Props> = ({
     [description, i18n],
   )
 
-  const loadOptions = async (): Promise<Option[]> => {
-    if (optionsCache.promise) {
-      return optionsCache.promise
-    }
+  const loadOptions = async (): Promise<Option<string>[]> => {
+    if (optionsCache.promise) return optionsCache.promise
     optionsCache.promise = (async () => {
-      try {
-        const res = await fetch('/api/rentlio/options')
-        if (!res.ok) {
-          throw new Error(`Failed to fetch: ${res.status}`)
-        }
-
-        const data = await res.json()
-
-        if (data.propertyOptions && Array.isArray(data.propertyOptions)) {
-          optionsCache.data = data.propertyOptions
-          return data.propertyOptions
-        } else {
-          throw new Error('Invalid data structure')
-        }
-      } catch (error) {
-        optionsCache.promise = null
-        throw error
+      const res = await fetch('/api/rentlio/options')
+      if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`)
+      const data = await res.json()
+      if (data.propertyOptions && Array.isArray(data.propertyOptions)) {
+        optionsCache.data = data.propertyOptions
+        return data.propertyOptions
       }
+      throw new Error('Invalid data structure')
     })()
-
     return optionsCache.promise
   }
 
@@ -75,29 +66,25 @@ const RentlioPropertyField: React.FC<Props> = ({
       setIsLoading(false)
       return
     }
-
     if (optionsCache.data) {
       setResolvedOptions(optionsCache.data)
       setIsLoading(false)
       return
     }
-
     setIsLoading(true)
     loadOptions()
       .then((fetchedOptions) => {
         setResolvedOptions(fetchedOptions)
         setIsLoading(false)
       })
-      .catch(() => {
-        setIsLoading(false)
-      })
+      .catch(() => setIsLoading(false))
   }, [options])
 
-  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const nextValue = event.target.value || null
+  const handleChange = (selected: Option<string> | Option<string>[]) => {
+    if (Array.isArray(selected)) return // not multi-select
+    const nextValue = selected?.value ?? null
     setValue(nextValue)
 
-    // Dispatch property change event
     const changeEvent = new CustomEvent('rentlio:propertyChanged', {
       detail: { propertyId: nextValue },
     })
@@ -106,37 +93,30 @@ const RentlioPropertyField: React.FC<Props> = ({
 
   return (
     <div className="field-type rentlio-property">
-      <label className="field-label" htmlFor={path}>
-        {translatedLabel}
-        {required ? ' *' : null}
-      </label>
-      <select
-        id={path}
+      <SelectInput
+        path={path}
         name={path}
-        value={value || ''}
-        onChange={handleChange}
-        disabled={isLoading}
-        className="field-input"
+        label={translatedLabel}
         required={required}
-      >
-        <option value="">
-          {isLoading ? 'Loading properties...' : 'Select a property'}
-        </option>
-        {resolvedOptions.map((option) =>
-          typeof option.label === 'string' ? (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ) : (
-            <option key={option.value} value={option.value}>
-              {getTranslation(option.label, i18n)}
-            </option>
-          ),
-        )}
-      </select>
-      {translatedDescription && (
-        <div className="field-description">{translatedDescription}</div>
-      )}
+        value={value || ''}
+        onChange={(val) => {
+          const nextValue = Array.isArray(val) ? null : (val?.value ?? null)
+          setValue(nextValue)
+
+          const changeEvent = new CustomEvent('rentlio:propertyChanged', {
+            detail: { propertyId: nextValue },
+          })
+          window.dispatchEvent(changeEvent)
+        }}
+        options={resolvedOptions.map((option) => ({
+          label:
+            typeof option.label === 'string' ? option.label : getTranslation(option.label, i18n),
+          value: option.value,
+        }))}
+        isClearable
+        readOnly={isLoading}
+      />
+      {translatedDescription && <div className="field-description">{translatedDescription}</div>}
     </div>
   )
 }
