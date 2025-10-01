@@ -19,6 +19,7 @@ import Pages from './collections/pages'
 import Media from './collections/Media'
 import Menu from './collections/Menu'
 import Footer from './collections/Footer'
+import { loadRentlioOptions } from './utils/rentlio'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -28,6 +29,7 @@ export default buildConfig({
     user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),
+      ignore: ['**/*.scss'],
     },
 
     livePreview: {
@@ -126,4 +128,17 @@ export default buildConfig({
       },
     }),
   ],
+  onInit: async (payload) => {
+    if (payload.express) {
+      payload.express.get('/rentlio/options', async (req, res) => {
+        try {
+          const options = await loadRentlioOptions()
+          res.json(options)
+        } catch (error) {
+          console.error('[Rentlio] Failed to serve options via Payload route:', error)
+          res.json({ propertyOptions: [], unitTypeOptions: [], unitTypesByProperty: {} })
+        }
+      })
+    }
+  },
 })
