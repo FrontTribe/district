@@ -29,7 +29,6 @@ export default buildConfig({
     user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),
-      ignore: ['**/*.scss'],
     },
 
     livePreview: {
@@ -129,8 +128,8 @@ export default buildConfig({
     }),
   ],
   onInit: async (payload) => {
-    if (payload.express) {
-      payload.express.get('/rentlio/options', async (req, res) => {
+    if ((payload as any).express) {
+      ;(payload as any).express.get('/rentlio/options', async (req: any, res: any) => {
         try {
           const options = await loadRentlioOptions()
           res.json(options)
