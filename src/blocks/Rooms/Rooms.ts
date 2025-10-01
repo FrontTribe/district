@@ -8,11 +8,8 @@ const propertyFieldValidate = (value: unknown) => {
   return true
 }
 
-const unitTypeFieldValidate = (value: unknown, { siblingData }: { siblingData?: any } = {}) => {
-  if (!siblingData?.rentlioPropertyId) {
-    return true
-  }
-
+const unitTypeFieldValidate = (value: unknown) => {
+  // Unit type is always required now since we show all options
   if (value === null || value === undefined || value === '') {
     return 'Provide a Rentlio unit type ID'
   }
@@ -20,8 +17,7 @@ const unitTypeFieldValidate = (value: unknown, { siblingData }: { siblingData?: 
   return true
 }
 
-const roomsFieldCondition: Condition = (_, __, { blockData }) =>
-  Boolean((blockData as any)?.rentlioPropertyId)
+const roomsFieldCondition: Condition = () => true // Always show rooms since unit types are available without selecting property
 
 const rentlioPropertyField: any = {
   name: 'rentlioPropertyId',

@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { getTranslation } from '@payloadcms/translations'
 import { useTranslation, useField, SelectInput } from '@payloadcms/ui'
+import { propertyStateManager } from '@/utils/propertyStateManager'
 
 type Option<T = string> = {
   label: string
@@ -14,7 +15,7 @@ type Props = {
   label?: string | Record<string, string>
   description?: string | Record<string, string>
   required?: boolean
-  options?: Option<string>[] // note: Option<T>
+  options?: Option<string>[] 
 }
 
 const optionsCache = {
@@ -80,17 +81,6 @@ const RentlioPropertyField: React.FC<Props> = ({
       .catch(() => setIsLoading(false))
   }, [options])
 
-  const handleChange = (selected: Option<string> | Option<string>[]) => {
-    if (Array.isArray(selected)) return // not multi-select
-    const nextValue = selected?.value ?? null
-    setValue(nextValue)
-
-    const changeEvent = new CustomEvent('rentlio:propertyChanged', {
-      detail: { propertyId: nextValue },
-    })
-    window.dispatchEvent(changeEvent)
-  }
-
   return (
     <div className="field-type rentlio-property">
       <SelectInput
@@ -102,11 +92,12 @@ const RentlioPropertyField: React.FC<Props> = ({
         onChange={(val) => {
           const nextValue = Array.isArray(val) ? null : (val?.value ?? null)
           setValue(nextValue)
-
           const changeEvent = new CustomEvent('rentlio:propertyChanged', {
             detail: { propertyId: nextValue },
           })
           window.dispatchEvent(changeEvent)
+
+          propertyStateManager.setPropertyId(nextValue as string | null)
         }}
         options={resolvedOptions.map((option) => ({
           label:

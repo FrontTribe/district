@@ -83,34 +83,64 @@ const RentlioUnitTypeField: React.FC<Props> = ({
       .catch(() => setIsLoading(false))
   }, [unitTypesByProperty])
 
-  // Listen for property changes
   useEffect(() => {
-    const handler = (e: Event) => {
-      const customEvent = e as CustomEvent
-      const newPropertyId = customEvent.detail?.propertyId || null
-      setSelectedPropertyId(newPropertyId)
+    console.log('[UnitType] Subscribing to property state manager')
 
-      if (!newPropertyId) {
-        setValue(null)
-        return
-      }
+    const unsubscribe = import('@/utils/propertyStateManager').then(({ propertyStateManager }) => {
+      return propertyStateManager.subscribe((newPropertyId) => {
+        setSelectedPropertyId(newPropertyId)
 
-      const availableOptions = resolvedMap[newPropertyId] || []
-      if (value && !availableOptions.find((opt) => opt.value === value)) {
-        setValue(null)
-      }
+        if (!newPropertyId) {
+          setValue(null)
+          return
+        }
+
+        const currentMap = unitTypesCache.data || {}
+        const availableOptions = currentMap[newPropertyId] || []
+
+        if (value && !availableOptions.find((opt: Option) => opt.value === value)) {
+          console.log('[UnitType] Clearing invalid unit type selection')
+          setValue(null)
+        }
+      })
+    })
+
+    return () => {
+      unsubscribe.then((unsub) => unsub?.())
     }
-    window.addEventListener('rentlio:propertyChanged', handler)
-    return () => window.removeEventListener('rentlio:propertyChanged', handler)
-  }, [resolvedMap, value, setValue])
+  }, [value, setValue])
+  useEffect(() => {
+    console.log('[UnitType] selectedPropertyId changed to:', selectedPropertyId)
+  }, [selectedPropertyId])
 
-  const availableOptions = selectedPropertyId ? resolvedMap[selectedPropertyId] || [] : []
+  const availableOptions = useMemo(() => {
+    console.log('[UnitType] Computing availableOptions:', {
+      selectedPropertyId,
+      resolvedMapKeys: Object.keys(resolvedMap || {}),
+      cacheKeys: Object.keys(unitTypesCache.data || {}),
+      resolvedMapData: resolvedMap,
+      cacheData: unitTypesCache.data,
+    })
 
-  const handleChange = (selected: Option | Option[]) => {
-    if (Array.isArray(selected)) return
-    const nextValue = selected?.value ?? null
-    setValue(nextValue)
-  }
+    const currentMap = resolvedMap || unitTypesCache.data || {}
+
+    if (selectedPropertyId) {
+      const options = currentMap[selectedPropertyId] || []
+      return options
+    } else {
+      const allOptions: Option[] = []
+      Object.entries(currentMap).forEach(([propId, propertyOptions]) => {
+        console.log('[UnitType] Adding', propertyOptions.length, 'options from property', propId)
+        allOptions.push(...propertyOptions)
+      })
+
+      const uniqueOptions = allOptions.filter(
+        (option, index, self) => index === self.findIndex((o) => o.value === option.value),
+      )
+
+      return uniqueOptions
+    }
+  }, [selectedPropertyId, resolvedMap])
 
   return (
     <div className="field-type rentlio-unit-type">
@@ -131,15 +161,15 @@ const RentlioUnitTypeField: React.FC<Props> = ({
           value: option.value,
         }))}
         isClearable
-        readOnly={!selectedPropertyId || isLoading}
+        readOnly={isLoading}
         placeholder={
-          !selectedPropertyId
-            ? 'Select a property first'
-            : isLoading
-              ? 'Loading Rentlio unit types...'
-              : availableOptions.length > 0
-                ? 'Select unit type'
-                : 'No Rentlio unit types available'
+          isLoading
+            ? 'Loading Rentlio unit types...'
+            : availableOptions.length > 0
+              ? selectedPropertyId
+                ? 'Select unit type for this property'
+                : 'Select unit type (all properties shown)'
+              : 'No Rentlio unit types available'
         }
       />
 
