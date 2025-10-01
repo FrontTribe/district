@@ -12,6 +12,7 @@ type Room = {
   description?: string
   image: any
   badges?: Badge[]
+  rentlioUnitTypeId?: string
 }
 
 type Props = {
@@ -21,6 +22,7 @@ type Props = {
   cta?: { label?: string; href?: string }
   rooms?: Room[]
   sectionId?: string
+  rentlioPropertyId?: string
 }
 
 export const RoomsBlock: React.FC<Props> = ({
