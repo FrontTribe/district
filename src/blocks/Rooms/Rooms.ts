@@ -49,7 +49,17 @@ const Rooms: Block = {
           localized: true,
           fields: [{ name: 'text', type: 'text', localized: true }],
         },
-        { name: 'image', type: 'upload', relationTo: 'media', required: true, localized: true },
+        {
+          name: 'images',
+          type: 'array',
+          label: 'Room Images',
+          minRows: 1,
+          localized: true,
+          fields: [
+            { name: 'image', type: 'upload', relationTo: 'media', required: true },
+            { name: 'alt', type: 'text', label: 'Alt Text' },
+          ],
+        },
       ],
       admin: {
         description: 'Add up to 4 rooms: Premium, Deluxe, Suite, Apartment',
