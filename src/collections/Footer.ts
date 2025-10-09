@@ -93,14 +93,12 @@ const Footer: CollectionConfig = {
           name: 'contact',
           type: 'group',
           label: 'Contact Information',
-          localized: true,
           fields: [
             {
               name: 'heading',
               type: 'text',
               label: 'Contact Heading',
               required: true,
-              defaultValue: 'Contact',
               localized: true,
             },
             {
@@ -128,14 +126,12 @@ const Footer: CollectionConfig = {
           name: 'address',
           type: 'group',
           label: 'Address Information',
-          localized: true,
           fields: [
             {
               name: 'heading',
               type: 'text',
               label: 'Address Heading',
               required: true,
-              defaultValue: 'Address',
               localized: true,
             },
             {
@@ -174,7 +170,6 @@ const Footer: CollectionConfig = {
       name: 'bottomContent',
       type: 'group',
       label: 'Bottom Content',
-      localized: true,
       fields: [
         {
           name: 'copyright',
