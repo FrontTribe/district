@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 
 export default function PageClient({
   page: initialPage,
-  locale,
+  locale = 'hr',
 }: {
   page: PageType
   locale?: string

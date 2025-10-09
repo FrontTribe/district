@@ -7,6 +7,7 @@ export interface ThreeColumnsColumn {
     alt: string
   }
   fullHeight?: boolean
+  comingSoon?: boolean
   gradient?: {
     enabled: boolean
     type?: 'linear' | 'radial'
@@ -33,8 +34,8 @@ export interface ThreeColumnsColumn {
     endColor?: string
     opacity?: number
   }
-  link: {
-    tenant: {
+  link?: {
+    tenant?: {
       id: string
       subdomain: string
       name: string
@@ -51,4 +52,5 @@ export interface ThreeColumnsColumn {
 export interface ThreeColumnsBlockProps {
   columns: Array<ThreeColumnsColumn>
   sectionId?: string
+  locale?: string
 }

@@ -39,7 +39,7 @@ type _Block = NonNullable<Page['layout']>[number]
 export const BlockRenderer: React.FC<{
   blocks: Page['layout'] | undefined | null
   locale?: string
-}> = ({ blocks, locale }) => {
+}> = ({ blocks, locale = 'en' }) => {
   if (!blocks || blocks.length === 0) {
     return null
   }

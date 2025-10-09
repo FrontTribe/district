@@ -27,6 +27,7 @@ interface MenuWrapperProps {
   positioning?: 'fixed' | 'absolute' | 'relative'
   locale: string
   menuId?: string
+  hideHamburger?: boolean
 }
 
 export const MenuWrapper: React.FC<MenuWrapperProps> = ({
@@ -36,6 +37,7 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
   positioning: _positioning = 'fixed',
   locale,
   menuId = 'default',
+  hideHamburger = false,
 }) => {
   const _router = useRouter()
   const pathname = usePathname()
@@ -174,7 +176,9 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
           <>
             <div className="tenant-menu-left">
               <div className="mobile-header-left">
-                <HamburgerButton isOpen={isMobileMenuOpen} onToggle={toggleMobileMenu} />
+                {!hideHamburger && (
+                  <HamburgerButton isOpen={isMobileMenuOpen} onToggle={toggleMobileMenu} />
+                )}
                 <div className="logo">
                   <Link href="/" onClick={handleLogoClick}>
                     {logo ? (
@@ -228,7 +232,9 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
           // Main menu layout - original
           <>
             <div className="mobile-header-left">
-              <HamburgerButton isOpen={isMobileMenuOpen} onToggle={toggleMobileMenu} />
+              {!hideHamburger && (
+                <HamburgerButton isOpen={isMobileMenuOpen} onToggle={toggleMobileMenu} />
+              )}
               <div className="logo">
                 <Link href="/" onClick={handleLogoClick}>
                   {logo ? (

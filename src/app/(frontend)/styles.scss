@@ -1311,7 +1311,7 @@ div {
   line-height: 1.6;
   margin: 0;
   color: rgba(255, 255, 255, 0.8);
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
 
   @media (max-width: 768px) {
@@ -1844,15 +1844,15 @@ div {
 
     .botique-intro__heading-line {
       display: block;
-      font-size: clamp(50px, 4.2vw, 60px);
+      font-size: clamp(48px, 7vw, 80px);
     }
   }
 
   .botique-intro__body {
-    font-size: 16px;
+    font-size: 18px;
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.85);
-    max-width: 520px;
+    max-width: 700px;
   }
 
   .botique-intro__cta {
@@ -2069,13 +2069,11 @@ div {
 
 /* Rooms Block */
 .rooms-block {
-  // background: #f5efe6;
-  // color: #7b0f0f;
-  padding: 100px 0 80px;
+  padding: 100px 0 250px;
   background-color: #051e24;
 
-  .rooms-container {
-    max-width: 1200px;
+  .rooms-inner {
+    max-width: 1440px;
     margin: 0 auto;
     padding: 0 20px;
   }
@@ -2089,7 +2087,7 @@ div {
     color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    font-size: 12px;
+    font-size: 16px;
     margin-bottom: 18px;
   }
 
@@ -2097,7 +2095,7 @@ div {
     margin: 0 0 18px 0;
     font-family: var(--font-marcellus), 'Marcellus', serif;
     font-weight: 400;
-    font-size: clamp(48px, 7vw, 160px);
+    font-size: clamp(48px, 7vw, 80px);
     line-height: 0.95;
 
     .line {
@@ -2106,8 +2104,12 @@ div {
   }
 
   .rooms-subheading {
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 18px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.85);
     margin-bottom: 16px;
+    max-width: 900px;
+    margin: 40px auto 0;
   }
 
   .rooms-cta {
@@ -2144,6 +2146,7 @@ div {
   .room-media {
     position: relative;
     overflow: hidden;
+    height: 800px;
   }
 
   .room-media img {
@@ -2382,6 +2385,7 @@ div {
 .rooftop-features-block {
   background: transparent;
   padding-top: 100px;
+  padding-bottom: 100px;
   background-color: #051e24;
 
   .rooftop-features__inner {
@@ -2392,7 +2396,7 @@ div {
 
   .rooftop-features__heading {
     font-family: var(--font-marcellus), 'Marcellus', serif;
-    font-size: clamp(40px, 5vw, 88px);
+    font-size: clamp(40px, 7vw, 80px);
     line-height: 1.05;
     margin: 0 0 40px 0;
     color: white;
@@ -2415,7 +2419,7 @@ div {
   }
 
   .rf-item {
-    padding: 26px 16px;
+    padding: 26px 0;
     border-right: 1px solid rgba(0, 0, 0, 0.08);
 
     &:last-child {
@@ -2423,20 +2427,9 @@ div {
     }
   }
 
-  .rf-icon {
-    width: 36px;
-    height: 36px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    color: #fff;
-    font-size: 18px;
-    margin-bottom: 16px;
-  }
-
   .rf-title {
     margin: 0 0 10px 0;
-    font-size: 18px;
+    font-size: 24px;
     font-weight: 700;
     color: white;
   }

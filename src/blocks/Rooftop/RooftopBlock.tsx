@@ -83,20 +83,29 @@ export const RooftopBlock: React.FC<{
 
     // Speed control with scroll velocity
     let timeoutId: any
-    const st = ScrollTrigger.create({
-      trigger: containerRef.current!,
-      start: 'top bottom',
-      end: 'bottom top',
-      onUpdate: (self) => {
-        const velocity = Math.abs(self.getVelocity())
-        const mapped = gsap.utils.clamp(1, 4, gsap.utils.mapRange(0, 4000, 1, 4, velocity))
-        marqueeTween.current?.timeScale(mapped)
-        clearTimeout(timeoutId)
-        timeoutId = setTimeout(() => {
-          gsap.to(marqueeTween.current, { timeScale: 1, duration: 0.6, ease: 'power2.out' })
-        }, 400)
-      },
-    })
+    let st: ScrollTrigger | null = null
+
+    // Add error handling for ScrollTrigger.create
+    try {
+      if (typeof ScrollTrigger !== 'undefined' && containerRef.current) {
+        st = ScrollTrigger.create({
+          trigger: containerRef.current,
+          start: 'top bottom',
+          end: 'bottom top',
+          onUpdate: (self) => {
+            const velocity = Math.abs(self.getVelocity())
+            const mapped = gsap.utils.clamp(1, 4, gsap.utils.mapRange(0, 4000, 1, 4, velocity))
+            marqueeTween.current?.timeScale(mapped)
+            clearTimeout(timeoutId)
+            timeoutId = setTimeout(() => {
+              gsap.to(marqueeTween.current, { timeScale: 1, duration: 0.6, ease: 'power2.out' })
+            }, 400)
+          },
+        })
+      }
+    } catch (error) {
+      console.error('Error creating ScrollTrigger for RooftopBlock:', error)
+    }
 
     // Recreate on resize
     const ro = new ResizeObserver(() => createTween())
@@ -104,7 +113,11 @@ export const RooftopBlock: React.FC<{
 
     return () => {
       marqueeTween.current?.kill()
-      st.kill()
+      try {
+        if (st) st.kill()
+      } catch (error) {
+        console.error('Error killing ScrollTrigger in RooftopBlock:', error)
+      }
       ro.disconnect()
       window.removeEventListener('load', onWindowLoad)
     }
@@ -112,35 +125,44 @@ export const RooftopBlock: React.FC<{
 
   useEffect(() => {
     // heading and card reveal on enter
+    if (typeof ScrollTrigger === 'undefined') {
+      console.warn('ScrollTrigger is not available in RooftopBlock')
+      return
+    }
+
     if ((gsap as any).registeredScrollTrigger !== true) {
       gsap.registerPlugin(ScrollTrigger)
       ;(gsap as any).registeredScrollTrigger = true
     }
 
     const ctx = gsap.context(() => {
-      if (headingRef.current) {
-        gsap.from(headingRef.current, {
-          y: 24,
-          opacity: 0,
-          duration: 0.9,
-          ease: 'power3.out',
-          scrollTrigger: { trigger: headingRef.current, start: 'top 85%', once: true },
-        })
-      }
+      try {
+        if (headingRef.current) {
+          gsap.from(headingRef.current, {
+            y: 24,
+            opacity: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+            scrollTrigger: { trigger: headingRef.current, start: 'top 85%', once: true },
+          })
+        }
 
-      if (trackRef.current) {
-        const cards = trackRef.current.querySelectorAll('.rooftop-card')
-        gsap.set(cards, { opacity: 0, y: 16 })
-        gsap.to(cards, {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          stagger: 0.08,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: trackRef.current, start: 'top 90%', once: true },
-        })
-        // ensure triggers are aware after layout/tween init
-        requestAnimationFrame(() => ScrollTrigger.refresh())
+        if (trackRef.current) {
+          const cards = trackRef.current.querySelectorAll('.rooftop-card')
+          gsap.set(cards, { opacity: 0, y: 16 })
+          gsap.to(cards, {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.08,
+            ease: 'power2.out',
+            scrollTrigger: { trigger: trackRef.current, start: 'top 90%', once: true },
+          })
+          // ensure triggers are aware after layout/tween init
+          requestAnimationFrame(() => ScrollTrigger.refresh())
+        }
+      } catch (error) {
+        console.error('Error creating ScrollTrigger animations in RooftopBlock:', error)
       }
     }, containerRef.current || undefined)
 

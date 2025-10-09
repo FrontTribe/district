@@ -15,7 +15,6 @@ const RooftopFeatures: Block = {
       type: 'array',
       label: 'Features',
       fields: [
-        { name: 'icon', type: 'text', label: 'Icon (emoji or small text)' },
         { name: 'title', type: 'text', required: true, localized: true },
         { name: 'description', type: 'textarea', localized: true },
       ],
