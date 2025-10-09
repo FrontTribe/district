@@ -118,7 +118,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         {pages.length > 0 ? (
           pages.map((page) => (
             <div key={page.id}>
-              <PageClient page={page} />
+              <PageClient page={page} locale={locale} />
             </div>
           ))
         ) : currentTenant ? (

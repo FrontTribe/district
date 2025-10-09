@@ -28,6 +28,9 @@ export default function LenisProvider({ children }: Props) {
       touchMultiplier: 1.2,
     })
 
+    // Expose Lenis instance globally for drawer control
+    ;(window as any).lenis = lenis
+
     // Sync Lenis with ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update)
 
@@ -50,6 +53,9 @@ export default function LenisProvider({ children }: Props) {
     requestAnimationFrame(raf)
 
     return () => {
+      // Clean up global reference
+      ;(window as any).lenis = null
+
       if (typeof (lenis as any)?.destroy === 'function') (lenis as any).destroy()
       // Don't kill all ScrollTriggers as it might interfere with other components
       // ScrollTrigger.killAll()

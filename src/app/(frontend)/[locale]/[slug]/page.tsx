@@ -106,7 +106,7 @@ export default async function Page({ params }: PageProps) {
       )}
 
       <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <PageClient page={page} />
+        <PageClient page={page} locale={locale} />
       </div>
 
       {/* Footer - only show for tenant pages */}

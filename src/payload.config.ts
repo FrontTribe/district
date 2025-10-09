@@ -49,8 +49,8 @@ export default buildConfig({
         }
 
         const frontendURL = tenantSubdomain
-          ? `http://${tenantSubdomain}.test:3000`
-          : 'http://localhost:3000'
+          ? `https://${tenantSubdomain}.test:3000`
+          : 'https://localhost:3000'
 
         let pagePath = '/'
         if (data.slug !== '/') {
@@ -74,10 +74,10 @@ export default buildConfig({
   collections: [Users, Media, Tenants, Pages, Menu, Footer],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
-  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
+  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://localhost:3000',
   cors: [
-    'http://restaurants.test:3000',
-    'http://localhost:3000', // Good to keep this for other tools
+    'https://boutique.test:3000',
+    'https://localhost:3000', // Good to keep this for other tools
   ],
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

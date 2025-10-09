@@ -68,7 +68,6 @@ if (typeof window === 'undefined') {
 const Rooms: Block = {
   slug: 'rooms',
   fields: [
-    rentlioPropertyField,
     {
       name: 'eyebrow',
       type: 'text',
@@ -106,6 +105,7 @@ const Rooms: Block = {
       maxRows: 4,
       localized: true,
       fields: [
+        rentlioPropertyField,
         rentlioUnitTypeField,
         { name: 'title', type: 'text', required: true, localized: true },
         { name: 'description', type: 'textarea', localized: true },

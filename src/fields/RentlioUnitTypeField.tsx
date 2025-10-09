@@ -88,10 +88,12 @@ const RentlioUnitTypeField: React.FC<Props> = ({
 
     const unsubscribe = import('@/utils/propertyStateManager').then(({ propertyStateManager }) => {
       return propertyStateManager.subscribe((newPropertyId) => {
+        console.log('[UnitType] Property state manager notified with ID:', newPropertyId)
         setSelectedPropertyId(newPropertyId)
 
+        // Don't clear the value if no property is selected - let it work independently
         if (!newPropertyId) {
-          setValue(null)
+          console.log('[UnitType] No property ID, but keeping unit type value')
           return
         }
 
@@ -112,6 +114,10 @@ const RentlioUnitTypeField: React.FC<Props> = ({
   useEffect(() => {
     console.log('[UnitType] selectedPropertyId changed to:', selectedPropertyId)
   }, [selectedPropertyId])
+
+  useEffect(() => {
+    console.log('[UnitType] value changed to:', value)
+  }, [value])
 
   const availableOptions = useMemo(() => {
     console.log('[UnitType] Computing availableOptions:', {
@@ -144,34 +150,42 @@ const RentlioUnitTypeField: React.FC<Props> = ({
 
   return (
     <div className="field-type rentlio-unit-type">
-      <SelectInput
-        path={path}
+      <label htmlFor={path} className="field-label">
+        {translatedLabel}
+        {required && <span className="required">*</span>}
+      </label>
+
+      <select
+        id={path}
         name={path}
-        label={translatedLabel}
-        required={required}
-        value={value || undefined}
-        onChange={(selected) => {
-          if (Array.isArray(selected)) return
-          const nextValue = selected?.value ?? null
+        value={value || ''}
+        onChange={(e) => {
+          const nextValue = e.target.value || null
+          console.log('[UnitType] onChange triggered:', {
+            selectedValue: e.target.value,
+            nextValue,
+            currentValue: value,
+          })
           setValue(nextValue)
         }}
-        options={availableOptions.map((option) => ({
-          label:
-            typeof option.label === 'string' ? option.label : getTranslation(option.label, i18n),
-          value: option.value,
-        }))}
-        isClearable
-        readOnly={isLoading}
-        placeholder={
-          isLoading
+        disabled={isLoading}
+        className="field-input"
+      >
+        <option value="">
+          {isLoading
             ? 'Loading Rentlio unit types...'
             : availableOptions.length > 0
               ? selectedPropertyId
                 ? 'Select unit type for this property'
                 : 'Select unit type (all properties shown)'
-              : 'No Rentlio unit types available'
-        }
-      />
+              : 'No Rentlio unit types available'}
+        </option>
+        {availableOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {typeof option.label === 'string' ? option.label : getTranslation(option.label, i18n)}
+          </option>
+        ))}
+      </select>
 
       {translatedDescription && <div className="field-description">{translatedDescription}</div>}
     </div>

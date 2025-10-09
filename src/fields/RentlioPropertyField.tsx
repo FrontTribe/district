@@ -15,7 +15,7 @@ type Props = {
   label?: string | Record<string, string>
   description?: string | Record<string, string>
   required?: boolean
-  options?: Option<string>[] 
+  options?: Option<string>[]
 }
 
 const optionsCache = {
@@ -83,15 +83,24 @@ const RentlioPropertyField: React.FC<Props> = ({
 
   return (
     <div className="field-type rentlio-property">
-      <SelectInput
-        path={path}
+      <label htmlFor={path} className="field-label">
+        {translatedLabel}
+        {required && <span className="required">*</span>}
+      </label>
+
+      <select
+        id={path}
         name={path}
-        label={translatedLabel}
-        required={required}
         value={value || ''}
-        onChange={(val) => {
-          const nextValue = Array.isArray(val) ? null : (val?.value ?? null)
+        onChange={(e) => {
+          const nextValue = e.target.value || null
+          console.log('[Property] onChange triggered:', {
+            selectedValue: e.target.value,
+            nextValue,
+            currentValue: value,
+          })
           setValue(nextValue)
+
           const changeEvent = new CustomEvent('rentlio:propertyChanged', {
             detail: { propertyId: nextValue },
           })
@@ -99,14 +108,19 @@ const RentlioPropertyField: React.FC<Props> = ({
 
           propertyStateManager.setPropertyId(nextValue as string | null)
         }}
-        options={resolvedOptions.map((option) => ({
-          label:
-            typeof option.label === 'string' ? option.label : getTranslation(option.label, i18n),
-          value: option.value,
-        }))}
-        isClearable
-        readOnly={isLoading}
-      />
+        disabled={isLoading}
+        className="field-input"
+      >
+        <option value="">
+          {isLoading ? 'Loading Rentlio properties...' : 'Select a property'}
+        </option>
+        {resolvedOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {typeof option.label === 'string' ? option.label : getTranslation(option.label, i18n)}
+          </option>
+        ))}
+      </select>
+
       {translatedDescription && <div className="field-description">{translatedDescription}</div>}
     </div>
   )
