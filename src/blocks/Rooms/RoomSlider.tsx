@@ -24,15 +24,6 @@ export const RoomSlider: React.FC<Props> = ({ images, roomTitle, badges }) => {
 
   const getUrl = (m: any) => getOptimizedImageUrl(m, { widthHint: 1200, aspect: 'portrait34' })
 
-  // Safety check for empty images
-  if (!images || images.length === 0) {
-    return (
-      <div className="room-slider room-slider-empty">
-        <div className="room-slider-placeholder">No images available</div>
-      </div>
-    )
-  }
-
   const nextSlide = () => {
     if (isAnimating || images.length <= 1) return
     setIsAnimating(true)
@@ -74,13 +65,24 @@ export const RoomSlider: React.FC<Props> = ({ images, roomTitle, badges }) => {
     }
   }, [])
 
+  // Safety check for empty images
+  if (!images || images.length === 0) {
+    return (
+      <div className="room-slider room-slider-empty">
+        <div className="room-slider-placeholder">No images available</div>
+      </div>
+    )
+  }
+
   return (
     <div className="room-slider" ref={sliderRef}>
       <div className="room-slider-container">
         {images.map((roomImage, index) => (
           <div key={index} className={`room-slide ${index === currentIndex ? 'active' : ''}`}>
             <img
-              ref={(el) => (imageRefs.current[index] = el)}
+              ref={(el) => {
+                imageRefs.current[index] = el
+              }}
               src={getUrl(roomImage.image)}
               alt={roomImage.alt || roomTitle}
               className="room-slide-image"
