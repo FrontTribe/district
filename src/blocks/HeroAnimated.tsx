@@ -16,6 +16,12 @@ export default function HeroAnimated({ heading, subheading }: Props) {
   const scrollRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
+    // Ensure ScrollTrigger is properly registered
+    if (typeof ScrollTrigger === 'undefined') {
+      console.warn('ScrollTrigger is not available in HeroAnimated')
+      return
+    }
+
     if ((gsap as any).registeredScrollTrigger !== true) {
       gsap.registerPlugin(ScrollTrigger)
       ;(gsap as any).registeredScrollTrigger = true
@@ -45,9 +51,11 @@ export default function HeroAnimated({ heading, subheading }: Props) {
       }
 
       const chars = Array.from(h.querySelectorAll('span[data-char]'))
-      // Fallback: avoid clip-path conflicts by revealing purely via characters
-      gsap.set(h, { opacity: 1 })
+      // Set initial hidden state for heading and characters
+      gsap.set(h, { opacity: 0 })
       gsap.set(chars, { yPercent: 120, opacity: 0, rotateX: 15, filter: 'blur(8px)' })
+      // Animate heading container first
+      tl.to(h, { opacity: 1, duration: 0.1 }, 0)
       tl.to(
         chars,
         {
@@ -72,16 +80,20 @@ export default function HeroAnimated({ heading, subheading }: Props) {
 
     // Subtle parallax as you scroll down the hero
     if (wrapRef.current && h && s) {
-      const parTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: wrapRef.current,
-          start: 'top top',
-          end: '+=60%',
-          scrub: true,
-        },
-      })
-      parTl.to(h, { yPercent: -8, scale: 0.985, ease: 'none' }, 0)
-      parTl.to(s, { yPercent: -6, ease: 'none' }, 0)
+      try {
+        const parTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: wrapRef.current,
+            start: 'top top',
+            end: '+=60%',
+            scrub: true,
+          },
+        })
+        parTl.to(h, { yPercent: -8, scale: 0.985, ease: 'none' }, 0)
+        parTl.to(s, { yPercent: -6, ease: 'none' }, 0)
+      } catch (error) {
+        console.error('Error creating ScrollTrigger for HeroAnimated parallax:', error)
+      }
     }
 
     return () => {
@@ -95,16 +107,25 @@ export default function HeroAnimated({ heading, subheading }: Props) {
   return (
     <>
       <div className="hero-content" style={{ position: 'relative', zIndex: 10 }} ref={wrapRef}>
-        <h1 ref={headingRef} className="hero-heading">
+        <h1 ref={headingRef} className="hero-heading" style={{ opacity: 0 }}>
           {heading}
         </h1>
         {subheading && (
-          <p ref={subRef} className="hero-subheading">
+          <p
+            ref={subRef}
+            className="hero-subheading"
+            style={{ opacity: 0, transform: 'translateY(16px)' }}
+          >
             {subheading}
           </p>
         )}
       </div>
-      <div className="hero-scroll-indicator" role="presentation" ref={scrollRef}>
+      <div
+        className="hero-scroll-indicator"
+        role="presentation"
+        ref={scrollRef}
+        style={{ opacity: 0, transform: 'translateY(10px)' }}
+      >
         <span className="scroll-text">Scroll to explore</span>
         <span className="scroll-dot" />
       </div>
