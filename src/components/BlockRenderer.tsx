@@ -36,8 +36,12 @@ const blockComponents = {
 
 type _Block = NonNullable<Page['layout']>[number]
 
-export const BlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null }> = ({
+export const BlockRenderer: React.FC<{ 
+  blocks: Page['layout'] | undefined | null
+  locale?: string 
+}> = ({
   blocks,
+  locale = 'en',
 }) => {
   if (!blocks || blocks.length === 0) {
     return null
@@ -52,7 +56,7 @@ export const BlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null
           const BlockComponent = blockComponents[blockType as keyof typeof blockComponents]
           const key = block.id ? `${block.id}-${index}` : index
           // @ts-expect-error - Block component props are dynamically typed based on block type
-          return <BlockComponent key={key} {...block} />
+          return <BlockComponent key={key} {...block} locale={locale} />
         }
 
         console.warn(`[BlockRenderer] No component found for block type: ${blockType}`)

@@ -3,13 +3,15 @@
 import React, { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { getTranslation } from '@/utils/translations'
 
 type Props = {
   heading: string
   subheading?: string
+  locale?: string
 }
 
-export default function HeroAnimated({ heading, subheading }: Props) {
+export default function HeroAnimated({ heading, subheading, locale = 'hr' }: Props) {
   const wrapRef = useRef<HTMLDivElement | null>(null)
   const headingRef = useRef<HTMLHeadingElement | null>(null)
   const subRef = useRef<HTMLParagraphElement | null>(null)
@@ -120,13 +122,13 @@ export default function HeroAnimated({ heading, subheading }: Props) {
           </p>
         )}
       </div>
-      <div
-        className="hero-scroll-indicator"
-        role="presentation"
+      <div 
+        className="hero-scroll-indicator" 
+        role="presentation" 
         ref={scrollRef}
         style={{ opacity: 0, transform: 'translateY(10px)' }}
       >
-        <span className="scroll-text">Scroll to explore</span>
+        <span className="scroll-text">{getTranslation('scrollToExplore', locale)}</span>
         <span className="scroll-dot" />
       </div>
     </>

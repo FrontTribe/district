@@ -52,4 +52,5 @@ export interface ThreeColumnsColumn {
 export interface ThreeColumnsBlockProps {
   columns: Array<ThreeColumnsColumn>
   sectionId?: string
+  locale?: string
 }

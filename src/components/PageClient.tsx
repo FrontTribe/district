@@ -4,7 +4,7 @@ import { Page as PageType } from '@/payload-types'
 import { BlockRenderer } from './BlockRenderer'
 import { useEffect, useState } from 'react'
 
-export default function PageClient({ page: initialPage }: { page: PageType }) {
+export default function PageClient({ page: initialPage, locale = 'hr' }: { page: PageType; locale?: string }) {
   const [_hasRendered, setHasRendered] = useState(false)
 
   // Debug logging
@@ -44,7 +44,7 @@ export default function PageClient({ page: initialPage }: { page: PageType }) {
 
   return (
     <div className="prose mx-auto max-w-4xl p-4 lg:p-8">
-      <BlockRenderer blocks={initialPage.layout} />
+      <BlockRenderer blocks={initialPage.layout} locale={locale} />
     </div>
   )
 }

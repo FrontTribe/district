@@ -4,9 +4,10 @@ import React, { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ThreeColumnsBlockProps } from './types'
 import { generateTenantUrl } from '@/utils/generateTenantUrl'
+import { getTranslation } from '@/utils/translations'
 import './ThreeColumns.scss'
 
-export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, sectionId }) => {
+export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, sectionId, locale = 'en' }) => {
   // Refs for animations
   const sectionRef = useRef<HTMLElement>(null)
   const lineRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -148,7 +149,7 @@ export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, s
                   </div>
                 )}
 
-                {isComingSoon && <span className="coming-soon-badge">Coming Soon</span>}
+                 {isComingSoon && <span className="coming-soon-badge">{getTranslation('comingSoon', locale)}</span>}
 
                 <h2 className="hero-title mt-4">{column.title}</h2>
                 <p className="hero-subtitle">{column.subtitle}</p>
