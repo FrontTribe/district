@@ -1311,7 +1311,7 @@ div {
   line-height: 1.6;
   margin: 0;
   color: rgba(255, 255, 255, 0.8);
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
 
   @media (max-width: 768px) {
@@ -1844,15 +1844,15 @@ div {
 
     .botique-intro__heading-line {
       display: block;
-      font-size: clamp(50px, 4.2vw, 60px);
+      font-size: clamp(48px, 7vw, 80px);
     }
   }
 
   .botique-intro__body {
-    font-size: 16px;
+    font-size: 18px;
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.85);
-    max-width: 520px;
+    max-width: 700px;
   }
 
   .botique-intro__cta {
@@ -2069,10 +2069,14 @@ div {
 
 /* Rooms Block */
 .rooms-block {
-  // background: #f5efe6;
-  // color: #7b0f0f;
   padding: 100px 0 80px;
   background-color: #051e24;
+
+  .rooms-inner {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
 
   .rooms-heading-wrap {
     margin: 0 auto 80px auto;
@@ -2083,7 +2087,7 @@ div {
     color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    font-size: 12px;
+    font-size: 16px;
     margin-bottom: 18px;
   }
 
@@ -2091,7 +2095,7 @@ div {
     margin: 0 0 18px 0;
     font-family: var(--font-marcellus), 'Marcellus', serif;
     font-weight: 400;
-    font-size: clamp(48px, 7vw, 160px);
+    font-size: clamp(48px, 7vw, 80px);
     line-height: 0.95;
 
     .line {
@@ -2100,8 +2104,12 @@ div {
   }
 
   .rooms-subheading {
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 18px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.85);
     margin-bottom: 16px;
+    max-width: 900px;
+    margin: 40px auto 0;
   }
 
   .rooms-cta {
