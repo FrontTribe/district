@@ -4,6 +4,9 @@ export function middleware(request: NextRequest) {
   const headers = new Headers(request.headers)
   const host = request.headers.get('host')
   const mainDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'district.hr'
+  const devDomain =
+    process.env.NEXT_PUBLIC_DEV_ROOT_DOMAIN ||
+    (mainDomain ? `dev.${mainDomain}` : '')
   const defaultTenant = 'district'
 
   if (!host) {
@@ -22,11 +25,20 @@ export function middleware(request: NextRequest) {
       subdomain = parts[0]
     }
   }
-  // Production: *.district.hr
-  else if (mainDomain) {
+  // Development shared domain: *.dev.{mainDomain}
+  else if (devDomain && (cleanHost === devDomain || cleanHost.endsWith(`.${devDomain}`))) {
+    if (cleanHost === devDomain) {
+      subdomain = defaultTenant
+    } else {
+      const subdomainEndIndex = cleanHost.length - devDomain.length - 1
+      subdomain = cleanHost.slice(0, subdomainEndIndex)
+    }
+  }
+  // Production: *.{mainDomain}
+  else if (mainDomain && (cleanHost === mainDomain || cleanHost.endsWith(`.${mainDomain}`))) {
     if (cleanHost === mainDomain) {
       subdomain = defaultTenant
-    } else if (cleanHost.endsWith(`.${mainDomain}`)) {
+    } else {
       // e.g. xyz.district.hr => xyz
       const subdomainEndIndex = cleanHost.length - mainDomain.length - 1
       subdomain = cleanHost.slice(0, subdomainEndIndex)
