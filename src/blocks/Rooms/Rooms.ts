@@ -19,6 +19,24 @@ const unitTypeFieldValidate = (value: unknown) => {
 
 const roomsFieldCondition: Condition = () => true // Always show rooms since unit types are available without selecting property
 
+const rentlioSalesChannelField: any = {
+  name: 'rentlioSalesChannelId',
+  type: 'text',
+  label: 'Sales Channel',
+  required: true,
+  admin: {
+    description:
+      'Sales channels are loading… If this remains a plain input, enter the ID manually or fix the API credentials.',
+    components: {
+      Field: '@/fields/RentlioSalesChannelField',
+    },
+    props: {
+      // salesChannelsByProperty: salesChannelsByPropertyOptions,
+    },
+  },
+  defaultValue: '45',
+}
+
 const rentlioPropertyField: any = {
   name: 'rentlioPropertyId',
   type: 'text',
@@ -56,9 +74,23 @@ const rentlioUnitTypeField: any = {
 
 if (typeof window === 'undefined') {
   loadRentlioOptions()
-    .then(({ propertyOptions, unitTypeOptions, unitTypesByProperty }) => {
+    .then(({ propertyOptions, unitTypeOptions, unitTypesByProperty, salesChannelsByProperty }) => {
+      console.log('[Rentlio] Loaded options:', {
+        propertyCount: propertyOptions.length,
+        unitTypeCount: unitTypeOptions.length,
+        salesChannelProperties: Object.keys(salesChannelsByProperty),
+        salesChannelsByProperty,
+      })
       rentlioPropertyField.admin.props.options = propertyOptions
       rentlioUnitTypeField.admin.props.unitTypesByProperty = unitTypesByProperty
+      rentlioSalesChannelField.admin.props.salesChannelsByProperty = salesChannelsByProperty
+
+      console.log('[Rentlio] Props set on fields:', {
+        propertyOptionsCount: propertyOptions.length,
+        unitTypesByPropertyKeys: Object.keys(unitTypesByProperty),
+        salesChannelsByPropertyKeys: Object.keys(salesChannelsByProperty),
+        salesChannelsByPropertyValues: Object.values(salesChannelsByProperty),
+      })
     })
     .catch((error) => {
       console.warn('[Rentlio] Failed to preload options. Falling back to manual entry.', error)
@@ -106,6 +138,7 @@ const Rooms: Block = {
       localized: true,
       fields: [
         rentlioPropertyField,
+        rentlioSalesChannelField,
         rentlioUnitTypeField,
         { name: 'title', type: 'text', required: true, localized: true },
         { name: 'description', type: 'textarea', localized: true },

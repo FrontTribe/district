@@ -20,10 +20,17 @@ type RentlioUnitType = {
   name: string
 }
 
+type RentlioSalesChannel = {
+  id: number
+  name: string
+  provisionAmount: number
+}
+
 type RentlioOptions = {
   propertyOptions: Option[]
   unitTypeOptions: Option[]
   unitTypesByProperty: Record<string, Option[]>
+  salesChannelsByProperty: Record<string, Option[]>
 }
 
 const logPrefix = '[Rentlio]'
@@ -88,6 +95,7 @@ async function fetchRentlioOptions(): Promise<RentlioOptions> {
       propertyOptions: [],
       unitTypeOptions: [],
       unitTypesByProperty: {},
+      salesChannelsByProperty: {},
     }
   }
 
@@ -97,6 +105,7 @@ async function fetchRentlioOptions(): Promise<RentlioOptions> {
     const propertyOptions: Option[] = []
     const unitTypeOptions: Option[] = []
     const unitTypesByProperty: Record<string, Option[]> = {}
+    const salesChannelsByProperty: Record<string, Option[]> = {}
 
     for (const property of properties) {
       const propertyValue = String(property.id)
@@ -105,6 +114,7 @@ async function fetchRentlioOptions(): Promise<RentlioOptions> {
         value: propertyValue,
       })
       unitTypesByProperty[propertyValue] = []
+      salesChannelsByProperty[propertyValue] = []
 
       try {
         const unitTypes = await fetchAllPages<RentlioUnitType>(
@@ -125,6 +135,30 @@ async function fetchRentlioOptions(): Promise<RentlioOptions> {
           unitTypeError,
         )
       }
+
+      try {
+        const salesChannels = await fetchAllPages<RentlioSalesChannel>(
+          `/properties/${property.id}/sales-channels`,
+        )
+
+        console.log(
+          `${logPrefix} Loaded ${salesChannels.length} sales channels for property ${property.id}:`,
+          salesChannels,
+        )
+
+        for (const salesChannel of salesChannels) {
+          const option = {
+            label: `${salesChannel.name} (ID: ${salesChannel.id})`,
+            value: String(salesChannel.id),
+          }
+          salesChannelsByProperty[propertyValue].push(option)
+        }
+      } catch (salesChannelError) {
+        console.error(
+          `${logPrefix} Failed to load sales channels for property ${property.id}:`,
+          salesChannelError,
+        )
+      }
     }
 
     warningLogged = false
@@ -132,6 +166,7 @@ async function fetchRentlioOptions(): Promise<RentlioOptions> {
       propertyOptions,
       unitTypeOptions,
       unitTypesByProperty,
+      salesChannelsByProperty,
     }
   } catch (error) {
     if (!warningLogged) {
@@ -145,6 +180,7 @@ async function fetchRentlioOptions(): Promise<RentlioOptions> {
       propertyOptions: [],
       unitTypeOptions: [],
       unitTypesByProperty: {},
+      salesChannelsByProperty: {},
     }
   }
 }
@@ -152,8 +188,20 @@ async function fetchRentlioOptions(): Promise<RentlioOptions> {
 let cachedOptions: RentlioOptions | null = null
 
 export async function loadRentlioOptions(forceReload = false): Promise<RentlioOptions> {
+  console.log(`${logPrefix} loadRentlioOptions called, forceReload: ${forceReload}`)
   if (!cachedOptions || forceReload) {
+    console.log(`${logPrefix} Fetching fresh options...`)
     cachedOptions = await fetchRentlioOptions()
+    console.log(`${logPrefix} Options fetched successfully:`, {
+      propertyCount: cachedOptions.propertyOptions.length,
+      salesChannelProperties: Object.keys(cachedOptions.salesChannelsByProperty),
+      totalSalesChannels: Object.values(cachedOptions.salesChannelsByProperty).reduce(
+        (sum, channels) => sum + channels.length,
+        0,
+      ),
+    })
+  } else {
+    console.log(`${logPrefix} Using cached options`)
   }
   return cachedOptions
 }

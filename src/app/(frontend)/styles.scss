@@ -2212,9 +2212,47 @@ div {
     }
   }
 
+  .room-title {
+    position: absolute;
+    top: 32px;
+    left: 32px;
+    z-index: 3;
+    font-family: var(--font-marcellus), 'Marcellus', serif;
+    font-size: 48px;
+    font-weight: 400;
+    color: #fff;
+    margin: 0;
+
+    .title-mask {
+      display: inline-block;
+      position: relative;
+      overflow: hidden;
+      line-height: 1.1;
+    }
+
+    .title-base,
+    .title-overlay {
+      display: block;
+      will-change: transform;
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .title-base {
+      transform: translateY(0);
+    }
+
+    .title-overlay {
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: #fff;
+      transform: translateY(100%);
+    }
+  }
+
   .room-book-now {
     position: absolute;
-    bottom: 24px;
+    bottom: 64px;
     left: 24px;
     right: 24px;
     padding: 16px 24px;
@@ -2274,6 +2312,70 @@ div {
     border: 1px solid rgba(255, 255, 255, 0.2);
     font-size: 13px;
     font-family: var(--font-marcellus), 'Marcellus', serif;
+  }
+
+  // Sales Channel Selector
+  .sales-channel-selector {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      white-space: nowrap;
+    }
+
+    .sales-channel-dropdown {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+      font-size: 14px;
+      min-width: 150px;
+      cursor: pointer;
+
+      &:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+      }
+    }
+  }
+
+  // Responsive styles
+  @media (max-width: 768px) {
+    .room-title {
+      top: 20px;
+      left: 20px;
+      font-size: 32px;
+    }
+
+    .room-book-now {
+      bottom: 48px;
+      left: 16px;
+      right: 16px;
+      padding: 14px 20px;
+      font-size: 13px;
+    }
+
+    .room-badges {
+      top: 20px;
+      left: 20px;
+    }
+
+    .sales-channel-selector {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+
+      .sales-channel-dropdown {
+        width: 100%;
+        min-width: auto;
+      }
+    }
   }
 }
 

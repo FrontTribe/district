@@ -12,7 +12,6 @@ import {
   UnitCapacityRestriction,
 } from '@/utils/rentlioBooking'
 import './BookingDrawer.scss'
-import 'flatpickr/dist/flatpickr.min.css'
 
 interface RoomData {
   title: string
@@ -27,6 +26,7 @@ interface BookingDrawerProps {
   onClose: () => void
   roomData: RoomData | null
   locale?: string
+  salesChannelId?: number
 }
 
 interface BookingFormData {
@@ -63,6 +63,7 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
   onClose,
   roomData,
   locale = 'hr',
+  salesChannelId = 45,
 }) => {
   console.log('🚀 BookingDrawer rendered:', { isOpen, roomData, locale })
 
@@ -1253,6 +1254,13 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
         return
       }
 
+      // Validate room data and unit type ID
+      if (!roomData?.rentlioUnitTypeId) {
+        alert('Room information is missing. Please try again.')
+        setIsSubmitting(false)
+        return
+      }
+
       // Check minimum stay requirements
       if (restrictionsWarning) {
         alert(restrictionsWarning)
@@ -1262,13 +1270,14 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
 
       // Prepare reservation data according to API structure
       const reservationData = {
-        unitTypeId: roomData?.rentlioUnitTypeId,
+        propertyId: parseInt(roomData?.rentlioPropertyId || '0', 10), // Add property ID
+        unitTypeId: parseInt(roomData?.rentlioUnitTypeId || '0', 10), // Ensure it's a number
         dateFrom: formData.checkIn,
         dateTo: formData.checkOut,
         email: formData.email,
         fullName: `${formData.firstName} ${formData.lastName}`,
-        persons: formData.persons,
-        rooms: formData.rooms,
+        persons: parseInt(formData.persons.toString(), 10), // Ensure it's a number
+        rooms: parseInt(formData.rooms.toString(), 10), // Ensure it's a number
         note: formData.message || '',
         cardHolder: formData.cardholderSameAsBooker
           ? `${formData.firstName} ${formData.lastName}`
@@ -1276,12 +1285,14 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
         cardNumber: formData.cardNumber.replace(/\s/g, ''),
         expiryMonth: formData.expiryDate.split('/')[0],
         expiryYear: formData.expiryDate.split('/')[1],
-        salesChannelsId: 45, // Default sales channel ID
-        adults: formData.adults,
+        salesChannelsId: salesChannelId, // Use selected sales channel
+        adults: parseInt(formData.adults.toString(), 10), // Ensure it's a number
         children: formData.children.filter((child) => child.age > 0), // Only include children with valid ages
       }
 
       console.log('Submitting reservation:', reservationData)
+      console.log('Room data:', roomData)
+      console.log('Unit Type ID:', roomData?.rentlioUnitTypeId)
 
       // Make API call to create reservation
       const response = await fetch('/api/rentlio/reservations', {
@@ -1294,11 +1305,16 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Reservation failed')
+        console.error('Reservation failed:', errorData)
+        throw new Error(errorData.error || `Reservation failed with status ${response.status}`)
       }
 
       const result = await response.json()
       console.log('Reservation successful:', result)
+
+      if (!result.success) {
+        throw new Error(result.error || 'Reservation was not successful')
+      }
 
       // Show success message
       alert(`Reservation submitted successfully! Reservation ID: ${result.reservationId}`)

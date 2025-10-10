@@ -106,6 +106,7 @@ const RentlioPropertyField: React.FC<Props> = ({
           })
           window.dispatchEvent(changeEvent)
 
+          console.log('[Property] Setting property ID in state manager:', nextValue)
           propertyStateManager.setPropertyId(nextValue as string | null)
         }}
         disabled={isLoading}

@@ -19,6 +19,8 @@ type Room = {
   image?: any // For backward compatibility
   badges?: Badge[]
   rentlioUnitTypeId?: string
+  rentlioPropertyId?: string
+  rentlioSalesChannelId?: string
 }
 
 type Props = {
@@ -29,7 +31,6 @@ type Props = {
   rooms?: Room[]
   sectionId?: string
   locale?: string
-  rentlioPropertyId?: string
 }
 
 export const RoomsBlock: React.FC<Props> = ({
@@ -172,6 +173,7 @@ export const RoomsBlock: React.FC<Props> = ({
             ))}
           </h2>
           {subheading && <p className="rooms-subheading">{subheading}</p>}
+
           {cta?.label && cta?.href && (
             <a className="rooms-cta" href={cta.href}>
               {cta.label}
@@ -193,15 +195,21 @@ export const RoomsBlock: React.FC<Props> = ({
                 <div className="room-media">
                   <RoomSlider images={roomImages} roomTitle={room.title} badges={room.badges} />
                   <div className="room-overlay" />
-                  <div className="room-book-now">Book now</div>
-                </div>
-                <div className="room-info">
                   <h3 className="room-title">
                     <span className="title-mask">
                       <span className="title-base">{room.title}</span>
                       <span className="title-overlay">{room.title}</span>
                     </span>
                   </h3>
+                  <button
+                    className="room-book-now"
+                    onClick={() => handleBookNow(room)}
+                    type="button"
+                  >
+                    Book now
+                  </button>
+                </div>
+                <div className="room-info">
                   {room.description && <p className="room-desc">{room.description}</p>}
                 </div>
               </article>
@@ -209,6 +217,18 @@ export const RoomsBlock: React.FC<Props> = ({
           })}
         </div>
       </div>
+
+      <BookingDrawer
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawer}
+        roomData={selectedRoom}
+        locale={locale}
+        salesChannelId={
+          selectedRoom?.rentlioSalesChannelId
+            ? parseInt(selectedRoom.rentlioSalesChannelId, 10)
+            : 45
+        }
+      />
     </section>
   )
 }
