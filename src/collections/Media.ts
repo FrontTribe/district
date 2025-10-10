@@ -54,14 +54,7 @@ const Media: CollectionConfig = {
         return data
       },
     ],
-    afterChange: [
-      async ({ doc }) => {
-        if (doc && doc.filename && doc.url) {
-          const s3Url = `https://${process.env.S3_BUCKET}.s3.${process.env.S3_REGION}.amazonaws.com/${doc.filename}`
-          console.log('Media uploaded to S3:', doc.filename, s3Url)
-        }
-      },
-    ],
+    afterChange: [],
   },
   fields: [
     {

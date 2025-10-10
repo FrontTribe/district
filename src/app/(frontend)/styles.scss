@@ -2525,3 +2525,12 @@ div {
     margin-bottom: 0;
   }
 }
+
+/* Block-specific styles imports */
+@import '../../blocks/Location/Location.scss';
+@import '../../blocks/ConceptBarMenu/ConceptBarMenu.scss';
+@import '../../blocks/ThreeColumns/ThreeColumns.scss';
+@import '../../blocks/Rooms/RoomSlider.scss';
+@import '../../blocks/ImageGrid/ImageGrid.scss';
+@import '../../blocks/JobOpportunity/JobOpportunity.scss';
+@import '../../blocks/Text/Text.scss';

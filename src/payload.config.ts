@@ -97,8 +97,8 @@ export default buildConfig({
     seoPlugin({
       collections: ['pages'],
       uploadsCollection: 'media',
-      generateTitle: ({ doc }) => `District — ${doc.title}`,
-      generateDescription: ({ doc }) => doc.excerpt,
+      generateTitle: ({ doc }) => `District — ${doc.title?.value || doc.title}`,
+      generateDescription: ({ doc }) => doc.excerpt || `${doc.title?.value || doc.title}`,
     }),
     formBuilderPlugin({
       formOverrides: {

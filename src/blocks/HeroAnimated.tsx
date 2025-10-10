@@ -20,7 +20,6 @@ export default function HeroAnimated({ heading, subheading, locale = 'hr' }: Pro
   useEffect(() => {
     // Ensure ScrollTrigger is properly registered
     if (typeof ScrollTrigger === 'undefined') {
-      console.warn('ScrollTrigger is not available in HeroAnimated')
       return
     }
 
@@ -94,7 +93,6 @@ export default function HeroAnimated({ heading, subheading, locale = 'hr' }: Pro
         parTl.to(h, { yPercent: -8, scale: 0.985, ease: 'none' }, 0)
         parTl.to(s, { yPercent: -6, ease: 'none' }, 0)
       } catch (error) {
-        console.error('Error creating ScrollTrigger for HeroAnimated parallax:', error)
       }
     }
 

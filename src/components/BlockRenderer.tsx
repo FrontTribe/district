@@ -36,13 +36,10 @@ const blockComponents = {
 
 type _Block = NonNullable<Page['layout']>[number]
 
-export const BlockRenderer: React.FC<{ 
+export const BlockRenderer: React.FC<{
   blocks: Page['layout'] | undefined | null
-  locale?: string 
-}> = ({
-  blocks,
-  locale = 'en',
-}) => {
+  locale?: string
+}> = ({ blocks, locale = 'en' }) => {
   if (!blocks || blocks.length === 0) {
     return null
   }
@@ -59,7 +56,6 @@ export const BlockRenderer: React.FC<{
           return <BlockComponent key={key} {...block} locale={locale} />
         }
 
-        console.warn(`[BlockRenderer] No component found for block type: ${blockType}`)
         return (
           <div key={index}>
             The component for block type &quot;{blockType}&quot; does not exist.

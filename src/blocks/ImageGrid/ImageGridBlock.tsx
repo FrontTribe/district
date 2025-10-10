@@ -3,7 +3,6 @@
 import React, { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import './ImageGrid.scss'
 
 type ImageItem = {
   image: {
@@ -85,16 +84,13 @@ export const ImageGridBlock: React.FC<Props> = ({
         // Mobile marquee animation
         const createMarquee = () => {
           if (!marqueeRef.current) {
-            console.log('No marquee ref found')
             return
           }
 
           const track = marqueeRef.current
           const cards = track.querySelectorAll('.image-grid__card')
-          console.log('Found cards:', cards.length)
 
           if (cards.length === 0) {
-            console.log('No cards found')
             return
           }
 
@@ -112,7 +108,6 @@ export const ImageGridBlock: React.FC<Props> = ({
           const cardWidth = cards[0].getBoundingClientRect().width
           const gap = 16
           const totalWidth = (cardWidth + gap) * cards.length
-          console.log('Card width:', cardWidth, 'Total width:', totalWidth)
 
           // Duplicate cards for seamless loop
           const cloneCards = Array.from(cards).map((card) => card.cloneNode(true) as HTMLElement)
@@ -130,8 +125,6 @@ export const ImageGridBlock: React.FC<Props> = ({
               immediateRender: true,
             },
           )
-
-          console.log('Marquee animation created')
         }
 
         // Wait for images to load
