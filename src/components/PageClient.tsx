@@ -2,6 +2,7 @@
 
 import { Page as PageType } from '@/payload-types'
 import { BlockRenderer } from './BlockRenderer'
+import { useState, useEffect } from 'react'
 
 export default function PageClient({
   page: initialPage,
