@@ -3,15 +3,16 @@
 import React, { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { Media } from '@/payload-types'
 
 type Props = {
   eyebrow?: string
   heading: string
   body?: string
   cta?: { label?: string; href?: string }
-  mediaTopRight?: any
-  mediaBottomLeft?: any
-  mediaBottomRight?: any
+  mediaTopRight?: Media | string | null
+  mediaBottomLeft?: Media | string | null
+  mediaBottomRight?: Media | string | null
   sectionId?: string
   parallax?: {
     topRight?: number
@@ -31,7 +32,7 @@ export const BotiqueIntroBlock: React.FC<Props> = ({
   sectionId,
   parallax,
 }) => {
-  const img = (m: any) => {
+  const img = (m: Media | string | null | undefined) => {
     if (!m) return undefined
     if (typeof m === 'string') return m
     return m.url
@@ -80,7 +81,7 @@ export const BotiqueIntroBlock: React.FC<Props> = ({
             trigger: wrap,
             start: 'top 85%',
             once: true,
-          } as any,
+          },
         })
       }
 
@@ -153,7 +154,7 @@ export const BotiqueIntroBlock: React.FC<Props> = ({
 
         {img(mediaTopRight) && (
           <div ref={topRightRef} className="botique-intro__media botique-intro__media--top-right">
-            <img src={img(mediaTopRight)} alt="" />
+            <img src={img(mediaTopRight) || ''} alt="" />
           </div>
         )}
 
@@ -162,7 +163,7 @@ export const BotiqueIntroBlock: React.FC<Props> = ({
             ref={bottomLeftRef}
             className="botique-intro__media botique-intro__media--bottom-left"
           >
-            <img src={img(mediaBottomLeft)} alt="" />
+            <img src={img(mediaBottomLeft) || ''} alt="" />
           </div>
         )}
 
@@ -171,7 +172,7 @@ export const BotiqueIntroBlock: React.FC<Props> = ({
             ref={bottomRightRef}
             className="botique-intro__media botique-intro__media--bottom-right"
           >
-            <img src={img(mediaBottomRight)} alt="" />
+            <img src={img(mediaBottomRight) || ''} alt="" />
           </div>
         )}
       </div>

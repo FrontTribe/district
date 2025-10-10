@@ -1,0 +1,295 @@
+/* Concept Bar Menu Block Styles */
+.concept-bar {
+  position: relative;
+  min-height: 100vh;
+  background: #051e24;
+  padding: 80px 0;
+
+  .concept-bar__container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .concept-bar__header {
+    text-align: center;
+    margin-bottom: 80px;
+  }
+
+  .concept-bar__title {
+    font-family: var(--font-marcellus), 'Marcellus', serif;
+    font-size: clamp(48px, 6vw, 72px);
+    font-weight: 400;
+    line-height: 1.1;
+    color: #ffffff;
+    margin: 0 0 24px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .concept-bar__subtitle {
+    font-family: var(--font-space-marcellus), 'Marcellus', serif;
+    font-size: 18px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .concept-bar__content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    min-height: 100vh;
+  }
+
+  .concept-bar__sticky-image {
+    position: sticky;
+    top: 120px;
+    height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .concept-bar__image-container {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .concept-bar__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+
+  .concept-bar__menu-sections {
+    grid-column: 1;
+    padding-right: 40px;
+  }
+
+  .concept-bar__category-section {
+    margin-bottom: 60px;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .concept-bar__category-header {
+    text-align: left;
+    margin-bottom: 40px;
+    padding: 0;
+  }
+
+  .concept-bar__category-title {
+    font-family: var(--font-marcellus), 'Marcellus', serif;
+    font-size: clamp(28px, 3vw, 36px);
+    font-weight: 400;
+    line-height: 1.2;
+    color: #ffffff;
+    margin: 0 0 12px 0;
+    letter-spacing: -0.01em;
+  }
+
+  .concept-bar__category-subtitle {
+    font-family: var(--font-space-marcellus), 'Marcellus', serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+  }
+
+  .concept-bar__menu-items {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .concept-bar__menu-item {
+    padding: 24px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      padding-left: 16px;
+      padding-right: 16px;
+      margin-left: -16px;
+      margin-right: -16px;
+      border-radius: 8px;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .concept-bar__item-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .concept-bar__item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .concept-bar__item-name {
+    font-family: var(--font-marcellus), 'Marcellus', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: #ffffff;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .concept-bar__popular-badge {
+    background: #d4af37;
+    color: #000000;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 4px 8px;
+    border-radius: 4px;
+    line-height: 1;
+  }
+
+  .concept-bar__item-price {
+    font-family: var(--font-space-marcellus), 'Marcellus', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #d4af37;
+    white-space: nowrap;
+  }
+
+  .concept-bar__item-description {
+    font-family: var(--font-space-marcellus), 'Marcellus', serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+  }
+
+  // Responsive Design
+  @media (max-width: 1024px) {
+    .concept-bar__content {
+      grid-template-columns: 1fr;
+      gap: 60px;
+    }
+
+    .concept-bar__sticky-image {
+      height: 50vh;
+      order: -1;
+    }
+
+    .concept-bar__menu-sections {
+      grid-column: 1;
+      padding-right: 0;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 60px 0;
+
+    .concept-bar__container {
+      padding: 0 16px;
+    }
+
+    .concept-bar__header {
+      margin-bottom: 60px;
+    }
+
+    .concept-bar__title {
+      font-size: clamp(36px, 5vw, 56px);
+    }
+
+    .concept-bar__subtitle {
+      font-size: 16px;
+    }
+
+    .concept-bar__sticky-image {
+      height: 40vh;
+    }
+
+    .concept-bar__category-section {
+      margin-bottom: 150px;
+      background-color: #061d22;
+    }
+
+    .concept-bar__category-header {
+      margin-bottom: 30px;
+      padding: 0;
+      padding-top: 30px !important;
+    }
+
+    .concept-bar__category-title {
+      font-size: clamp(24px, 3vw, 32px);
+    }
+
+    .concept-bar__menu-items {
+      padding: 0;
+    }
+
+    .concept-bar__menu-item {
+      padding: 20px 0;
+    }
+
+    .concept-bar__item-name {
+      font-size: 18px;
+    }
+
+    .concept-bar__item-price {
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .concept-bar__sticky-image {
+      height: 35vh;
+    }
+
+    .concept-bar__category-header {
+      padding: 0;
+    }
+
+    .concept-bar__menu-items {
+      padding: 0;
+    }
+
+    .concept-bar__item-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .concept-bar__item-name {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .concept-bar__item-price {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+  }
+}

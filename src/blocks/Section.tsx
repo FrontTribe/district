@@ -21,6 +21,10 @@ import Rooftop from '@/blocks/Rooftop'
 import RooftopFeatures from '@/blocks/RooftopFeatures'
 import { RooftopBlock } from '@/blocks/Rooftop'
 import { RooftopFeaturesBlock } from '@/blocks/RooftopFeatures'
+import { Intro } from '@/blocks/Intro'
+import { IntroBlock } from '@/blocks/Intro'
+import { ImageGrid } from '@/blocks/ImageGrid'
+import { ImageGridBlock } from '@/blocks/ImageGrid'
 
 const Section: Block = {
   slug: 'section',
@@ -46,6 +50,8 @@ const Section: Block = {
                 Image,
                 Rooftop,
                 RooftopFeatures,
+                Intro,
+                ImageGrid,
               ],
             },
           ],
@@ -69,6 +75,7 @@ const Section: Block = {
               options: [
                 { label: 'Full Width', value: 'full' },
                 { label: '1440px Max Width', value: 'container' },
+                { label: 'Narrow (800px Max Width)', value: 'narrow' },
               ],
               defaultValue: 'container',
               admin: {
@@ -190,7 +197,7 @@ const Section: Block = {
 
 export const SectionBlock: React.FC<{
   isFullHeight?: boolean
-  container?: 'full' | 'container'
+  container?: 'full' | 'container' | 'narrow'
   backgroundColor?: string
   backgroundMedia?: {
     type: 'none' | 'image' | 'video'
@@ -298,7 +305,9 @@ export const SectionBlock: React.FC<{
   const contentClassName =
     container === 'full'
       ? 'section-content section-content--full'
-      : 'section-content section-content--container'
+      : container === 'narrow'
+        ? 'section-content section-content--narrow'
+        : 'section-content section-content--container'
 
   // Build section classes including overlay
   const sectionClasses = ['section-block']
@@ -335,6 +344,8 @@ const SectionBlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null
     image: ImageBlock,
     rooftop: RooftopBlock,
     'rooftop-features': RooftopFeaturesBlock,
+    intro: IntroBlock,
+    'image-grid': ImageGridBlock,
   }
 
   return (
@@ -345,7 +356,7 @@ const SectionBlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null
         if (blockType && blockType in blockComponents) {
           const BlockComponent = blockComponents[blockType as keyof typeof blockComponents]
           const key = block.id ? `${block.id}-${index}` : index
-          // @ts-expect-error
+          // @ts-expect-error - Block component props are dynamically typed based on block type
           return <BlockComponent key={key} {...block} />
         }
 

@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={marcellus.variable}>
+    <html lang="hr" className={marcellus.variable}>
       <body className={marcellus.className}>
         <LenisProvider>
           <div className="min-h-screen flex flex-col">{children}</div>

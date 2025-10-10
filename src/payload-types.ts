@@ -94,11 +94,11 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   globals: {};
   globalsSelect: {};
-  locale: 'en' | 'hr' | 'de';
+  locale: 'hr' | 'en' | 'de';
   user: User & {
     collection: 'users';
   };
@@ -132,9 +132,9 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
   role: 'superadmin' | 'tenant-admin';
-  tenant?: (string | null) | Tenant;
+  tenant?: (number | null) | Tenant;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -160,7 +160,7 @@ export interface User {
  * via the `definition` "tenants".
  */
 export interface Tenant {
-  id: string;
+  id: number;
   name: string;
   subdomain: string;
   updatedAt: string;
@@ -173,9 +173,9 @@ export interface Tenant {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
-  alt: string;
-  tenant?: (string | null) | Tenant;
+  id: number;
+  alt?: string | null;
+  tenant?: (number | null) | Tenant;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -277,313 +277,19 @@ export interface Media {
  * via the `definition` "pages".
  */
 export interface Page {
-  id: string;
+  id: number;
   title: string;
   slug: string;
-  tenant?: (string | null) | Tenant;
+  tenant?: (number | null) | Tenant;
   layout?:
     | (
-        | {
-            blocks?:
-              | (
-                  | {
-                      heading: string;
-                      subheading?: string | null;
-                      backgroundMedia?: {
-                        type?: ('none' | 'image' | 'video') | null;
-                        image?: (string | null) | Media;
-                        video?: (string | null) | Media;
-                        overlay?: ('none' | 'light' | 'medium' | 'dark') | null;
-                      };
-                      /**
-                       * Optional ID for this section (used for menu navigation)
-                       */
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'hero';
-                    }
-                  | {
-                      heading?: string | null;
-                      features?:
-                        | {
-                            title?: string | null;
-                            description?: string | null;
-                            id?: string | null;
-                          }[]
-                        | null;
-                      /**
-                       * Optional ID for this section (used for menu navigation)
-                       */
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'features';
-                    }
-                  | {
-                      heading: string;
-                      content: {
-                        root: {
-                          type: string;
-                          children: {
-                            type: string;
-                            version: number;
-                            [k: string]: unknown;
-                          }[];
-                          direction: ('ltr' | 'rtl') | null;
-                          format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-                          indent: number;
-                          version: number;
-                        };
-                        [k: string]: unknown;
-                      };
-                      /**
-                       * Optional ID for this section (used for menu navigation)
-                       */
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'text';
-                    }
-                  | {
-                      columns?:
-                        | {
-                            title: string;
-                            subtitle?: string | null;
-                            /**
-                             * Optional background image for this column
-                             */
-                            backgroundImage?: (string | null) | Media;
-                            /**
-                             * Make this column take the full viewport height
-                             */
-                            fullHeight?: boolean | null;
-                            /**
-                             * Optional gradient overlay for this column
-                             */
-                            gradient?: {
-                              enabled?: boolean | null;
-                              type?: ('linear' | 'radial') | null;
-                              direction?:
-                                | (
-                                    | 'to-bottom'
-                                    | 'to-top'
-                                    | 'to-right'
-                                    | 'to-left'
-                                    | 'to-bottom-right'
-                                    | 'to-bottom-left'
-                                    | 'to-top-right'
-                                    | 'to-top-left'
-                                  )
-                                | null;
-                              position?:
-                                | (
-                                    | 'center'
-                                    | 'top'
-                                    | 'bottom'
-                                    | 'left'
-                                    | 'right'
-                                    | 'top-left'
-                                    | 'top-right'
-                                    | 'bottom-left'
-                                    | 'bottom-right'
-                                  )
-                                | null;
-                              /**
-                               * Hex color code (e.g., #000000)
-                               */
-                              startColor?: string | null;
-                              /**
-                               * Hex color code (e.g., #ffffff)
-                               */
-                              endColor?: string | null;
-                              /**
-                               * Gradient opacity (0 = transparent, 1 = opaque)
-                               */
-                              opacity?: number | null;
-                            };
-                            link: {
-                              url: string;
-                              text: string;
-                              openInNewTab?: boolean | null;
-                            };
-                            /**
-                             * Optional social network links for this column
-                             */
-                            socialNetworks?: {
-                              /**
-                               * Full Facebook profile or page URL
-                               */
-                              facebook?: string | null;
-                              /**
-                               * Full Instagram profile URL
-                               */
-                              instagram?: string | null;
-                            };
-                            id?: string | null;
-                          }[]
-                        | null;
-                      /**
-                       * Optional ID for this section (used for menu navigation)
-                       */
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'three-columns';
-                    }
-                  | {
-                      eyebrow?: string | null;
-                      heading: string;
-                      body?: string | null;
-                      cta?: {
-                        label?: string | null;
-                        href?: string | null;
-                      };
-                      mediaTopRight?: (string | null) | Media;
-                      mediaBottomLeft?: (string | null) | Media;
-                      mediaBottomRight?: (string | null) | Media;
-                      /**
-                       * Adjust vertical parallax in percent of the element height. Negative moves up, positive moves down.
-                       */
-                      parallax?: {
-                        topRight?: number | null;
-                        bottomLeft?: number | null;
-                        bottomRight?: number | null;
-                      };
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'botique-intro';
-                    }
-                  | {
-                      headingEyebrow?: string | null;
-                      heading: string;
-                      leftText?: string | null;
-                      address?: string | null;
-                      email?: string | null;
-                      phone?: string | null;
-                      form: string | Form;
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'boutique-contact';
-                    }
-                  | {
-                      eyebrow?: string | null;
-                      heading: string;
-                      subheading?: string | null;
-                      cta?: {
-                        label?: string | null;
-                        href?: string | null;
-                      };
-                      /**
-                       * Add up to 4 rooms: Premium, Deluxe, Suite, Apartment
-                       */
-                      rooms?:
-                        | {
-                            title: string;
-                            description?: string | null;
-                            badges?:
-                              | {
-                                  text?: string | null;
-                                  id?: string | null;
-                                }[]
-                              | null;
-                            image: string | Media;
-                            id?: string | null;
-                          }[]
-                        | null;
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'rooms';
-                    }
-                  | {
-                      media: string | Media;
-                      alt?: string | null;
-                      caption?: string | null;
-                      layout?: ('full' | 'contained') | null;
-                      align?: ('left' | 'center' | 'right') | null;
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'image';
-                    }
-                  | {
-                      heading: string;
-                      images?:
-                        | {
-                            media: string | Media;
-                            alt?: string | null;
-                            caption?: string | null;
-                            id?: string | null;
-                          }[]
-                        | null;
-                      /**
-                       * Higher = slower. Animation speeds up temporarily with scroll velocity.
-                       */
-                      baseDuration?: number | null;
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'rooftop';
-                    }
-                  | {
-                      heading: string;
-                      features?:
-                        | {
-                            icon?: string | null;
-                            title: string;
-                            description?: string | null;
-                            id?: string | null;
-                          }[]
-                        | null;
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'rooftop-features';
-                    }
-                )[]
-              | null;
-            /**
-             * Make this section take up the full viewport height
-             */
-            isFullHeight?: boolean | null;
-            /**
-             * Choose the container width for section content
-             */
-            container?: ('full' | 'container') | null;
-            padding?: {
-              top?: number | null;
-              right?: number | null;
-              bottom?: number | null;
-              left?: number | null;
-            };
-            /**
-             * CSS color value (e.g., #000000, rgb(0,0,0), black)
-             */
-            backgroundColor?: string | null;
-            backgroundMedia?: {
-              type?: ('none' | 'image' | 'video') | null;
-              image?: (string | null) | Media;
-              video?: (string | null) | Media;
-              overlay?: ('none' | 'light' | 'medium' | 'dark') | null;
-            };
-            /**
-             * Optional ID for this section (used for menu navigation)
-             */
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'section';
-          }
         | {
             heading: string;
             subheading?: string | null;
             backgroundMedia?: {
               type?: ('none' | 'image' | 'video') | null;
-              image?: (string | null) | Media;
-              video?: (string | null) | Media;
+              image?: (number | null) | Media;
+              video?: (number | null) | Media;
               overlay?: ('none' | 'light' | 'medium' | 'dark') | null;
             };
             /**
@@ -612,22 +318,11 @@ export interface Page {
             blockType: 'features';
           }
         | {
-            heading: string;
-            content: {
-              root: {
-                type: string;
-                children: {
-                  type: string;
-                  version: number;
-                  [k: string]: unknown;
-                }[];
-                direction: ('ltr' | 'rtl') | null;
-                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-                indent: number;
-                version: number;
-              };
-              [k: string]: unknown;
-            };
+            content: string;
+            /**
+             * Choose the font size for the text content
+             */
+            fontSize?: ('small' | 'medium' | 'large' | 'xl') | null;
             /**
              * Optional ID for this section (used for menu navigation)
              */
@@ -644,7 +339,7 @@ export interface Page {
                   /**
                    * Optional background image for this column
                    */
-                  backgroundImage?: (string | null) | Media;
+                  backgroundImage?: (number | null) | Media;
                   /**
                    * Make this column take the full viewport height
                    */
@@ -693,8 +388,15 @@ export interface Page {
                      */
                     opacity?: number | null;
                   };
+                  /**
+                   * Mark this column as "Coming Soon" - will fade out and disable clicking
+                   */
+                  comingSoon?: boolean | null;
                   link: {
-                    url: string;
+                    /**
+                     * Select the tenant to link to. URL will be generated automatically based on environment.
+                     */
+                    tenant?: (number | null) | Tenant;
                     text: string;
                     openInNewTab?: boolean | null;
                   };
@@ -730,9 +432,9 @@ export interface Page {
               label?: string | null;
               href?: string | null;
             };
-            mediaTopRight?: (string | null) | Media;
-            mediaBottomLeft?: (string | null) | Media;
-            mediaBottomRight?: (string | null) | Media;
+            mediaTopRight?: (number | null) | Media;
+            mediaBottomLeft?: (number | null) | Media;
+            mediaBottomRight?: (number | null) | Media;
             /**
              * Adjust vertical parallax in percent of the element height. Negative moves up, positive moves down.
              */
@@ -753,7 +455,7 @@ export interface Page {
             address?: string | null;
             email?: string | null;
             phone?: string | null;
-            form: string | Form;
+            form: number | Form;
             sectionId?: string | null;
             id?: string | null;
             blockName?: string | null;
@@ -780,7 +482,13 @@ export interface Page {
                         id?: string | null;
                       }[]
                     | null;
-                  image: string | Media;
+                  images?:
+                    | {
+                        image: number | Media;
+                        alt?: string | null;
+                        id?: string | null;
+                      }[]
+                    | null;
                   id?: string | null;
                 }[]
               | null;
@@ -793,7 +501,7 @@ export interface Page {
             heading: string;
             images?:
               | {
-                  media: string | Media;
+                  media: number | Media;
                   alt?: string | null;
                   caption?: string | null;
                   id?: string | null;
@@ -812,7 +520,6 @@ export interface Page {
             heading: string;
             features?:
               | {
-                  icon?: string | null;
                   title: string;
                   description?: string | null;
                   id?: string | null;
@@ -823,6 +530,167 @@ export interface Page {
             blockName?: string | null;
             blockType: 'rooftop-features';
           }
+        | {
+            /**
+             * Main title for the location section
+             */
+            title: string;
+            /**
+             * Short description about the location
+             */
+            description?: string | null;
+            /**
+             * Full address for the location
+             */
+            address: string;
+            coordinates: {
+              /**
+               * Latitude coordinate for the map pin
+               */
+              lat: number;
+              /**
+               * Longitude coordinate for the map pin
+               */
+              lng: number;
+            };
+            workingHours?:
+              | {
+                  day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+                  isOpen?: boolean | null;
+                  /**
+                   * Format: HH:MM (e.g., 09:00)
+                   */
+                  openTime?: string | null;
+                  /**
+                   * Format: HH:MM (e.g., 18:00)
+                   */
+                  closeTime?: string | null;
+                  isClosed?: boolean | null;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Optional ID for this section (used for menu navigation)
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'location';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            popularBadgeText: string;
+            menuCategories?:
+              | {
+                  categoryName: string;
+                  categoryDescription?: string | null;
+                  categoryImage: number | Media;
+                  menuItems?:
+                    | {
+                        itemName: string;
+                        itemDescription?: string | null;
+                        itemPrice?: string | null;
+                        isPopular?: boolean | null;
+                        id?: string | null;
+                      }[]
+                    | null;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Optional ID for this section (used for navigation)
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'concept-bar-menu';
+          }
+        | {
+            title: string;
+            subtitle?: string | null;
+            description: string;
+            buttonText: string;
+            buttonUrl: string;
+            badgeText: string;
+            features?:
+              | {
+                  featureText: string;
+                  id?: string | null;
+                }[]
+              | null;
+            ctaNote: string;
+            /**
+             * Optional background image for the block
+             */
+            backgroundImage?: (number | null) | Media;
+            /**
+             * Optional ID for this section (used for navigation)
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'job-opportunity';
+          }
+        | {
+            media: number | Media;
+            alt?: string | null;
+            caption?: string | null;
+            layout?: ('full' | 'contained') | null;
+            align?: ('left' | 'center' | 'right') | null;
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'image';
+          }
+        | {
+            /**
+             * Enter the intro text that will be displayed centered in black
+             */
+            content: string;
+            /**
+             * Optional ID for this section (used for menu navigation)
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'intro';
+          }
+        | {
+            /**
+             * Main title displayed in the center
+             */
+            title: string;
+            /**
+             * Subtitle text displayed below the title
+             */
+            subtitle: string;
+            /**
+             * Optional button text (e.g., "Reservieren")
+             */
+            buttonText?: string | null;
+            /**
+             * URL for the button (if button text is provided)
+             */
+            buttonUrl?: string | null;
+            images?:
+              | {
+                  image: number | Media;
+                  /**
+                   * Choose the position and aspect ratio for this image
+                   */
+                  position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Optional ID for this section (used for menu navigation)
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'image-grid';
+          }
       )[]
     | null;
   meta?: {
@@ -831,18 +699,17 @@ export interface Page {
     /**
      * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
      */
-    image?: (string | null) | Media;
+    image?: (number | null) | Media;
   };
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "forms".
  */
 export interface Form {
-  id: string;
+  id: number;
   title: string;
   fields?:
     | (
@@ -879,7 +746,7 @@ export interface Form {
               root: {
                 type: string;
                 children: {
-                  type: string;
+                  type: any;
                   version: number;
                   [k: string]: unknown;
                 }[];
@@ -962,7 +829,7 @@ export interface Form {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -994,7 +861,7 @@ export interface Form {
           root: {
             type: string;
             children: {
-              type: string;
+              type: any;
               version: number;
               [k: string]: unknown;
             }[];
@@ -1018,7 +885,7 @@ export interface Form {
  * via the `definition` "menu".
  */
 export interface Menu {
-  id: string;
+  id: number;
   /**
    * Unique identifier for this menu type. Main Menu gets centered logo styling, Tenant Menu gets standard top-left styling.
    */
@@ -1027,7 +894,7 @@ export interface Menu {
    * Internal title for this menu (e.g., "Hotel ABC Menu", "Restaurant XYZ Menu")
    */
   title: string;
-  tenant?: (string | null) | Tenant;
+  tenant?: (number | null) | Tenant;
   menuItems?:
     | {
         label: string;
@@ -1058,7 +925,7 @@ export interface Menu {
         id?: string | null;
       }[]
     | null;
-  logo?: (string | null) | Media;
+  logo?: (number | null) | Media;
   logoText?: string | null;
   /**
    * Choose how the menu should be positioned on the page
@@ -1074,35 +941,45 @@ export interface Menu {
  * via the `definition` "footer".
  */
 export interface Footer {
-  id: string;
+  id: number;
   /**
    * Internal title for this footer (e.g., "Hotel ABC Footer", "Restaurant XYZ Footer")
    */
   title: string;
-  tenant?: (string | null) | Tenant;
-  columns?:
-    | {
-        title: string;
-        links?:
-          | {
-              label: string;
-              link: string;
-              external?: boolean | null;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  bottomSection?: {
-    copyright?: string | null;
-    socialLinks?:
+  tenant?: (number | null) | Tenant;
+  leftContent: {
+    heading: string;
+    subheading?: string | null;
+  };
+  rightContent: {
+    contact: {
+      heading: string;
+      email: string;
+      phone?: string | null;
+      /**
+       * Enter without @ symbol (e.g., legendslounge)
+       */
+      instagram?: string | null;
+    };
+    address: {
+      heading: string;
+      venue: string;
+      street: string;
+      city: string;
+      country: string;
+    };
+  };
+  bottomContent: {
+    copyright: string;
+    links?:
       | {
-          platform?: ('facebook' | 'twitter' | 'instagram' | 'linkedin' | 'youtube') | null;
+          text: string;
           url: string;
+          openInNewTab?: boolean | null;
           id?: string | null;
         }[]
       | null;
+    madeBy: string;
   };
   updatedAt: string;
   createdAt: string;
@@ -1112,8 +989,8 @@ export interface Footer {
  * via the `definition` "form-submissions".
  */
 export interface FormSubmission {
-  id: string;
-  form: string | Form;
+  id: number;
+  form: number | Form;
   submissionData?:
     | {
         field: string;
@@ -1129,44 +1006,44 @@ export interface FormSubmission {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
       } | null)
     | ({
         relationTo: 'tenants';
-        value: string | Tenant;
+        value: number | Tenant;
       } | null)
     | ({
         relationTo: 'pages';
-        value: string | Page;
+        value: number | Page;
       } | null)
     | ({
         relationTo: 'menu';
-        value: string | Menu;
+        value: number | Menu;
       } | null)
     | ({
         relationTo: 'footer';
-        value: string | Footer;
+        value: number | Footer;
       } | null)
     | ({
         relationTo: 'forms';
-        value: string | Form;
+        value: number | Form;
       } | null)
     | ({
         relationTo: 'form-submissions';
-        value: string | FormSubmission;
+        value: number | FormSubmission;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -1176,10 +1053,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -1199,7 +1076,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -1373,232 +1250,6 @@ export interface PagesSelect<T extends boolean = true> {
   layout?:
     | T
     | {
-        section?:
-          | T
-          | {
-              blocks?:
-                | T
-                | {
-                    hero?:
-                      | T
-                      | {
-                          heading?: T;
-                          subheading?: T;
-                          backgroundMedia?:
-                            | T
-                            | {
-                                type?: T;
-                                image?: T;
-                                video?: T;
-                                overlay?: T;
-                              };
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    features?:
-                      | T
-                      | {
-                          heading?: T;
-                          features?:
-                            | T
-                            | {
-                                title?: T;
-                                description?: T;
-                                id?: T;
-                              };
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    text?:
-                      | T
-                      | {
-                          heading?: T;
-                          content?: T;
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    'three-columns'?:
-                      | T
-                      | {
-                          columns?:
-                            | T
-                            | {
-                                title?: T;
-                                subtitle?: T;
-                                backgroundImage?: T;
-                                fullHeight?: T;
-                                gradient?:
-                                  | T
-                                  | {
-                                      enabled?: T;
-                                      type?: T;
-                                      direction?: T;
-                                      position?: T;
-                                      startColor?: T;
-                                      endColor?: T;
-                                      opacity?: T;
-                                    };
-                                link?:
-                                  | T
-                                  | {
-                                      url?: T;
-                                      text?: T;
-                                      openInNewTab?: T;
-                                    };
-                                socialNetworks?:
-                                  | T
-                                  | {
-                                      facebook?: T;
-                                      instagram?: T;
-                                    };
-                                id?: T;
-                              };
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    'botique-intro'?:
-                      | T
-                      | {
-                          eyebrow?: T;
-                          heading?: T;
-                          body?: T;
-                          cta?:
-                            | T
-                            | {
-                                label?: T;
-                                href?: T;
-                              };
-                          mediaTopRight?: T;
-                          mediaBottomLeft?: T;
-                          mediaBottomRight?: T;
-                          parallax?:
-                            | T
-                            | {
-                                topRight?: T;
-                                bottomLeft?: T;
-                                bottomRight?: T;
-                              };
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    'boutique-contact'?:
-                      | T
-                      | {
-                          headingEyebrow?: T;
-                          heading?: T;
-                          leftText?: T;
-                          address?: T;
-                          email?: T;
-                          phone?: T;
-                          form?: T;
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    rooms?:
-                      | T
-                      | {
-                          eyebrow?: T;
-                          heading?: T;
-                          subheading?: T;
-                          cta?:
-                            | T
-                            | {
-                                label?: T;
-                                href?: T;
-                              };
-                          rooms?:
-                            | T
-                            | {
-                                title?: T;
-                                description?: T;
-                                badges?:
-                                  | T
-                                  | {
-                                      text?: T;
-                                      id?: T;
-                                    };
-                                image?: T;
-                                id?: T;
-                              };
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    image?:
-                      | T
-                      | {
-                          media?: T;
-                          alt?: T;
-                          caption?: T;
-                          layout?: T;
-                          align?: T;
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    rooftop?:
-                      | T
-                      | {
-                          heading?: T;
-                          images?:
-                            | T
-                            | {
-                                media?: T;
-                                alt?: T;
-                                caption?: T;
-                                id?: T;
-                              };
-                          baseDuration?: T;
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    'rooftop-features'?:
-                      | T
-                      | {
-                          heading?: T;
-                          features?:
-                            | T
-                            | {
-                                icon?: T;
-                                title?: T;
-                                description?: T;
-                                id?: T;
-                              };
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                  };
-              isFullHeight?: T;
-              container?: T;
-              padding?:
-                | T
-                | {
-                    top?: T;
-                    right?: T;
-                    bottom?: T;
-                    left?: T;
-                  };
-              backgroundColor?: T;
-              backgroundMedia?:
-                | T
-                | {
-                    type?: T;
-                    image?: T;
-                    video?: T;
-                    overlay?: T;
-                  };
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
         hero?:
           | T
           | {
@@ -1634,8 +1285,8 @@ export interface PagesSelect<T extends boolean = true> {
         text?:
           | T
           | {
-              heading?: T;
               content?: T;
+              fontSize?: T;
               sectionId?: T;
               id?: T;
               blockName?: T;
@@ -1661,10 +1312,11 @@ export interface PagesSelect<T extends boolean = true> {
                           endColor?: T;
                           opacity?: T;
                         };
+                    comingSoon?: T;
                     link?:
                       | T
                       | {
-                          url?: T;
+                          tenant?: T;
                           text?: T;
                           openInNewTab?: T;
                         };
@@ -1743,7 +1395,13 @@ export interface PagesSelect<T extends boolean = true> {
                           text?: T;
                           id?: T;
                         };
-                    image?: T;
+                    images?:
+                      | T
+                      | {
+                          image?: T;
+                          alt?: T;
+                          id?: T;
+                        };
                     id?: T;
                   };
               sectionId?: T;
@@ -1774,9 +1432,120 @@ export interface PagesSelect<T extends boolean = true> {
               features?:
                 | T
                 | {
-                    icon?: T;
                     title?: T;
                     description?: T;
+                    id?: T;
+                  };
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        location?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              address?: T;
+              coordinates?:
+                | T
+                | {
+                    lat?: T;
+                    lng?: T;
+                  };
+              workingHours?:
+                | T
+                | {
+                    day?: T;
+                    isOpen?: T;
+                    openTime?: T;
+                    closeTime?: T;
+                    isClosed?: T;
+                    id?: T;
+                  };
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'concept-bar-menu'?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              popularBadgeText?: T;
+              menuCategories?:
+                | T
+                | {
+                    categoryName?: T;
+                    categoryDescription?: T;
+                    categoryImage?: T;
+                    menuItems?:
+                      | T
+                      | {
+                          itemName?: T;
+                          itemDescription?: T;
+                          itemPrice?: T;
+                          isPopular?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                  };
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'job-opportunity'?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              description?: T;
+              buttonText?: T;
+              buttonUrl?: T;
+              badgeText?: T;
+              features?:
+                | T
+                | {
+                    featureText?: T;
+                    id?: T;
+                  };
+              ctaNote?: T;
+              backgroundImage?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        image?:
+          | T
+          | {
+              media?: T;
+              alt?: T;
+              caption?: T;
+              layout?: T;
+              align?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        intro?:
+          | T
+          | {
+              content?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'image-grid'?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              buttonText?: T;
+              buttonUrl?: T;
+              images?:
+                | T
+                | {
+                    image?: T;
+                    position?: T;
                     id?: T;
                   };
               sectionId?: T;
@@ -1793,7 +1562,6 @@ export interface PagesSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
-  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1834,31 +1602,46 @@ export interface MenuSelect<T extends boolean = true> {
 export interface FooterSelect<T extends boolean = true> {
   title?: T;
   tenant?: T;
-  columns?:
+  leftContent?:
     | T
     | {
-        title?: T;
-        links?:
+        heading?: T;
+        subheading?: T;
+      };
+  rightContent?:
+    | T
+    | {
+        contact?:
           | T
           | {
-              label?: T;
-              link?: T;
-              external?: T;
-              id?: T;
+              heading?: T;
+              email?: T;
+              phone?: T;
+              instagram?: T;
             };
-        id?: T;
+        address?:
+          | T
+          | {
+              heading?: T;
+              venue?: T;
+              street?: T;
+              city?: T;
+              country?: T;
+            };
       };
-  bottomSection?:
+  bottomContent?:
     | T
     | {
         copyright?: T;
-        socialLinks?:
+        links?:
           | T
           | {
-              platform?: T;
+              text?: T;
               url?: T;
+              openInNewTab?: T;
               id?: T;
             };
+        madeBy?: T;
       };
   updatedAt?: T;
   createdAt?: T;

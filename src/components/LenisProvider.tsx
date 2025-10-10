@@ -4,6 +4,7 @@ import React, { useEffect } from 'react'
 import Lenis from 'lenis'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { usePathname } from 'next/navigation'
 
 type Props = {
   children?: React.ReactNode
@@ -12,6 +13,8 @@ type Props = {
 // Initializes Lenis smooth scroll on the client side.
 // It renders no DOM and simply mounts/unmounts the Lenis instance.
 export default function LenisProvider({ children }: Props) {
+  const pathname = usePathname()
+
   useEffect(() => {
     // Register GSAP plugin once
     if (typeof window !== 'undefined' && (gsap as any).registeredScrollTrigger !== true) {
@@ -27,6 +30,32 @@ export default function LenisProvider({ children }: Props) {
       wheelMultiplier: 1,
       touchMultiplier: 1.2,
     })
+
+    // Expose Lenis instance globally for route change handling
+    ;(window as any).lenis = lenis
+
+    // Disable browser scroll restoration
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual'
+    }
+
+    // Force scroll to top immediately on initialization
+    window.scrollTo(0, 0)
+    lenis.scrollTo(0, { immediate: true })
+
+    // Ensure scroll to top after Lenis is fully ready
+    const ensureScrollToTop = () => {
+      window.scrollTo(0, 0)
+      lenis.scrollTo(0, { immediate: true })
+    }
+
+    // Try multiple times to ensure it works
+    ensureScrollToTop()
+    setTimeout(ensureScrollToTop, 100)
+    setTimeout(ensureScrollToTop, 300)
+
+    // Also ensure scroll to top when window is fully loaded
+    window.addEventListener('load', ensureScrollToTop)
 
     // Sync Lenis with ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update)
@@ -50,10 +79,21 @@ export default function LenisProvider({ children }: Props) {
     requestAnimationFrame(raf)
 
     return () => {
+      window.removeEventListener('load', ensureScrollToTop)
       if (typeof (lenis as any)?.destroy === 'function') (lenis as any).destroy()
-      ScrollTrigger.killAll()
+      // Don't kill all ScrollTriggers as it might interfere with other components
+      // ScrollTrigger.killAll()
     }
   }, [])
+
+  // Handle scroll to top on route changes
+  // Handle route changes - use Lenis for smooth scrolling
+  useEffect(() => {
+    // Scroll to top when pathname changes (navigation)
+    if (typeof window !== 'undefined' && (window as any).lenis) {
+      ;(window as any).lenis.scrollTo(0, { immediate: true })
+    }
+  }, [pathname])
 
   return <>{children}</>
 }

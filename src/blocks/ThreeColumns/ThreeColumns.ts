@@ -142,15 +142,29 @@ const ThreeColumns: Block = {
           ],
         },
         {
+          name: 'comingSoon',
+          type: 'checkbox',
+          label: 'Coming Soon',
+          defaultValue: false,
+          admin: {
+            description: 'Mark this column as "Coming Soon" - will fade out and disable clicking',
+          },
+        },
+        {
           name: 'link',
           type: 'group',
           label: 'Link',
           fields: [
             {
-              name: 'url',
-              type: 'text',
-              label: 'URL',
-              required: true,
+              name: 'tenant',
+              type: 'relationship',
+              relationTo: 'tenants',
+              label: 'Tenant',
+              required: false,
+              admin: {
+                description:
+                  'Select the tenant to link to. URL will be generated automatically based on environment.',
+              },
             },
             {
               name: 'text',

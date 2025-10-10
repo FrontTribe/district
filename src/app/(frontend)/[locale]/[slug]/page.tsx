@@ -1,12 +1,14 @@
 import PageClient from '@/components/PageClient'
 import { getPayloadClient } from '@/utils/getPayloadClient'
 import { notFound } from 'next/navigation'
-import { draftMode, headers } from 'next/headers'
+import { headers } from 'next/headers'
+import type { Metadata } from 'next'
 import type { Page as PageType, Tenant } from '@/payload-types'
 import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
 import { localeLang } from '@/utils/locale'
+import { generateMetadataFromPage } from '@/utils/generateMetadata'
 
 type PageProps = {
   params: Promise<{
@@ -19,7 +21,6 @@ type AllowedLocale = 'en' | 'hr' | 'de' | undefined
 
 async function fetchPage(slug: string, locale: AllowedLocale): Promise<PageType | null> {
   try {
-    const { isEnabled: isDraftMode } = await draftMode()
     const payload = await getPayloadClient()
 
     const pageQuery = await payload.find({
@@ -29,16 +30,34 @@ async function fetchPage(slug: string, locale: AllowedLocale): Promise<PageType 
           equals: slug,
         },
       },
-      draft: isDraftMode,
       depth: 2,
       locale, // <-- add locale here to fetch localized content
     })
 
     return pageQuery.docs[0] || null
-  } catch (error) {
-    console.error('Error fetching page data:', error)
+  } catch (_error) {
     return null
   }
+}
+
+/**
+ * Generate metadata for the page
+ */
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug, locale } = await params
+  const page = await fetchPage(slug, locale as AllowedLocale)
+
+  if (!page) {
+    return {
+      title: 'Page Not Found',
+      description: 'The requested page could not be found',
+    }
+  }
+
+  // Get base URL from environment or construct it
+  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+
+  return generateMetadataFromPage(page, locale, baseUrl)
 }
 
 export default async function Page({ params }: PageProps) {
@@ -65,7 +84,7 @@ export default async function Page({ params }: PageProps) {
   }
 
   // Fetch menu and footer for the current tenant
-  const tenantId = currentTenant?.id || null
+  const tenantId = currentTenant?.id ? String(currentTenant.id) : null
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
 
   return (
@@ -89,7 +108,10 @@ export default async function Page({ params }: PageProps) {
             })) || []
           }
           logo={
-            menuGlobal?.logo && typeof menuGlobal.logo !== 'string' && menuGlobal.logo.url
+            menuGlobal?.logo &&
+            typeof menuGlobal.logo === 'object' &&
+            'url' in menuGlobal.logo &&
+            menuGlobal.logo.url
               ? {
                   url: menuGlobal.logo.url,
                   alt: menuGlobal.logo.alt || 'Logo',
@@ -106,35 +128,15 @@ export default async function Page({ params }: PageProps) {
       )}
 
       <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <PageClient page={page} />
+        <PageClient page={page} locale={locale} />
       </div>
 
       {/* Footer - only show for tenant pages */}
-      {currentTenant && (
+      {currentTenant && footerGlobal && (
         <Footer
-          columns={
-            footerGlobal?.columns?.map((column) => ({
-              title: column.title,
-              links:
-                column.links?.map((link) => ({
-                  label: link.label,
-                  link: link.link,
-                  external: link.external || false,
-                })) || [],
-            })) || []
-          }
-          bottomSection={
-            footerGlobal?.bottomSection
-              ? {
-                  copyright: footerGlobal.bottomSection?.copyright ?? undefined,
-                  socialLinks:
-                    footerGlobal.bottomSection?.socialLinks?.map((s) => ({
-                      platform: s.platform as string,
-                      url: s.url,
-                    })) || [],
-                }
-              : undefined
-          }
+          leftContent={footerGlobal.leftContent}
+          rightContent={footerGlobal.rightContent}
+          bottomContent={footerGlobal.bottomContent}
         />
       )}
     </>

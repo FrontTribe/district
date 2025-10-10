@@ -8,16 +8,15 @@ const RooftopFeatures: Block = {
       type: 'textarea',
       label: 'Heading',
       required: true,
-      defaultValue: 'Anyone. Anywhere. 290+ markers, 160+ patterns.',
+      localized: true,
     },
     {
       name: 'features',
       type: 'array',
       label: 'Features',
       fields: [
-        { name: 'icon', type: 'text', label: 'Icon (emoji or small text)' },
-        { name: 'title', type: 'text', required: true },
-        { name: 'description', type: 'textarea' },
+        { name: 'title', type: 'text', required: true, localized: true },
+        { name: 'description', type: 'textarea', localized: true },
       ],
     },
     {

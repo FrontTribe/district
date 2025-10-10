@@ -2,13 +2,19 @@ import { CollectionConfig } from 'payload'
 import Hero from '@/blocks/Hero'
 import Features from '@/blocks/Features'
 import Section from '@/blocks/Section'
-import Text from '@/blocks/Text'
+import Text from '@/blocks/Text/Text'
 import { ThreeColumns } from '@/blocks/ThreeColumns'
 import BotiqueIntro from '@/blocks/BotiqueIntro'
 import BoutiqueContact from '@/blocks/BoutiqueContact'
 import Rooms from '@/blocks/Rooms'
 import Rooftop from '@/blocks/Rooftop'
 import RooftopFeatures from '@/blocks/RooftopFeatures'
+import Location from '@/blocks/Location/Location'
+import ConceptBarMenu from '@/blocks/ConceptBarMenu'
+import JobOpportunity from '@/blocks/JobOpportunity'
+import Image from '@/blocks/Image'
+import { Intro } from '@/blocks/Intro'
+import { ImageGrid } from '@/blocks/ImageGrid'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
@@ -19,8 +25,6 @@ const Pages: CollectionConfig = {
   },
   access: {
     read: ({ req }) => {
-      console.log(req.user)
-
       if ((req.user as any)?.role === 'superadmin') {
         return true
       }
@@ -65,11 +69,6 @@ const Pages: CollectionConfig = {
       },
     ],
   },
-  versions: {
-    drafts: {
-      autosave: true,
-    },
-  },
   fields: [
     {
       name: 'title',
@@ -82,12 +81,18 @@ const Pages: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
+      admin: {
+        position: 'sidebar',
+      },
     },
     {
       name: 'tenant',
       type: 'relationship',
       relationTo: 'tenants',
       required: false,
+      admin: {
+        position: 'sidebar',
+      },
       access: {
         read: () => true,
         create: ({ req }) => {
@@ -107,7 +112,6 @@ const Pages: CollectionConfig = {
       name: 'layout',
       type: 'blocks',
       blocks: [
-        Section,
         Hero,
         Features,
         Text,
@@ -117,8 +121,17 @@ const Pages: CollectionConfig = {
         Rooms,
         Rooftop,
         RooftopFeatures,
+        Location,
+        ConceptBarMenu,
+        JobOpportunity,
+        Image,
+        Intro,
+        ImageGrid,
       ],
       localized: true,
+      admin: {
+        initCollapsed: true,
+      },
     },
   ],
 }

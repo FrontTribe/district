@@ -1,9 +1,11 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import EnhancedLanguageSwitcher from './EnhancedLanguageSwitcher'
+import { MobileMenu } from './MobileMenu'
+import { HamburgerButton } from './HamburgerButton'
 
 interface MenuItem {
   label: string
@@ -25,20 +27,23 @@ interface MenuWrapperProps {
   positioning?: 'fixed' | 'absolute' | 'relative'
   locale: string
   menuId?: string
+  hideHamburger?: boolean
 }
 
 export const MenuWrapper: React.FC<MenuWrapperProps> = ({
   menuItems = [],
   logo,
   logoText,
-  positioning = 'fixed',
+  positioning: _positioning = 'fixed',
   locale,
   menuId = 'default',
+  hideHamburger = false,
 }) => {
-  const router = useRouter()
+  const _router = useRouter()
   const pathname = usePathname()
   const [isLanguageChanging, setIsLanguageChanging] = useState(false)
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const isTenantMenu = menuId === 'tenant-menu'
 
@@ -116,7 +121,6 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
       // handle locale changes properly without a full server-side re-render
       window.location.href = newPath
     } catch (error) {
-      console.error('Error changing language:', error)
       setIsLanguageChanging(false)
     }
   }
@@ -152,6 +156,12 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
         })
       }
     }
+    // Close mobile menu when logo is clicked
+    setIsMobileMenuOpen(false)
+  }
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
   const headerClass = isTenantMenu ? 'header header--tenant' : 'header'
@@ -164,16 +174,21 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
           // Tenant menu layout - logo left, menu center, language right
           <>
             <div className="tenant-menu-left">
-              <div className="logo">
-                <Link href="/" onClick={handleLogoClick}>
-                  {logo ? (
-                    <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
-                  ) : logoText ? (
-                    <h1>{logoText}</h1>
-                  ) : (
-                    <h1>district.</h1>
-                  )}
-                </Link>
+              <div className="mobile-header-left">
+                {!hideHamburger && (
+                  <HamburgerButton isOpen={isMobileMenuOpen} onToggle={toggleMobileMenu} />
+                )}
+                <div className="logo">
+                  <Link href="/" onClick={handleLogoClick}>
+                    {logo ? (
+                      <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
+                    ) : logoText ? (
+                      <h1>{logoText}</h1>
+                    ) : (
+                      <h1>district.</h1>
+                    )}
+                  </Link>
+                </div>
               </div>
             </div>
             <div className="tenant-menu-center">
@@ -215,16 +230,21 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
         ) : (
           // Main menu layout - original
           <>
-            <div className="logo">
-              <Link href="/">
-                {logo ? (
-                  <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
-                ) : logoText ? (
-                  <h1>{logoText}</h1>
-                ) : (
-                  <h1>district.</h1>
-                )}
-              </Link>
+            <div className="mobile-header-left">
+              {!hideHamburger && (
+                <HamburgerButton isOpen={isMobileMenuOpen} onToggle={toggleMobileMenu} />
+              )}
+              <div className="logo">
+                <Link href="/" onClick={handleLogoClick}>
+                  {logo ? (
+                    <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
+                  ) : logoText ? (
+                    <h1>{logoText}</h1>
+                  ) : (
+                    <h1>district.</h1>
+                  )}
+                </Link>
+              </div>
             </div>
             <div className="language-switcher-wrapper">
               <EnhancedLanguageSwitcher
@@ -237,6 +257,19 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
           </>
         )}
       </div>
+
+      {/* Mobile Menu */}
+      <MobileMenu
+        menuItems={menuItems}
+        logo={logo}
+        logoText={logoText}
+        locale={locale}
+        onLanguageChange={handleLanguageChange}
+        isLanguageChanging={isLanguageChanging}
+        isTenantMenu={isTenantMenu}
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+      />
     </header>
   )
 }

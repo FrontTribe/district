@@ -12,7 +12,6 @@ interface MainPageLoaderProps {
 export const resetLoader = () => {
   if (typeof window !== 'undefined') {
     sessionStorage.removeItem('district-loader-shown')
-    console.log('Loader reset - will show on next page load')
   }
 }
 
@@ -56,7 +55,6 @@ export const MainPageLoader: React.FC<MainPageLoaderProps> = ({
       setTimeout(() => {
         const progressBar = progressBarRef.current || document.querySelector('.loading-progress')
         if (progressBar) {
-          console.log('Progress bar found, starting animation')
           gsap.to(progressBar, {
             width: '100%',
             duration: 2,
@@ -64,14 +62,12 @@ export const MainPageLoader: React.FC<MainPageLoaderProps> = ({
             delay: 0.5,
           })
         } else {
-          console.log('Progress bar not found')
         }
       }, 50)
 
       // After loading completes, slide overlay down
       setTimeout(() => {
         if (loadingRef.current) {
-          console.log('Loading ref found, starting slide down animation')
 
           // Set initial transform
           gsap.set(loadingRef.current, { y: 0 })
@@ -83,11 +79,9 @@ export const MainPageLoader: React.FC<MainPageLoaderProps> = ({
             ease: 'power2.inOut',
             delay: 2.5,
           }).call(() => {
-            console.log('Slide down animation completed')
             setIsLoading(false)
           })
         } else {
-          console.log('Loading ref not found')
           // Fallback: just hide the loader after delay
           setTimeout(() => setIsLoading(false), 3500)
         }

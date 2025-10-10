@@ -62,12 +62,7 @@ export const RooftopFeaturesBlock: React.FC<{
         <div className="rooftop-features__grid">
           {features.map((f, i) => (
             <div className="rf-item" key={i}>
-              {f.icon && (
-                <div className="rf-icon" aria-hidden>
-                  {f.icon}
-                </div>
-              )}
-              <h4 className="rf-title">{f.title}</h4>
+              <h3 className="rf-title">{f.title}</h3>
               {f.description && <p className="rf-desc">{f.description}</p>}
             </div>
           ))}

@@ -4,7 +4,6 @@ const restrictTenantLogin = async ({ req, user }: { req: any; user: any }) => {
   if (user.role === 'superadmin') {
     return
   }
-  console.log('from user:', user)
 
   if (user.role === 'tenant-admin') {
     let requestSubdomain = ''
