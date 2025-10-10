@@ -98,7 +98,7 @@ export interface Config {
   };
   globals: {};
   globalsSelect: {};
-  locale: 'en' | 'hr' | 'de';
+  locale: 'hr' | 'en' | 'de';
   user: User & {
     collection: 'users';
   };
@@ -174,7 +174,7 @@ export interface Tenant {
  */
 export interface Media {
   id: number;
-  alt: string;
+  alt?: string | null;
   tenant?: (number | null) | Tenant;
   updatedAt: string;
   createdAt: string;
@@ -284,340 +284,6 @@ export interface Page {
   layout?:
     | (
         | {
-            blocks?:
-              | (
-                  | {
-                      heading: string;
-                      subheading?: string | null;
-                      backgroundMedia?: {
-                        type?: ('none' | 'image' | 'video') | null;
-                        image?: (number | null) | Media;
-                        video?: (number | null) | Media;
-                        overlay?: ('none' | 'light' | 'medium' | 'dark') | null;
-                      };
-                      /**
-                       * Optional ID for this section (used for menu navigation)
-                       */
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'hero';
-                    }
-                  | {
-                      heading?: string | null;
-                      features?:
-                        | {
-                            title?: string | null;
-                            description?: string | null;
-                            id?: string | null;
-                          }[]
-                        | null;
-                      /**
-                       * Optional ID for this section (used for menu navigation)
-                       */
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'features';
-                    }
-                  | {
-                      content: string;
-                      /**
-                       * Choose the font size for the text content
-                       */
-                      fontSize?: ('small' | 'medium' | 'large' | 'xl') | null;
-                      /**
-                       * Optional ID for this section (used for menu navigation)
-                       */
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'text';
-                    }
-                  | {
-                      columns?:
-                        | {
-                            title: string;
-                            subtitle?: string | null;
-                            /**
-                             * Optional background image for this column
-                             */
-                            backgroundImage?: (number | null) | Media;
-                            /**
-                             * Make this column take the full viewport height
-                             */
-                            fullHeight?: boolean | null;
-                            /**
-                             * Optional gradient overlay for this column
-                             */
-                            gradient?: {
-                              enabled?: boolean | null;
-                              type?: ('linear' | 'radial') | null;
-                              direction?:
-                                | (
-                                    | 'to-bottom'
-                                    | 'to-top'
-                                    | 'to-right'
-                                    | 'to-left'
-                                    | 'to-bottom-right'
-                                    | 'to-bottom-left'
-                                    | 'to-top-right'
-                                    | 'to-top-left'
-                                  )
-                                | null;
-                              position?:
-                                | (
-                                    | 'center'
-                                    | 'top'
-                                    | 'bottom'
-                                    | 'left'
-                                    | 'right'
-                                    | 'top-left'
-                                    | 'top-right'
-                                    | 'bottom-left'
-                                    | 'bottom-right'
-                                  )
-                                | null;
-                              /**
-                               * Hex color code (e.g., #000000)
-                               */
-                              startColor?: string | null;
-                              /**
-                               * Hex color code (e.g., #ffffff)
-                               */
-                              endColor?: string | null;
-                              /**
-                               * Gradient opacity (0 = transparent, 1 = opaque)
-                               */
-                              opacity?: number | null;
-                            };
-                            link: {
-                              /**
-                               * Select the tenant to link to. URL will be generated automatically based on environment.
-                               */
-                              tenant: number | Tenant;
-                              text: string;
-                              openInNewTab?: boolean | null;
-                            };
-                            /**
-                             * Optional social network links for this column
-                             */
-                            socialNetworks?: {
-                              /**
-                               * Full Facebook profile or page URL
-                               */
-                              facebook?: string | null;
-                              /**
-                               * Full Instagram profile URL
-                               */
-                              instagram?: string | null;
-                            };
-                            id?: string | null;
-                          }[]
-                        | null;
-                      /**
-                       * Optional ID for this section (used for menu navigation)
-                       */
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'three-columns';
-                    }
-                  | {
-                      eyebrow?: string | null;
-                      heading: string;
-                      body?: string | null;
-                      cta?: {
-                        label?: string | null;
-                        href?: string | null;
-                      };
-                      mediaTopRight?: (number | null) | Media;
-                      mediaBottomLeft?: (number | null) | Media;
-                      mediaBottomRight?: (number | null) | Media;
-                      /**
-                       * Adjust vertical parallax in percent of the element height. Negative moves up, positive moves down.
-                       */
-                      parallax?: {
-                        topRight?: number | null;
-                        bottomLeft?: number | null;
-                        bottomRight?: number | null;
-                      };
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'botique-intro';
-                    }
-                  | {
-                      headingEyebrow?: string | null;
-                      heading: string;
-                      leftText?: string | null;
-                      address?: string | null;
-                      email?: string | null;
-                      phone?: string | null;
-                      form: number | Form;
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'boutique-contact';
-                    }
-                  | {
-                      eyebrow?: string | null;
-                      heading: string;
-                      subheading?: string | null;
-                      cta?: {
-                        label?: string | null;
-                        href?: string | null;
-                      };
-                      /**
-                       * Add up to 4 rooms: Premium, Deluxe, Suite, Apartment
-                       */
-                      rooms?:
-                        | {
-                            title: string;
-                            description?: string | null;
-                            badges?:
-                              | {
-                                  text?: string | null;
-                                  id?: string | null;
-                                }[]
-                              | null;
-                            image: number | Media;
-                            id?: string | null;
-                          }[]
-                        | null;
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'rooms';
-                    }
-                  | {
-                      media: number | Media;
-                      alt?: string | null;
-                      caption?: string | null;
-                      layout?: ('full' | 'contained') | null;
-                      align?: ('left' | 'center' | 'right') | null;
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'image';
-                    }
-                  | {
-                      heading: string;
-                      images?:
-                        | {
-                            media: number | Media;
-                            alt?: string | null;
-                            caption?: string | null;
-                            id?: string | null;
-                          }[]
-                        | null;
-                      /**
-                       * Higher = slower. Animation speeds up temporarily with scroll velocity.
-                       */
-                      baseDuration?: number | null;
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'rooftop';
-                    }
-                  | {
-                      heading: string;
-                      features?:
-                        | {
-                            icon?: string | null;
-                            title: string;
-                            description?: string | null;
-                            id?: string | null;
-                          }[]
-                        | null;
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'rooftop-features';
-                    }
-                  | {
-                      /**
-                       * Enter the intro text that will be displayed centered in black
-                       */
-                      content: string;
-                      /**
-                       * Optional ID for this section (used for menu navigation)
-                       */
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'intro';
-                    }
-                  | {
-                      /**
-                       * Main title displayed in the center
-                       */
-                      title: string;
-                      /**
-                       * Subtitle text displayed below the title
-                       */
-                      subtitle: string;
-                      /**
-                       * Optional button text (e.g., "Reservieren")
-                       */
-                      buttonText?: string | null;
-                      /**
-                       * URL for the button (if button text is provided)
-                       */
-                      buttonUrl?: string | null;
-                      images?:
-                        | {
-                            image: number | Media;
-                            /**
-                             * Choose the position and aspect ratio for this image
-                             */
-                            position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-                            id?: string | null;
-                          }[]
-                        | null;
-                      /**
-                       * Optional ID for this section (used for menu navigation)
-                       */
-                      sectionId?: string | null;
-                      id?: string | null;
-                      blockName?: string | null;
-                      blockType: 'image-grid';
-                    }
-                )[]
-              | null;
-            /**
-             * Make this section take up the full viewport height
-             */
-            isFullHeight?: boolean | null;
-            /**
-             * Choose the container width for section content
-             */
-            container?: ('full' | 'container' | 'narrow') | null;
-            padding?: {
-              top?: number | null;
-              right?: number | null;
-              bottom?: number | null;
-              left?: number | null;
-            };
-            /**
-             * CSS color value (e.g., #000000, rgb(0,0,0), black)
-             */
-            backgroundColor?: string | null;
-            backgroundMedia?: {
-              type?: ('none' | 'image' | 'video') | null;
-              image?: (number | null) | Media;
-              video?: (number | null) | Media;
-              overlay?: ('none' | 'light' | 'medium' | 'dark') | null;
-            };
-            /**
-             * Optional ID for this section (used for menu navigation)
-             */
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'section';
-          }
-        | {
             heading: string;
             subheading?: string | null;
             backgroundMedia?: {
@@ -722,11 +388,15 @@ export interface Page {
                      */
                     opacity?: number | null;
                   };
+                  /**
+                   * Mark this column as "Coming Soon" - will fade out and disable clicking
+                   */
+                  comingSoon?: boolean | null;
                   link: {
                     /**
                      * Select the tenant to link to. URL will be generated automatically based on environment.
                      */
-                    tenant: number | Tenant;
+                    tenant?: (number | null) | Tenant;
                     text: string;
                     openInNewTab?: boolean | null;
                   };
@@ -812,7 +482,13 @@ export interface Page {
                         id?: string | null;
                       }[]
                     | null;
-                  image: number | Media;
+                  images?:
+                    | {
+                        image: number | Media;
+                        alt?: string | null;
+                        id?: string | null;
+                      }[]
+                    | null;
                   id?: string | null;
                 }[]
               | null;
@@ -844,7 +520,6 @@ export interface Page {
             heading: string;
             features?:
               | {
-                  icon?: string | null;
                   title: string;
                   description?: string | null;
                   id?: string | null;
@@ -950,23 +625,71 @@ export interface Page {
              */
             backgroundImage?: (number | null) | Media;
             /**
-             * Add decorative images that will be positioned randomly around the content
-             */
-            decorativeImages?:
-              | {
-                  image: number | Media;
-                  aspectRatio: '16:9' | '9:16';
-                  position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center-left' | 'center-right';
-                  id?: string | null;
-                }[]
-              | null;
-            /**
              * Optional ID for this section (used for navigation)
              */
             sectionId?: string | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'job-opportunity';
+          }
+        | {
+            media: number | Media;
+            alt?: string | null;
+            caption?: string | null;
+            layout?: ('full' | 'contained') | null;
+            align?: ('left' | 'center' | 'right') | null;
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'image';
+          }
+        | {
+            /**
+             * Enter the intro text that will be displayed centered in black
+             */
+            content: string;
+            /**
+             * Optional ID for this section (used for menu navigation)
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'intro';
+          }
+        | {
+            /**
+             * Main title displayed in the center
+             */
+            title: string;
+            /**
+             * Subtitle text displayed below the title
+             */
+            subtitle: string;
+            /**
+             * Optional button text (e.g., "Reservieren")
+             */
+            buttonText?: string | null;
+            /**
+             * URL for the button (if button text is provided)
+             */
+            buttonUrl?: string | null;
+            images?:
+              | {
+                  image: number | Media;
+                  /**
+                   * Choose the position and aspect ratio for this image
+                   */
+                  position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Optional ID for this section (used for menu navigation)
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'image-grid';
           }
       )[]
     | null;
@@ -980,7 +703,6 @@ export interface Page {
   };
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1024,7 +746,7 @@ export interface Form {
               root: {
                 type: string;
                 children: {
-                  type: string;
+                  type: any;
                   version: number;
                   [k: string]: unknown;
                 }[];
@@ -1107,7 +829,7 @@ export interface Form {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -1139,7 +861,7 @@ export interface Form {
           root: {
             type: string;
             children: {
-              type: string;
+              type: any;
               version: number;
               [k: string]: unknown;
             }[];
@@ -1528,258 +1250,6 @@ export interface PagesSelect<T extends boolean = true> {
   layout?:
     | T
     | {
-        section?:
-          | T
-          | {
-              blocks?:
-                | T
-                | {
-                    hero?:
-                      | T
-                      | {
-                          heading?: T;
-                          subheading?: T;
-                          backgroundMedia?:
-                            | T
-                            | {
-                                type?: T;
-                                image?: T;
-                                video?: T;
-                                overlay?: T;
-                              };
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    features?:
-                      | T
-                      | {
-                          heading?: T;
-                          features?:
-                            | T
-                            | {
-                                title?: T;
-                                description?: T;
-                                id?: T;
-                              };
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    text?:
-                      | T
-                      | {
-                          content?: T;
-                          fontSize?: T;
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    'three-columns'?:
-                      | T
-                      | {
-                          columns?:
-                            | T
-                            | {
-                                title?: T;
-                                subtitle?: T;
-                                backgroundImage?: T;
-                                fullHeight?: T;
-                                gradient?:
-                                  | T
-                                  | {
-                                      enabled?: T;
-                                      type?: T;
-                                      direction?: T;
-                                      position?: T;
-                                      startColor?: T;
-                                      endColor?: T;
-                                      opacity?: T;
-                                    };
-                                link?:
-                                  | T
-                                  | {
-                                      tenant?: T;
-                                      text?: T;
-                                      openInNewTab?: T;
-                                    };
-                                socialNetworks?:
-                                  | T
-                                  | {
-                                      facebook?: T;
-                                      instagram?: T;
-                                    };
-                                id?: T;
-                              };
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    'botique-intro'?:
-                      | T
-                      | {
-                          eyebrow?: T;
-                          heading?: T;
-                          body?: T;
-                          cta?:
-                            | T
-                            | {
-                                label?: T;
-                                href?: T;
-                              };
-                          mediaTopRight?: T;
-                          mediaBottomLeft?: T;
-                          mediaBottomRight?: T;
-                          parallax?:
-                            | T
-                            | {
-                                topRight?: T;
-                                bottomLeft?: T;
-                                bottomRight?: T;
-                              };
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    'boutique-contact'?:
-                      | T
-                      | {
-                          headingEyebrow?: T;
-                          heading?: T;
-                          leftText?: T;
-                          address?: T;
-                          email?: T;
-                          phone?: T;
-                          form?: T;
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    rooms?:
-                      | T
-                      | {
-                          eyebrow?: T;
-                          heading?: T;
-                          subheading?: T;
-                          cta?:
-                            | T
-                            | {
-                                label?: T;
-                                href?: T;
-                              };
-                          rooms?:
-                            | T
-                            | {
-                                title?: T;
-                                description?: T;
-                                badges?:
-                                  | T
-                                  | {
-                                      text?: T;
-                                      id?: T;
-                                    };
-                                image?: T;
-                                id?: T;
-                              };
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    image?:
-                      | T
-                      | {
-                          media?: T;
-                          alt?: T;
-                          caption?: T;
-                          layout?: T;
-                          align?: T;
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    rooftop?:
-                      | T
-                      | {
-                          heading?: T;
-                          images?:
-                            | T
-                            | {
-                                media?: T;
-                                alt?: T;
-                                caption?: T;
-                                id?: T;
-                              };
-                          baseDuration?: T;
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    'rooftop-features'?:
-                      | T
-                      | {
-                          heading?: T;
-                          features?:
-                            | T
-                            | {
-                                icon?: T;
-                                title?: T;
-                                description?: T;
-                                id?: T;
-                              };
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    intro?:
-                      | T
-                      | {
-                          content?: T;
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                    'image-grid'?:
-                      | T
-                      | {
-                          title?: T;
-                          subtitle?: T;
-                          buttonText?: T;
-                          buttonUrl?: T;
-                          images?:
-                            | T
-                            | {
-                                image?: T;
-                                position?: T;
-                                id?: T;
-                              };
-                          sectionId?: T;
-                          id?: T;
-                          blockName?: T;
-                        };
-                  };
-              isFullHeight?: T;
-              container?: T;
-              padding?:
-                | T
-                | {
-                    top?: T;
-                    right?: T;
-                    bottom?: T;
-                    left?: T;
-                  };
-              backgroundColor?: T;
-              backgroundMedia?:
-                | T
-                | {
-                    type?: T;
-                    image?: T;
-                    video?: T;
-                    overlay?: T;
-                  };
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
         hero?:
           | T
           | {
@@ -1842,6 +1312,7 @@ export interface PagesSelect<T extends boolean = true> {
                           endColor?: T;
                           opacity?: T;
                         };
+                    comingSoon?: T;
                     link?:
                       | T
                       | {
@@ -1924,7 +1395,13 @@ export interface PagesSelect<T extends boolean = true> {
                           text?: T;
                           id?: T;
                         };
-                    image?: T;
+                    images?:
+                      | T
+                      | {
+                          image?: T;
+                          alt?: T;
+                          id?: T;
+                        };
                     id?: T;
                   };
               sectionId?: T;
@@ -1955,7 +1432,6 @@ export interface PagesSelect<T extends boolean = true> {
               features?:
                 | T
                 | {
-                    icon?: T;
                     title?: T;
                     description?: T;
                     id?: T;
@@ -2034,11 +1510,41 @@ export interface PagesSelect<T extends boolean = true> {
                   };
               ctaNote?: T;
               backgroundImage?: T;
-              decorativeImages?:
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        image?:
+          | T
+          | {
+              media?: T;
+              alt?: T;
+              caption?: T;
+              layout?: T;
+              align?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        intro?:
+          | T
+          | {
+              content?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'image-grid'?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              buttonText?: T;
+              buttonUrl?: T;
+              images?:
                 | T
                 | {
                     image?: T;
-                    aspectRatio?: T;
                     position?: T;
                     id?: T;
                   };
@@ -2056,7 +1562,6 @@ export interface PagesSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
-  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

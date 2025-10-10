@@ -2,7 +2,6 @@
 
 import { Page as PageType } from '@/payload-types'
 import { BlockRenderer } from './BlockRenderer'
-import { useEffect, useState } from 'react'
 
 export default function PageClient({
   page: initialPage,
@@ -32,13 +31,11 @@ export default function PageClient({
 
   // If we have no data at all, don't render anything
   if (!initialPage) {
-    console.error('[PageClient] No page data available')
     return null
   }
 
   // If we have no layout, show a fallback
   if (!initialPage.layout || initialPage.layout.length === 0) {
-    console.warn('[PageClient] No layout data available')
     return (
       <div className="prose mx-auto max-w-4xl p-4 lg:p-8">
         <div className="text-center text-gray-500">

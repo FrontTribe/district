@@ -1281,12 +1281,25 @@ div {
   background: rgb(0, 0, 0);
   position: relative;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    position: relative;
+    width: 100%;
+  }
 }
 
 .hero-content {
   // max-width: 800px;
   // content intentionally left commented; remove empty rule warning
   display: block;
+
+  @media (max-width: 768px) {
+    padding: 0 2rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0 1.5rem;
+  }
 }
 
 .hero-heading {
@@ -1365,10 +1378,11 @@ div {
   position: absolute;
   bottom: 24px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(10px);
   z-index: 6;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   color: rgba(255, 255, 255, 0.9);
   font-size: 12px;
@@ -1376,6 +1390,26 @@ div {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   user-select: none;
+  width: auto;
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    width: auto;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  @media (max-width: 480px) {
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    width: auto;
+    white-space: nowrap;
+    text-align: center;
+  }
 }
 
 .hero-scroll-indicator .scroll-text {
@@ -2593,3 +2627,12 @@ div {
     margin-bottom: 0;
   }
 }
+
+/* Block-specific styles imports */
+@import '../../blocks/Location/Location.scss';
+@import '../../blocks/ConceptBarMenu/ConceptBarMenu.scss';
+@import '../../blocks/ThreeColumns/ThreeColumns.scss';
+@import '../../blocks/Rooms/RoomSlider.scss';
+@import '../../blocks/ImageGrid/ImageGrid.scss';
+@import '../../blocks/JobOpportunity/JobOpportunity.scss';
+@import '../../blocks/Text/Text.scss';

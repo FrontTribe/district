@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import './Location.scss'
+import { getTranslation } from '@/utils/translations'
 
 // Google Maps types
 declare global {
@@ -41,6 +41,7 @@ type Props = {
   }
   workingHours: WorkingHours[]
   sectionId?: string
+  locale?: string
 }
 
 export const LocationBlock: React.FC<Props> = ({
@@ -51,6 +52,7 @@ export const LocationBlock: React.FC<Props> = ({
   coordinates,
   workingHours,
   sectionId,
+  locale = 'hr',
 }) => {
   const mapRef = useRef<HTMLDivElement>(null)
 
@@ -66,11 +68,8 @@ export const LocationBlock: React.FC<Props> = ({
   useEffect(() => {
     if (typeof window === 'undefined' || !mapRef.current) return
 
-    console.log('LocationBlock: Initializing map with coordinates:', coordinates)
-
     // Validate coordinates before proceeding
     if (!validateCoordinates(coordinates.lat, coordinates.lng)) {
-      console.error('LocationBlock: Invalid coordinates provided:', coordinates)
       if (mapRef.current) {
         mapRef.current.innerHTML = `
           <div style="
@@ -99,7 +98,6 @@ export const LocationBlock: React.FC<Props> = ({
     // Initialize Google Maps
     const initMap = () => {
       try {
-        console.log('LocationBlock: Creating Google Maps instance')
         const map = new (window as any).google.maps.Map(mapRef.current!, {
           zoom: 18,
           center: { lat: coordinates.lat, lng: coordinates.lng },
@@ -258,15 +256,7 @@ export const LocationBlock: React.FC<Props> = ({
 
         // Open info window by default
         infoWindow.open(map, marker)
-
-        console.log('LocationBlock: Marker created at coordinates:', {
-          lat: coordinates.lat,
-          lng: coordinates.lng,
-          title: title,
-          address: address,
-        })
       } catch (error) {
-        console.error('Error initializing Google Maps:', error)
         // Fallback: show a placeholder with coordinates
         if (mapRef.current) {
           mapRef.current.innerHTML = `
@@ -296,12 +286,8 @@ export const LocationBlock: React.FC<Props> = ({
     // Load Google Maps script if not already loaded
     if (!(window as any).google) {
       const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-      console.log('LocationBlock: Google Maps not loaded, API key:', apiKey ? 'Present' : 'Missing')
 
       if (!apiKey) {
-        console.warn(
-          'Google Maps API key not found. Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your environment variables.',
-        )
         // Show fallback placeholder
         if (mapRef.current) {
           mapRef.current.innerHTML = `
@@ -333,11 +319,9 @@ export const LocationBlock: React.FC<Props> = ({
       script.async = true
       script.defer = true
       script.onload = () => {
-        console.log('LocationBlock: Google Maps script loaded successfully')
         initMap()
       }
       script.onerror = () => {
-        console.error('LocationBlock: Failed to load Google Maps script, falling back to embed')
         // Show fallback with Google Maps embed
         if (mapRef.current) {
           const embedUrl = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${coordinates.lat},${coordinates.lng}&zoom=15`
@@ -355,22 +339,26 @@ export const LocationBlock: React.FC<Props> = ({
         }
       }
       document.head.appendChild(script)
-      console.log('LocationBlock: Google Maps script added to document head')
     } else {
-      console.log('LocationBlock: Google Maps already loaded, initializing map')
       initMap()
     }
   }, [coordinates.lat, coordinates.lng, title, address, photo, description])
 
+  const getDayTranslation = (day: string) => {
+    const dayKey = day.toLowerCase()
+    return getTranslation(dayKey, locale)
+  }
+
   const formatWorkingHours = (hours: WorkingHours[]) => {
+    const closedText = getTranslation('closed', locale)
     return hours.map((day) => {
       if (day.isClosed) {
-        return { ...day, display: 'Closed' }
+        return { ...day, display: closedText }
       }
       if (day.isOpen && day.openTime && day.closeTime) {
         return { ...day, display: `${day.openTime} - ${day.closeTime}` }
       }
-      return { ...day, display: 'Closed' }
+      return { ...day, display: closedText }
     })
   }
 
@@ -392,18 +380,18 @@ export const LocationBlock: React.FC<Props> = ({
             {description && <p className="location-block__description">{description}</p>}
 
             <div className="location-block__address">
-              <h3 className="location-block__address-title">Address</h3>
+              <h3 className="location-block__address-title">{getTranslation('address', locale)}</h3>
               <p className="location-block__address-text">{address}</p>
             </div>
 
             <div className="location-block__hours">
-              <h3 className="location-block__hours-title">Working Hours</h3>
+              <h3 className="location-block__hours-title">
+                {getTranslation('workingHours', locale)}
+              </h3>
               <div className="location-block__hours-list">
                 {formattedHours.map((day, index) => (
                   <div key={index} className="location-block__hours-item">
-                    <span className="location-block__hours-day">
-                      {day.day.charAt(0).toUpperCase() + day.day.slice(1)}
-                    </span>
+                    <span className="location-block__hours-day">{getDayTranslation(day.day)}</span>
                     <span className="location-block__hours-time">{day.display}</span>
                   </div>
                 ))}

@@ -4,7 +4,6 @@ import React, { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { JobOpportunityBlockProps } from './types'
-import './JobOpportunity.scss'
 
 export const JobOpportunityBlock: React.FC<JobOpportunityBlockProps> = ({
   title,

@@ -2,11 +2,13 @@ import PageClient from '@/components/PageClient'
 import { getPayloadClient } from '@/utils/getPayloadClient'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
+import type { Metadata } from 'next'
 import type { Page as PageType, Tenant } from '@/payload-types'
 import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
 import { localeLang } from '@/utils/locale'
+import { generateMetadataFromPage } from '@/utils/generateMetadata'
 
 type PageProps = {
   params: Promise<{
@@ -36,6 +38,26 @@ async function fetchPage(slug: string, locale: AllowedLocale): Promise<PageType 
   } catch (_error) {
     return null
   }
+}
+
+/**
+ * Generate metadata for the page
+ */
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug, locale } = await params
+  const page = await fetchPage(slug, locale as AllowedLocale)
+
+  if (!page) {
+    return {
+      title: 'Page Not Found',
+      description: 'The requested page could not be found',
+    }
+  }
+
+  // Get base URL from environment or construct it
+  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+
+  return generateMetadataFromPage(page, locale, baseUrl)
 }
 
 export default async function Page({ params }: PageProps) {

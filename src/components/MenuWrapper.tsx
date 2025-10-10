@@ -121,7 +121,6 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
       // handle locale changes properly without a full server-side re-render
       window.location.href = newPath
     } catch (error) {
-      console.error('Error changing language:', error)
       setIsLanguageChanging(false)
     }
   }

@@ -1,6 +1,7 @@
 import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import React from 'react'
+import type { Metadata } from 'next'
 
 import config from '@/payload.config'
 import { MenuWrapper } from '@/components/MenuWrapper'
@@ -13,6 +14,74 @@ import { localeLang } from '@/utils/locale'
 import { notFound } from 'next/navigation'
 import PageClient from '@/components/PageClient'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
+import { generateMetadataFromPages } from '@/utils/generateMetadata'
+
+/**
+ * Fetch pages for metadata generation
+ */
+async function fetchPagesForMetadata(locale: string, subdomain?: string | null): Promise<Page[]> {
+  const payloadConfig = await config
+  const payload = await getPayload({ config: payloadConfig })
+
+  let currentTenant: Tenant | null = null
+  if (subdomain) {
+    currentTenant = await getTenantBySubdomain(subdomain)
+  }
+
+  let pages: Page[] = []
+  if (currentTenant) {
+    try {
+      const pagesResponse = await payload.find({
+        collection: 'pages',
+        depth: 2,
+        locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
+        where: {
+          tenant: {
+            equals: currentTenant.id,
+          },
+        },
+      })
+      pages = pagesResponse.docs as Page[]
+    } catch (_error) {
+      // Error fetching pages
+    }
+  } else {
+    try {
+      const mainPagesResponse = await payload.find({
+        collection: 'pages',
+        depth: 2,
+        locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
+        where: {
+          tenant: {
+            exists: false,
+          },
+        },
+      })
+      pages = mainPagesResponse.docs as Page[]
+    } catch (_error) {
+      // Error fetching main domain pages
+    }
+  }
+
+  return pages
+}
+
+/**
+ * Generate metadata for the home page
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const requestHeaders: Headers = await headers()
+  const subdomain = requestHeaders.get('x-tenant-subdomain')
+
+  const pages = await fetchPagesForMetadata(locale, subdomain)
+
+  return generateMetadataFromPages(pages, locale, !!subdomain)
+}
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params

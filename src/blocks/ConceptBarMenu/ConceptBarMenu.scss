@@ -276,13 +276,20 @@
     }
 
     .concept-bar__item-header {
-      flex-direction: column;
+      flex-direction: row;
+      justify-content: space-between;
       align-items: flex-start;
-      gap: 8px;
+      gap: 12px;
+    }
+
+    .concept-bar__item-name {
+      flex: 1;
+      min-width: 0;
     }
 
     .concept-bar__item-price {
-      align-self: flex-end;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
   }
 }

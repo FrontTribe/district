@@ -56,7 +56,6 @@ export const BlockRenderer: React.FC<{
           return <BlockComponent key={key} {...block} locale={locale} />
         }
 
-        console.warn(`[BlockRenderer] No component found for block type: ${blockType}`)
         return (
           <div key={index}>
             The component for block type &quot;{blockType}&quot; does not exist.
