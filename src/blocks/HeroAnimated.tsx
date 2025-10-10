@@ -122,11 +122,11 @@ export default function HeroAnimated({ heading, subheading, locale = 'hr' }: Pro
           </p>
         )}
       </div>
-      <div 
-        className="hero-scroll-indicator" 
-        role="presentation" 
+      <div
+        className="hero-scroll-indicator"
+        role="presentation"
         ref={scrollRef}
-        style={{ opacity: 0, transform: 'translateY(10px)' }}
+        style={{ opacity: 0 }}
       >
         <span className="scroll-text">{getTranslation('scrollToExplore', locale)}</span>
         <span className="scroll-dot" />
