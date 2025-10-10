@@ -1,5 +1,3 @@
-import './Text.scss'
-
 export const TextBlock: React.FC<{
   content: string
   fontSize?: 'small' | 'medium' | 'large' | 'xl'

@@ -11,7 +11,6 @@ export function middleware(request: NextRequest) {
   }
 
   const cleanHost = host.replace('www.', '').split(':')[0]
-  console.log(`[Middleware] Clean host: ${cleanHost}`)
 
   let subdomain = ''
 
@@ -35,10 +34,8 @@ export function middleware(request: NextRequest) {
   }
 
   if (subdomain) {
-    console.log(`[Middleware] Derived Subdomain: ${subdomain}`)
     headers.set('x-tenant-subdomain', subdomain)
   } else {
-    console.log(`[Middleware] No subdomain detected for host: ${cleanHost}`)
   }
 
   return NextResponse.next({

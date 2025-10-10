@@ -5,9 +5,12 @@ import { gsap } from 'gsap'
 import { ThreeColumnsBlockProps } from './types'
 import { generateTenantUrl } from '@/utils/generateTenantUrl'
 import { getTranslation } from '@/utils/translations'
-import './ThreeColumns.scss'
 
-export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, sectionId, locale = 'en' }) => {
+export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({
+  columns,
+  sectionId,
+  locale = 'en',
+}) => {
   // Refs for animations
   const sectionRef = useRef<HTMLElement>(null)
   const lineRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -111,8 +114,6 @@ export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, s
     }
   }
 
-  console.log(`[ThreeColumnsBlock] Rendering with columns:`, columns)
-
   return (
     <section ref={sectionRef} id={sectionId} className="hero three-columns-section">
       {/* Hero Section - 3 Column Grid Layout (Full Width) */}
@@ -149,7 +150,9 @@ export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({ columns, s
                   </div>
                 )}
 
-                 {isComingSoon && <span className="coming-soon-badge">{getTranslation('comingSoon', locale)}</span>}
+                {isComingSoon && (
+                  <span className="coming-soon-badge">{getTranslation('comingSoon', locale)}</span>
+                )}
 
                 <h2 className="hero-title mt-4">{column.title}</h2>
                 <p className="hero-subtitle">{column.subtitle}</p>

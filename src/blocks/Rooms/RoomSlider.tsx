@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { getOptimizedImageUrl } from '@/utils/getOptimizedImageUrl'
-import './RoomSlider.scss'
 
 type RoomImage = {
   image: any

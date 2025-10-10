@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ConceptBarMenuBlockProps } from './types'
-import './ConceptBarMenu.scss'
 
 export const ConceptBarMenuBlock: React.FC<ConceptBarMenuBlockProps> = ({
   title,
@@ -152,6 +151,39 @@ export const ConceptBarMenuBlock: React.FC<ConceptBarMenuBlockProps> = ({
         }
       })
 
+      // Animate category titles on scroll
+      q('.concept-bar__category-title').forEach((title: HTMLElement, index: number) => {
+        gsap.set(title, { opacity: 0, y: 20 })
+        gsap.to(title, {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: title,
+            start: 'top 85%',
+            toggleActions: 'play none none reverse',
+          },
+        })
+      })
+
+      // Animate category subtitles on scroll
+      q('.concept-bar__category-subtitle').forEach((subtitle: HTMLElement, index: number) => {
+        gsap.set(subtitle, { opacity: 0, y: 15 })
+        gsap.to(subtitle, {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          delay: 0.1,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: subtitle,
+            start: 'top 85%',
+            toggleActions: 'play none none reverse',
+          },
+        })
+      })
+
       // Animate menu items on scroll - faster and more responsive
       q('.concept-bar__menu-item').forEach((item: HTMLElement, index: number) => {
         gsap.set(item, { opacity: 0, y: 10 })
@@ -159,7 +191,6 @@ export const ConceptBarMenuBlock: React.FC<ConceptBarMenuBlockProps> = ({
           opacity: 1,
           y: 0,
           duration: 0.3,
-          delay: index * 0.02,
           ease: 'power2.out',
           scrollTrigger: {
             trigger: item,

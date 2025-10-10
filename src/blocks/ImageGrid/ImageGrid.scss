@@ -8,6 +8,10 @@
   overflow: hidden;
   background-color: #051e24;
 
+  @media (max-width: 768px) {
+    min-height: auto;
+  }
+
   // Desktop Grid Layout
   .image-grid__container--desktop {
     position: relative;
@@ -67,6 +71,13 @@
 
     @media (max-width: 768px) {
       display: flex;
+      padding: 20px 0;
+      min-height: auto;
+    }
+
+    @media (max-width: 480px) {
+      padding: 15px 0;
+      min-height: auto;
     }
   }
 
@@ -79,9 +90,14 @@
     display: flex;
     align-items: center;
 
+    @media (max-width: 768px) {
+      height: 35vh;
+      margin-bottom: 50px;
+    }
+
     @media (max-width: 480px) {
-      height: 40vh;
-      margin-bottom: 30px;
+      height: 30vh;
+      margin-bottom: 50px;
     }
   }
 
@@ -134,6 +150,9 @@
       padding: 0 20px;
       height: auto;
       justify-content: flex-start;
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 0;
 
       @media (max-width: 480px) {
         padding: 0 16px;
@@ -153,11 +172,17 @@
     @media (max-width: 768px) {
       font-size: clamp(36px, 8vw, 56px);
       margin-bottom: 20px;
+      max-width: 100%;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
 
     @media (max-width: 480px) {
       font-size: clamp(28px, 7vw, 42px);
       margin-bottom: 16px;
+      max-width: 100%;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
   }
 
@@ -174,11 +199,17 @@
     @media (max-width: 768px) {
       font-size: 16px;
       margin-bottom: 24px;
+      max-width: 100%;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
 
     @media (max-width: 480px) {
       font-size: 15px;
       margin-bottom: 20px;
+      max-width: 100%;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
   }
 

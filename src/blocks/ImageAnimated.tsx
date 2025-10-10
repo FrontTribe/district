@@ -22,7 +22,6 @@ export default function ImageAnimated({ src, alt = '', width, height, caption, c
     const initAnimation = () => {
       // Ensure ScrollTrigger is properly registered
       if (typeof ScrollTrigger === 'undefined') {
-        console.warn('ScrollTrigger is not available')
         return
       }
 
@@ -58,7 +57,6 @@ export default function ImageAnimated({ src, alt = '', width, height, caption, c
           onEnter: () => tl.play(),
         })
       } catch (error) {
-        console.error('Error creating ScrollTrigger:', error)
         // Fallback: just play the animation immediately
         tl.play()
       }
@@ -68,7 +66,6 @@ export default function ImageAnimated({ src, alt = '', width, height, caption, c
           if (st) st.kill()
           tl.kill()
         } catch (error) {
-          console.error('Error cleaning up ScrollTrigger:', error)
         }
       }
     }

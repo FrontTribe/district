@@ -104,7 +104,6 @@ export const RooftopBlock: React.FC<{
         })
       }
     } catch (error) {
-      console.error('Error creating ScrollTrigger for RooftopBlock:', error)
     }
 
     // Recreate on resize
@@ -116,7 +115,6 @@ export const RooftopBlock: React.FC<{
       try {
         if (st) st.kill()
       } catch (error) {
-        console.error('Error killing ScrollTrigger in RooftopBlock:', error)
       }
       ro.disconnect()
       window.removeEventListener('load', onWindowLoad)
@@ -126,7 +124,6 @@ export const RooftopBlock: React.FC<{
   useEffect(() => {
     // heading and card reveal on enter
     if (typeof ScrollTrigger === 'undefined') {
-      console.warn('ScrollTrigger is not available in RooftopBlock')
       return
     }
 
@@ -162,7 +159,6 @@ export const RooftopBlock: React.FC<{
           requestAnimationFrame(() => ScrollTrigger.refresh())
         }
       } catch (error) {
-        console.error('Error creating ScrollTrigger animations in RooftopBlock:', error)
       }
     }, containerRef.current || undefined)
 
