@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export function middleware(request: NextRequest) {
   const headers = new Headers(request.headers)
   const host = request.headers.get('host')
-  const mainDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'new.district.hr'
+  const mainDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'district.hr'
   const defaultTenant = 'district'
 
   if (!host) {
@@ -11,23 +11,23 @@ export function middleware(request: NextRequest) {
   }
 
   const cleanHost = host.replace('www.', '').split(':')[0]
-
   let subdomain = ''
 
-  // Handle local development environments
+  // Local development: localhost or *.test
   if (cleanHost === 'localhost') {
     subdomain = defaultTenant
-  } else if (cleanHost.includes('.test') || cleanHost.includes('localhost')) {
+  } else if (cleanHost.endsWith('.test') || cleanHost.includes('localhost')) {
     const parts = cleanHost.split('.')
     if (parts.length >= 2) {
       subdomain = parts[0]
     }
   }
-  // Handle production and staging environments
+  // Production: *.district.hr
   else if (mainDomain) {
     if (cleanHost === mainDomain) {
       subdomain = defaultTenant
     } else if (cleanHost.endsWith(`.${mainDomain}`)) {
+      // e.g. xyz.district.hr => xyz
       const subdomainEndIndex = cleanHost.length - mainDomain.length - 1
       subdomain = cleanHost.slice(0, subdomainEndIndex)
     }
@@ -35,7 +35,6 @@ export function middleware(request: NextRequest) {
 
   if (subdomain) {
     headers.set('x-tenant-subdomain', subdomain)
-  } else {
   }
 
   return NextResponse.next({
