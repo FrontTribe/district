@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
+import { getTranslation } from '@/utils/translations'
 import './Location.scss'
 
 // Google Maps types
@@ -37,6 +38,7 @@ type Props = {
   }
   workingHours: WorkingHours[]
   sectionId?: string
+  locale?: string
 }
 
 export const LocationBlock: React.FC<Props> = ({
@@ -46,6 +48,7 @@ export const LocationBlock: React.FC<Props> = ({
   coordinates,
   workingHours,
   sectionId,
+  locale = 'hr',
 }) => {
   const mapRef = useRef<HTMLDivElement>(null)
 
@@ -335,7 +338,14 @@ export const LocationBlock: React.FC<Props> = ({
     }
   }, [coordinates.lat, coordinates.lng, title, address])
 
+  const getDayTranslation = (day: string) => {
+    const dayKey = day.toLowerCase()
+    return getTranslation(dayKey, locale)
+  }
+
   const formatWorkingHours = (hours: WorkingHours[]) => {
+    const closedText = getTranslation('closed', locale)
+
     if (!hours || !Array.isArray(hours)) {
       console.warn('LocationBlock: No working hours data provided')
       return []
@@ -347,12 +357,12 @@ export const LocationBlock: React.FC<Props> = ({
       // Ensure we have a valid day object
       if (!day || typeof day !== 'object') {
         console.warn(`LocationBlock: Invalid day data at index ${index}:`, day)
-        return { day: `Day ${index + 1}`, display: 'Closed' }
+        return { day: `Day ${index + 1}`, display: closedText }
       }
 
       // If explicitly marked as closed
       if (day.isClosed === true) {
-        return { ...day, display: 'Closed' }
+        return { ...day, display: closedText }
       }
 
       // If open and has both times
@@ -365,17 +375,17 @@ export const LocationBlock: React.FC<Props> = ({
       // If open but missing times, show as closed
       if (day.isOpen === true && (!day.openTime || !day.closeTime)) {
         console.warn(`LocationBlock: Day ${day.day} is open but missing times`)
-        return { ...day, display: 'Closed' }
+        return { ...day, display: closedText }
       }
 
       // If not open, show as closed
       if (day.isOpen === false) {
-        return { ...day, display: 'Closed' }
+        return { ...day, display: closedText }
       }
 
       // Default to closed
       console.warn(`LocationBlock: Day ${day.day} defaulting to closed`)
-      return { ...day, display: 'Closed' }
+      return { ...day, display: closedText }
     })
   }
 
@@ -404,20 +414,20 @@ export const LocationBlock: React.FC<Props> = ({
             {description && <p className="location-block__description">{description}</p>}
 
             <div className="location-block__address">
-              <h3 className="location-block__address-title">Address</h3>
+              <h3 className="location-block__address-title">{getTranslation('address', locale)}</h3>
               <p className="location-block__address-text">{address}</p>
             </div>
 
             <div className="location-block__hours">
-              <h3 className="location-block__hours-title">Working Hours</h3>
+              <h3 className="location-block__hours-title">
+                {getTranslation('workingHours', locale)}
+              </h3>
               <div className="location-block__hours-list">
                 {formattedHours && formattedHours.length > 0 ? (
                   formattedHours.map((day, index) => {
                     // Ensure we have valid data
-                    const dayName = day?.day
-                      ? day.day.charAt(0).toUpperCase() + day.day.slice(1)
-                      : `Day ${index + 1}`
-                    const displayTime = day?.display || 'Closed'
+                    const dayName = day?.day ? getDayTranslation(day.day) : `Day ${index + 1}`
+                    const displayTime = day?.display || getTranslation('closed', locale)
 
                     return (
                       <div key={index} className="location-block__hours-item">

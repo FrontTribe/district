@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
+import { getTranslation } from '@/utils/translations'
 import './Location.scss'
 
 // Google Maps types
@@ -41,6 +42,7 @@ type Props = {
   }
   workingHours: WorkingHours[]
   sectionId?: string
+  locale?: string
 }
 
 export const LocationBlock: React.FC<Props> = ({
@@ -51,6 +53,7 @@ export const LocationBlock: React.FC<Props> = ({
   coordinates,
   workingHours,
   sectionId,
+  locale = 'hr',
 }) => {
   const mapRef = useRef<HTMLDivElement>(null)
 
@@ -362,15 +365,21 @@ export const LocationBlock: React.FC<Props> = ({
     }
   }, [coordinates.lat, coordinates.lng, title, address, photo, description])
 
+  const getDayTranslation = (day: string) => {
+    const dayKey = day.toLowerCase()
+    return getTranslation(dayKey, locale)
+  }
+
   const formatWorkingHours = (hours: WorkingHours[]) => {
+    const closedText = getTranslation('closed', locale)
     return hours.map((day) => {
       if (day.isClosed) {
-        return { ...day, display: 'Closed' }
+        return { ...day, display: closedText }
       }
       if (day.isOpen && day.openTime && day.closeTime) {
         return { ...day, display: `${day.openTime} - ${day.closeTime}` }
       }
-      return { ...day, display: 'Closed' }
+      return { ...day, display: closedText }
     })
   }
 
@@ -392,18 +401,18 @@ export const LocationBlock: React.FC<Props> = ({
             {description && <p className="location-block__description">{description}</p>}
 
             <div className="location-block__address">
-              <h3 className="location-block__address-title">Address</h3>
+              <h3 className="location-block__address-title">{getTranslation('address', locale)}</h3>
               <p className="location-block__address-text">{address}</p>
             </div>
 
             <div className="location-block__hours">
-              <h3 className="location-block__hours-title">Working Hours</h3>
+              <h3 className="location-block__hours-title">
+                {getTranslation('workingHours', locale)}
+              </h3>
               <div className="location-block__hours-list">
                 {formattedHours.map((day, index) => (
                   <div key={index} className="location-block__hours-item">
-                    <span className="location-block__hours-day">
-                      {day.day.charAt(0).toUpperCase() + day.day.slice(1)}
-                    </span>
+                    <span className="location-block__hours-day">{getDayTranslation(day.day)}</span>
                     <span className="location-block__hours-time">{day.display}</span>
                   </div>
                 ))}
