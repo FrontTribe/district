@@ -24,8 +24,6 @@ export async function GET(
       url.searchParams.set(key, value)
     })
 
-    console.log('🔄 Proxying request to:', url.toString())
-
     const response = await fetch(url.toString(), {
       headers: {
         'Content-Type': 'application/json',

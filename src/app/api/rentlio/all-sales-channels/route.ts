@@ -49,11 +49,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    console.log('[API] Fetching all sales channels...')
-
     // Fetch all properties
     const properties = await fetchAllPages<{ id: number; name: string }>('/properties')
-    console.log(`[API] Found ${properties.length} properties`)
 
     const salesChannelsByProperty: Record<
       string,
@@ -69,9 +66,6 @@ export async function GET(request: NextRequest) {
           provisionAmount: number
         }>(`/properties/${property.id}/sales-channels`)
 
-        console.log(
-          `[API] Found ${salesChannels.length} sales channels for property ${property.id}`,
-        )
         salesChannelsByProperty[property.id.toString()] = salesChannels
       } catch (error) {
         console.error(`[API] Failed to fetch sales channels for property ${property.id}:`, error)

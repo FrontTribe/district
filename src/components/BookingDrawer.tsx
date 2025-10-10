@@ -11,12 +11,14 @@ import {
   fetchUnitCapacityRestrictions,
   UnitCapacityRestriction,
 } from '@/utils/rentlioBooking'
+import { ReservationToast } from './ReservationToast'
 import './BookingDrawer.scss'
 
 interface RoomData {
   title: string
   description?: string
   rentlioUnitTypeId?: string
+  rentlioPropertyId?: string
   image?: any
   badges?: Array<{ text?: string }>
 }
@@ -65,8 +67,6 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
   locale = 'hr',
   salesChannelId = 45,
 }) => {
-  console.log('🚀 BookingDrawer rendered:', { isOpen, roomData, locale })
-
   // Translation function for frontend
   const t = (key: string, fallback: string = key) => {
     const translations: Record<string, Record<string, string>> = {
@@ -477,13 +477,20 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
   )
   const [_isLoadingPricing, setIsLoadingPricing] = useState(false)
   const [_pricingError, setPricingError] = useState<string | null>(null)
+  const [showReservationToast, setShowReservationToast] = useState(false)
+  const [reservationData, setReservationData] = useState<{
+    confirmationNumber?: string
+    fullName: string
+    email: string
+    checkIn: string
+    checkOut: string
+    roomName?: string
+    nights?: number
+    totalPrice?: number
+    currency?: string
+  } | null>(null)
 
   const rentlioApiKey = process.env.NEXT_PUBLIC_RENTLIO_API_KEY || ''
-  console.log('🔑 API Key check:', {
-    hasApiKey: !!rentlioApiKey,
-    keyLength: rentlioApiKey?.length,
-    keyPreview: rentlioApiKey ? `${rentlioApiKey.substring(0, 8)}...` : 'No key',
-  })
 
   // Prevent body scroll when drawer is open using Lenis-compatible method
   useEffect(() => {
@@ -557,15 +564,11 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
           static: true,
           inline: true,
           onChange: (selectedDates) => {
-            console.log('📅 Flatpickr onChange triggered:', selectedDates)
-
             if (selectedDates.length === 2) {
               const [startDate, endDate] = selectedDates
               // Format dates correctly to avoid timezone issues
               const startFormatted = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`
               const endFormatted = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`
-
-              console.log('📅 Selected date range:', { startFormatted, endFormatted })
 
               setFormData((prev) => ({
                 ...prev,
@@ -575,8 +578,6 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
             } else if (selectedDates.length === 1) {
               const startDate = selectedDates[0]
               const startFormatted = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`
-
-              console.log('📅 Selected single date:', { startFormatted })
 
               setFormData((prev) => ({
                 ...prev,
@@ -599,26 +600,6 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
 
   // Fetch pricing data when dates change
   useEffect(() => {
-    console.log('🔄 useEffect triggered:', {
-      isOpen,
-      hasRoomData: !!roomData,
-      hasUnitTypeId: !!roomData?.rentlioUnitTypeId,
-      hasApiKey: !!rentlioApiKey,
-      hasCheckIn: !!formData.checkIn,
-      hasCheckOut: !!formData.checkOut,
-      checkIn: formData.checkIn,
-      checkOut: formData.checkOut,
-    })
-
-    console.log('🔍 Detailed check:', {
-      isOpen: isOpen,
-      'roomData exists': !!roomData,
-      rentlioUnitTypeId: roomData?.rentlioUnitTypeId,
-      'apiKey length': rentlioApiKey?.length,
-      'checkIn value': formData.checkIn,
-      'checkOut value': formData.checkOut,
-    })
-
     // Check each condition separately
     const conditions = {
       isOpen: isOpen,
@@ -628,15 +609,7 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
       hasCheckOut: !!formData.checkOut,
     }
 
-    console.log('✅ Conditions check:', conditions)
-
     if (isOpen && roomData?.rentlioUnitTypeId && formData.checkIn && formData.checkOut) {
-      console.log('🏨 Room Object:', roomData)
-      console.log('📅 Selected Dates:', { checkIn: formData.checkIn, checkOut: formData.checkOut })
-      console.log('🔑 API Key:', rentlioApiKey ? 'Present' : 'Missing')
-      console.log('🏷️ Unit Type ID:', roomData.rentlioUnitTypeId)
-      console.log('🔍 All room data keys:', Object.keys(roomData || {}))
-
       setIsLoadingPricing(true)
       setPricingError(null)
 
@@ -646,9 +619,6 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
         fetchUnitTypeRestrictions(roomData.rentlioUnitTypeId, formData.checkIn, formData.checkOut),
       ])
         .then(([pricingData, restrictionsData]) => {
-          console.log('💰 Pricing Data Result:', pricingData)
-          console.log('🚫 Restrictions Data Result:', restrictionsData)
-
           setPricingData(pricingData)
           setRestrictions(restrictionsData)
 
@@ -672,7 +642,6 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
           }
         })
         .catch((error) => {
-          console.error('❌ Error fetching pricing or restrictions data:', error)
           setPricingError('Failed to load pricing information')
           setRestrictions([])
           setRestrictionsWarning('')
@@ -689,6 +658,7 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
             totalPrice: 240.0,
             totalPriceHRK: 1808.28,
             exchangeRate: 7.5345,
+            currencyCode: 'EUR',
             checkInTime: '15:00 - 21:00',
             checkOutTime: '6:00 - 11:00',
             minStay: 1,
@@ -702,11 +672,6 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
         .finally(() => {
           setIsLoadingPricing(false)
         })
-    } else {
-      console.log(
-        '❌ API call not triggered. Missing conditions:',
-        Object.entries(conditions).filter(([key, value]) => !value),
-      )
     }
   }, [isOpen, roomData, formData.checkIn, formData.checkOut])
 
@@ -763,6 +728,7 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
       totalPrice: 0,
       totalPriceHRK: 0,
       exchangeRate: 7.5345,
+      currencyCode: 'EUR',
       checkInTime: '15:00 - 21:00',
       checkOutTime: '6:00 - 11:00',
       minStay: 1,
@@ -1219,7 +1185,6 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
         setRestrictionsWarning('')
       }
     } catch (error) {
-      console.error('Error fetching restrictions:', error)
       setRestrictionsWarning('')
     }
   }
@@ -1290,10 +1255,6 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
         children: formData.children.filter((child) => child.age > 0), // Only include children with valid ages
       }
 
-      console.log('Submitting reservation:', reservationData)
-      console.log('Room data:', roomData)
-      console.log('Unit Type ID:', roomData?.rentlioUnitTypeId)
-
       // Make API call to create reservation
       const response = await fetch('/api/rentlio/reservations', {
         method: 'POST',
@@ -1305,24 +1266,49 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
 
       if (!response.ok) {
         const errorData = await response.json()
-        console.error('Reservation failed:', errorData)
         throw new Error(errorData.error || `Reservation failed with status ${response.status}`)
       }
 
       const result = await response.json()
-      console.log('Reservation successful:', result)
 
-      if (!result.success) {
+      // Check for success - handle both wrapped and direct Rentlio responses
+      if (result.success === false) {
         throw new Error(result.error || 'Reservation was not successful')
       }
 
-      // Show success message
-      alert(`Reservation submitted successfully! Reservation ID: ${result.reservationId}`)
+      // Extract reservation data from response
+      // Handle both wrapped response (result.data) and direct Rentlio response
+      const rentlioData = result.data || result
+      const reservation = rentlioData.reservations?.[0] || rentlioData
 
-      // Close drawer
-      onClose()
+      // Calculate nights
+      const checkInDate = new Date(formData.checkIn)
+      const checkOutDate = new Date(formData.checkOut)
+      const nights = Math.ceil(
+        (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24),
+      )
+
+      // Prepare reservation data for toast
+      setReservationData({
+        confirmationNumber:
+          reservation.id || reservation.publicId || result.reservationId || rentlioData.uuid,
+        fullName: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        checkIn: formData.checkIn,
+        checkOut: formData.checkOut,
+        roomName: roomData?.title || reservation.unitName,
+        nights: reservation.totalNights || nights,
+        totalPrice: reservation.totalPrice || pricingData?.totalPrice,
+        currency: pricingData?.currencyCode || 'EUR',
+      })
+
+      // Show success toast
+      setShowReservationToast(true)
+
+      // Don't close drawer immediately - let user see the success message
+      // User can close manually after viewing the toast
+      // setTimeout(() => onClose(), 500) // Optional: auto-close after toast appears
     } catch (error) {
-      console.error('Reservation error:', error)
       alert('Failed to submit reservation. Please try again.')
     } finally {
       setIsSubmitting(false)
@@ -1495,24 +1481,24 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
               {/* Capacity Restrictions Display */}
               {capacityRestrictions && (
                 <div className="capacity-restrictions">
-                  <h4>{translations.unitCapacity}</h4>
+                  <h4>{t('Unit Capacity')}</h4>
                   <div className="capacity-info">
                     <div className="capacity-item">
-                      <span className="capacity-label">{translations.maximumOccupancy}:</span>
+                      <span className="capacity-label">{t('Maximum Occupancy')}:</span>
                       <span className="capacity-value">
-                        {capacityRestrictions.maxOccupancy} {translations.people}
+                        {capacityRestrictions.maxOccupancy} {t('people')}
                       </span>
                     </div>
                     <div className="capacity-item">
-                      <span className="capacity-label">{translations.maximumAdults}:</span>
+                      <span className="capacity-label">{t('Maximum Adults')}:</span>
                       <span className="capacity-value">
-                        {capacityRestrictions.maxAdults} {translations.adults}
+                        {capacityRestrictions.maxAdults} {t('adults')}
                       </span>
                     </div>
                     <div className="capacity-item">
-                      <span className="capacity-label">{translations.maximumChildren}:</span>
+                      <span className="capacity-label">{t('Maximum Children')}:</span>
                       <span className="capacity-value">
-                        {capacityRestrictions.maxChildren} {translations.children}
+                        {capacityRestrictions.maxChildren} {t('children')}
                       </span>
                     </div>
                   </div>
@@ -1830,7 +1816,11 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
                           onChange={(e) => {
                             const newChildren = [...formData.children]
                             newChildren[index] = { age: parseInt(e.target.value) || 0 }
-                            setFormData({ ...formData, children: newChildren })
+                            setFormData({
+                              ...formData,
+                              children: newChildren,
+                              persons: formData.adults + newChildren.length,
+                            })
                             // Trigger restrictions validation when child age changes
                             if (formData.checkIn && formData.checkOut) {
                               validateMinimumStay(formData.checkIn, formData.checkOut)
@@ -1990,6 +1980,19 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
           </div>
         </form>
       </div>
+
+      {/* Reservation Success Toast */}
+      {reservationData && (
+        <ReservationToast
+          isOpen={showReservationToast}
+          onClose={() => {
+            setShowReservationToast(false)
+            onClose() // Close the drawer when toast is closed
+          }}
+          reservationData={reservationData}
+          locale={locale}
+        />
+      )}
     </div>
   )
 }

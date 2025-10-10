@@ -74,35 +74,23 @@ export const RentlioSalesChannelField: React.FC<RentlioSalesChannelFieldProps> =
 
   // Subscribe to property state manager
   useEffect(() => {
-    console.log('[SalesChannel] Subscribing to property state manager')
-
     const unsubscribe = import('@/utils/propertyStateManager').then(({ propertyStateManager }) => {
       // Get the current property ID immediately
       const currentPropertyId = propertyStateManager.getCurrentPropertyId()
-      console.log('[SalesChannel] Current property ID from state manager:', currentPropertyId)
       setSelectedPropertyId(currentPropertyId)
 
       return propertyStateManager.subscribe((newPropertyId) => {
-        console.log('[SalesChannel] Property state manager notified with ID:', newPropertyId)
         setSelectedPropertyId(newPropertyId)
 
         // Don't clear the value if no property is selected - let it work independently
         if (!newPropertyId) {
-          console.log('[SalesChannel] No property ID, but keeping sales channel value')
           return
         }
 
         const currentMap = salesChannelsCache.data || {}
         const availableOptions = currentMap[newPropertyId] || []
-        console.log(
-          '[SalesChannel] Available options for property',
-          newPropertyId,
-          ':',
-          availableOptions,
-        )
 
         if (value && !availableOptions.find((opt: Option) => opt.value === value)) {
-          console.log('[SalesChannel] Clearing invalid sales channel selection')
           setValue(null)
         }
       })
@@ -114,14 +102,6 @@ export const RentlioSalesChannelField: React.FC<RentlioSalesChannelFieldProps> =
   }, [value, setValue])
 
   const availableOptions = useMemo(() => {
-    console.log('[SalesChannel] Computing availableOptions:', {
-      selectedPropertyId,
-      resolvedMapKeys: Object.keys(resolvedMap || {}),
-      cacheKeys: Object.keys(salesChannelsCache.data || {}),
-      resolvedMapData: resolvedMap,
-      cacheData: salesChannelsCache.data,
-    })
-
     const currentMap = resolvedMap || salesChannelsCache.data || {}
 
     if (selectedPropertyId) {
@@ -130,12 +110,6 @@ export const RentlioSalesChannelField: React.FC<RentlioSalesChannelFieldProps> =
     } else {
       const allOptions: Option[] = []
       Object.entries(currentMap).forEach(([propId, propertyOptions]) => {
-        console.log(
-          '[SalesChannel] Adding',
-          propertyOptions.length,
-          'options from property',
-          propId,
-        )
         allOptions.push(...propertyOptions)
       })
 

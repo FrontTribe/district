@@ -57,6 +57,7 @@ export interface BookingPricingData {
   totalPrice: number
   totalPriceHRK: number
   exchangeRate: number
+  currencyCode: string
   checkInTime: string
   checkOutTime: string
   minStay: number
@@ -104,21 +105,12 @@ export async function fetchUnitTypeRates(
     })
 
     const url = `/api/rentlio/unit-types/${unitTypeId}/rates?${params}`
-    console.log('🌐 Rates API Request:', {
-      url,
-      unitTypeId,
-      checkIn,
-      checkOut,
-      apiKey: apiKey ? 'Present' : 'Not needed (using proxy)',
-    })
 
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
       },
     })
-
-    console.log('📡 Rates API Response Status:', response.status)
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -127,12 +119,9 @@ export async function fetchUnitTypeRates(
     }
 
     const data = await response.json()
-    console.log('📊 Rates API Raw Response:', data)
-    console.log('📊 Rates Data:', data.data || [])
 
     return data.data || []
   } catch (error) {
-    console.error('❌ Error fetching unit type rates:', error)
     throw error
   }
 }
@@ -165,8 +154,6 @@ export async function fetchUnitTypeRestrictions(
     }
 
     const data = await response.json()
-    console.log('📊 Restrictions API Raw Response:', data)
-    console.log('📊 Restrictions Data:', data.data || [])
 
     // Return the data array from the response
     return data.data || []
@@ -188,21 +175,18 @@ export async function fetchUnitCapacityRestrictions(
     // For now, we'll simulate this with mock data
     // In a real implementation, this would call an endpoint like:
     // `/api/rentlio/unit-types/${unitTypeId}/capacity` or similar
-    
-    console.log('🏠 Fetching capacity restrictions for unit type:', unitTypeId)
-    
+
     // Mock capacity data - in production this would come from API
     const mockCapacityData: UnitCapacityRestriction = {
       maxOccupancy: 2, // Maximum total guests
-      maxAdults: 2,    // Maximum adults
-      maxChildren: 1,  // Maximum children
+      maxAdults: 2, // Maximum adults
+      maxChildren: 1, // Maximum children
       unitTypeId: parseInt(unitTypeId),
-      unitName: 'Standard Room'
+      unitName: 'Standard Room',
     }
-    
-    console.log('📊 Capacity restrictions:', mockCapacityData)
+
     return mockCapacityData
-    
+
     // Real API call would look like this:
     /*
     const response = await fetch(`/api/rentlio/unit-types/${unitTypeId}/capacity`, {
@@ -255,25 +239,12 @@ export async function fetchUnitTypeAvailability(
     })
 
     const url = `/api/rentlio/unit-types/${unitTypeId}/availability?${params}`
-    console.log('🌐 Availability API Request:', {
-      url,
-      unitTypeId,
-      checkIn,
-      checkOut,
-      apiKey: apiKey ? 'Present' : 'Missing',
-    })
 
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
       },
     })
-
-    console.log('📡 Availability API Response Status:', response.status)
-    console.log(
-      '📡 Availability API Response Headers:',
-      Object.fromEntries(response.headers.entries()),
-    )
 
     // Check rate limiting headers
     const rateLimitSecond = response.headers.get('x-ratelimit-remaining-second')
@@ -302,8 +273,6 @@ export async function fetchUnitTypeAvailability(
     }
 
     const data = await response.json()
-    console.log('📊 Availability API Raw Response:', data)
-    console.log('📊 Availability Data:', data.data || [])
 
     // Validate response structure
     if (!data || typeof data !== 'object') {
@@ -313,7 +282,7 @@ export async function fetchUnitTypeAvailability(
     const availability = data.data || []
 
     // Validate each availability entry
-    const validatedAvailability = availability.map((item, index) => {
+    const validatedAvailability = availability.map((item: any, index: number) => {
       if (!item.date || typeof item.availability !== 'number') {
         console.warn(`⚠️ Invalid availability entry at index ${index}:`, item)
       }
@@ -329,10 +298,8 @@ export async function fetchUnitTypeAvailability(
       }
     })
 
-    console.log('✅ Processed availability data:', validatedAvailability)
     return validatedAvailability
   } catch (error) {
-    console.error('❌ Error fetching unit type availability:', error)
     throw error
   }
 }
@@ -483,8 +450,6 @@ export async function processRentlioBookingData(
   apiKey?: string,
 ): Promise<BookingPricingData> {
   try {
-    console.log('Fetching data for:', { unitTypeId, checkIn, checkOut })
-
     // Fetch rates, restrictions, and availability in parallel
     const [rates, restrictions, availability] = await Promise.all([
       fetchUnitTypeRates(unitTypeId, checkIn, checkOut),
@@ -492,11 +457,8 @@ export async function processRentlioBookingData(
       fetchUnitTypeAvailability(unitTypeId, checkIn, checkOut),
     ])
 
-    console.log('API Response:', { rates, restrictions, availability })
-
     // Analyze availability data for more detailed information
     const availabilityAnalysis = analyzeAvailability(availability)
-    console.log('📊 Availability Analysis:', availabilityAnalysis)
 
     // Check if all dates in the range are available
     const isAvailable =
@@ -535,6 +497,7 @@ export async function processRentlioBookingData(
       totalPrice,
       totalPriceHRK,
       exchangeRate,
+      currencyCode,
       checkInTime: '15:00 - 21:00', // Default check-in time
       checkOutTime: '6:00 - 11:00', // Default check-out time
       minStay,
@@ -549,10 +512,8 @@ export async function processRentlioBookingData(
       closedToDepartureDates: availabilityAnalysis.closedToDepartureDates,
     }
 
-    console.log('Processed result:', result)
     return result
   } catch (error) {
-    console.error('Error processing Rentlio booking data:', error)
     throw error
   }
 }

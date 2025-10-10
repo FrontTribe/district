@@ -42,28 +42,11 @@ export const RoomsBlock: React.FC<Props> = ({
   sectionId,
   locale,
 }) => {
-  console.log('🏨 RoomsBlock received data:', { rooms, roomsCount: rooms.length })
-  rooms.forEach((room, index) => {
-    console.log(`🏨 Room ${index}:`, {
-      title: room.title,
-      rentlioUnitTypeId: room.rentlioUnitTypeId,
-      hasImage: !!room.image,
-      badgesCount: room.badges?.length || 0,
-    })
-  })
-
   const sectionRef = useRef<HTMLElement | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
 
   const handleBookNow = (room: Room) => {
-    console.log('🚀 handleBookNow called with room:', {
-      title: room.title,
-      rentlioUnitTypeId: room.rentlioUnitTypeId,
-      description: room.description,
-      hasImage: !!room.image,
-      badges: room.badges,
-    })
     setSelectedRoom(room)
     setIsDrawerOpen(true)
   }

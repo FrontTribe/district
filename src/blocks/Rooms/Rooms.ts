@@ -75,22 +75,9 @@ const rentlioUnitTypeField: any = {
 if (typeof window === 'undefined') {
   loadRentlioOptions()
     .then(({ propertyOptions, unitTypeOptions, unitTypesByProperty, salesChannelsByProperty }) => {
-      console.log('[Rentlio] Loaded options:', {
-        propertyCount: propertyOptions.length,
-        unitTypeCount: unitTypeOptions.length,
-        salesChannelProperties: Object.keys(salesChannelsByProperty),
-        salesChannelsByProperty,
-      })
       rentlioPropertyField.admin.props.options = propertyOptions
       rentlioUnitTypeField.admin.props.unitTypesByProperty = unitTypesByProperty
       rentlioSalesChannelField.admin.props.salesChannelsByProperty = salesChannelsByProperty
-
-      console.log('[Rentlio] Props set on fields:', {
-        propertyOptionsCount: propertyOptions.length,
-        unitTypesByPropertyKeys: Object.keys(unitTypesByProperty),
-        salesChannelsByPropertyKeys: Object.keys(salesChannelsByProperty),
-        salesChannelsByPropertyValues: Object.values(salesChannelsByProperty),
-      })
     })
     .catch((error) => {
       console.warn('[Rentlio] Failed to preload options. Falling back to manual entry.', error)

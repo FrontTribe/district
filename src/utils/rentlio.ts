@@ -141,11 +141,6 @@ async function fetchRentlioOptions(): Promise<RentlioOptions> {
           `/properties/${property.id}/sales-channels`,
         )
 
-        console.log(
-          `${logPrefix} Loaded ${salesChannels.length} sales channels for property ${property.id}:`,
-          salesChannels,
-        )
-
         for (const salesChannel of salesChannels) {
           const option = {
             label: `${salesChannel.name} (ID: ${salesChannel.id})`,
@@ -188,20 +183,8 @@ async function fetchRentlioOptions(): Promise<RentlioOptions> {
 let cachedOptions: RentlioOptions | null = null
 
 export async function loadRentlioOptions(forceReload = false): Promise<RentlioOptions> {
-  console.log(`${logPrefix} loadRentlioOptions called, forceReload: ${forceReload}`)
   if (!cachedOptions || forceReload) {
-    console.log(`${logPrefix} Fetching fresh options...`)
     cachedOptions = await fetchRentlioOptions()
-    console.log(`${logPrefix} Options fetched successfully:`, {
-      propertyCount: cachedOptions.propertyOptions.length,
-      salesChannelProperties: Object.keys(cachedOptions.salesChannelsByProperty),
-      totalSalesChannels: Object.values(cachedOptions.salesChannelsByProperty).reduce(
-        (sum, channels) => sum + channels.length,
-        0,
-      ),
-    })
-  } else {
-    console.log(`${logPrefix} Using cached options`)
   }
   return cachedOptions
 }

@@ -28,9 +28,6 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    console.log(`Fetching sales channels for property ID: ${propertyId}`)
-    console.log(`API URL: https://api.rentl.io/v1/properties/${propertyId}/sales-channels`)
-
     // Make API call to Rentlio to get sales channels
     const rentlioResponse = await fetch(
       `https://api.rentl.io/v1/properties/${propertyId}/sales-channels`,
@@ -41,12 +38,6 @@ export async function GET(request: NextRequest) {
           ApiKey: apiKey,
         },
       },
-    )
-
-    console.log('Rentlio sales channels response status:', rentlioResponse.status)
-    console.log(
-      'Rentlio sales channels response headers:',
-      Object.fromEntries(rentlioResponse.headers.entries()),
     )
 
     if (!rentlioResponse.ok) {
@@ -77,7 +68,6 @@ export async function GET(request: NextRequest) {
     }
 
     const result = await rentlioResponse.json()
-    console.log('Rentlio sales groups success response:', result)
 
     return NextResponse.json(
       {
@@ -88,8 +78,6 @@ export async function GET(request: NextRequest) {
       { status: 200 },
     )
   } catch (error) {
-    console.error('Sales groups API error:', error)
-
     return NextResponse.json(
       {
         success: false,

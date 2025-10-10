@@ -94,19 +94,12 @@ const RentlioPropertyField: React.FC<Props> = ({
         value={value || ''}
         onChange={(e) => {
           const nextValue = e.target.value || null
-          console.log('[Property] onChange triggered:', {
-            selectedValue: e.target.value,
-            nextValue,
-            currentValue: value,
-          })
           setValue(nextValue)
 
           const changeEvent = new CustomEvent('rentlio:propertyChanged', {
             detail: { propertyId: nextValue },
           })
           window.dispatchEvent(changeEvent)
-
-          console.log('[Property] Setting property ID in state manager:', nextValue)
           propertyStateManager.setPropertyId(nextValue as string | null)
         }}
         disabled={isLoading}

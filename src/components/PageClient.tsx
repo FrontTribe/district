@@ -13,20 +13,10 @@ export default function PageClient({
 }) {
   const [_hasRendered, setHasRendered] = useState(false)
 
-  // Debug logging
-  useEffect(() => {
-    console.log('[PageClient] Rendering page:', {
-      pageId: initialPage?.id,
-      title: initialPage?.title || 'No title',
-      blockCount: initialPage?.layout?.length || 0,
-    })
-  }, [initialPage])
-
   // Track if we've rendered content
   useEffect(() => {
     if (initialPage?.layout && initialPage.layout.length > 0) {
       setHasRendered(true)
-      console.log('[PageClient] Content rendered successfully')
     }
   }, [initialPage])
 

@@ -84,16 +84,12 @@ const RentlioUnitTypeField: React.FC<Props> = ({
   }, [unitTypesByProperty])
 
   useEffect(() => {
-    console.log('[UnitType] Subscribing to property state manager')
-
     const unsubscribe = import('@/utils/propertyStateManager').then(({ propertyStateManager }) => {
       return propertyStateManager.subscribe((newPropertyId) => {
-        console.log('[UnitType] Property state manager notified with ID:', newPropertyId)
         setSelectedPropertyId(newPropertyId)
 
         // Don't clear the value if no property is selected - let it work independently
         if (!newPropertyId) {
-          console.log('[UnitType] No property ID, but keeping unit type value')
           return
         }
 
@@ -101,7 +97,6 @@ const RentlioUnitTypeField: React.FC<Props> = ({
         const availableOptions = currentMap[newPropertyId] || []
 
         if (value && !availableOptions.find((opt: Option) => opt.value === value)) {
-          console.log('[UnitType] Clearing invalid unit type selection')
           setValue(null)
         }
       })
@@ -111,23 +106,8 @@ const RentlioUnitTypeField: React.FC<Props> = ({
       unsubscribe.then((unsub) => unsub?.())
     }
   }, [value, setValue])
-  useEffect(() => {
-    console.log('[UnitType] selectedPropertyId changed to:', selectedPropertyId)
-  }, [selectedPropertyId])
-
-  useEffect(() => {
-    console.log('[UnitType] value changed to:', value)
-  }, [value])
 
   const availableOptions = useMemo(() => {
-    console.log('[UnitType] Computing availableOptions:', {
-      selectedPropertyId,
-      resolvedMapKeys: Object.keys(resolvedMap || {}),
-      cacheKeys: Object.keys(unitTypesCache.data || {}),
-      resolvedMapData: resolvedMap,
-      cacheData: unitTypesCache.data,
-    })
-
     const currentMap = resolvedMap || unitTypesCache.data || {}
 
     if (selectedPropertyId) {
@@ -136,7 +116,6 @@ const RentlioUnitTypeField: React.FC<Props> = ({
     } else {
       const allOptions: Option[] = []
       Object.entries(currentMap).forEach(([propId, propertyOptions]) => {
-        console.log('[UnitType] Adding', propertyOptions.length, 'options from property', propId)
         allOptions.push(...propertyOptions)
       })
 
@@ -161,11 +140,6 @@ const RentlioUnitTypeField: React.FC<Props> = ({
         value={value || ''}
         onChange={(e) => {
           const nextValue = e.target.value || null
-          console.log('[UnitType] onChange triggered:', {
-            selectedValue: e.target.value,
-            nextValue,
-            currentValue: value,
-          })
           setValue(nextValue)
         }}
         disabled={isLoading}

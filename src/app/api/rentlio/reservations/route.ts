@@ -4,8 +4,6 @@ export async function POST(request: NextRequest) {
   try {
     const reservationData = await request.json()
 
-    console.log('Received reservation data:', reservationData)
-
     // Validate required fields
     const requiredFields = [
       'unitTypeId',
@@ -83,8 +81,6 @@ export async function POST(request: NextRequest) {
       .filter((child: any) => child && typeof child.age === 'number' && child.age > 0)
       .map((child: any) => ({ age: child.age })) // Ensure only age property is included
 
-    console.log('Validated reservation data:', reservationData)
-
     // Get API key from environment (use same pattern as other Rentlio APIs)
     const apiKey = process.env.RENTAL_SECRET
     if (!apiKey) {
@@ -99,7 +95,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Make actual API call to Rentlio
-    console.log('Making API call to Rentlio...')
     const rentlioResponse = await fetch('https://api.rentl.io/v1/reservations', {
       method: 'POST',
       headers: {
@@ -108,12 +103,6 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify(reservationData),
     })
-
-    console.log('Rentlio API response status:', rentlioResponse.status)
-    console.log(
-      'Rentlio API response headers:',
-      Object.fromEntries(rentlioResponse.headers.entries()),
-    )
 
     if (!rentlioResponse.ok) {
       const errorText = await rentlioResponse.text()
@@ -148,7 +137,6 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await rentlioResponse.json()
-    console.log('Rentlio API success response:', result)
 
     return NextResponse.json(
       {
