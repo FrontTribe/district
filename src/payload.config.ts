@@ -19,6 +19,7 @@ import Pages from './collections/pages'
 import Media from './collections/Media'
 import Menu from './collections/Menu'
 import Footer from './collections/Footer'
+import { loadRentlioOptions } from './utils/rentlio'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -48,8 +49,8 @@ export default buildConfig({
         }
 
         const frontendURL = tenantSubdomain
-          ? `http://${tenantSubdomain}.test:3000`
-          : 'http://localhost:3000'
+          ? `https://${tenantSubdomain}.test:3000`
+          : 'https://localhost:3000'
 
         let pagePath = '/'
         if (data.slug !== '/') {
@@ -73,10 +74,10 @@ export default buildConfig({
   collections: [Users, Media, Tenants, Pages, Menu, Footer],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
-  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
+  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://localhost:3000',
   cors: [
-    'http://restaurants.test:3000',
-    'http://localhost:3000', // Good to keep this for other tools
+    'https://boutique.test:3000',
+    'https://localhost:3000', // Good to keep this for other tools
   ],
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
@@ -126,4 +127,17 @@ export default buildConfig({
       },
     }),
   ],
+  onInit: async (payload) => {
+    if ((payload as any).express) {
+      ;(payload as any).express.get('/rentlio/options', async (req: any, res: any) => {
+        try {
+          const options = await loadRentlioOptions()
+          res.json(options)
+        } catch (error) {
+          console.error('[Rentlio] Failed to serve options via Payload route:', error)
+          res.json({ propertyOptions: [], unitTypeOptions: [], unitTypesByProperty: {} })
+        }
+      })
+    }
+  },
 })

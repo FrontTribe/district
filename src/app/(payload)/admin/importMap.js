@@ -1,3 +1,6 @@
+import { default as default_d9cb25956f9597fc1e8bde8e06512f0c } from '@/fields/RentlioPropertyField'
+import { default as default_7c0002d958a37cd5f4b48d634e500427 } from '@/fields/RentlioSalesChannelField'
+import { default as default_15d40bbcc2115beb0dd0da3c984878f4 } from '@/fields/RentlioUnitTypeField'
 import { OverviewComponent as OverviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaTitleComponent as MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
@@ -29,6 +32,9 @@ import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 
 export const importMap = {
+  "@/fields/RentlioPropertyField#default": default_d9cb25956f9597fc1e8bde8e06512f0c,
+  "@/fields/RentlioSalesChannelField#default": default_7c0002d958a37cd5f4b48d634e500427,
+  "@/fields/RentlioUnitTypeField#default": default_15d40bbcc2115beb0dd0da3c984878f4,
   "@payloadcms/plugin-seo/client#OverviewComponent": OverviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaTitleComponent": MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaDescriptionComponent": MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860,
