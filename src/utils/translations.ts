@@ -12,6 +12,46 @@ const translations: Translations = {
     en: 'Coming Soon',
     de: 'Demnächst',
   },
+  reservationSuccess: {
+    hr: 'Rezervacija uspješna!',
+    en: 'Reservation Successful!',
+    de: 'Reservierung erfolgreich!',
+  },
+  reservationSuccessMessage: {
+    hr: 'Vaša rezervacija je uspješno obrađena. Detalji su poslani na vašu email adresu.',
+    en: 'Your reservation has been successfully processed. Details have been sent to your email address.',
+    de: 'Ihre Reservierung wurde erfolgreich bearbeitet. Details wurden an Ihre E-Mail-Adresse gesendet.',
+  },
+  confirmationDetails: {
+    hr: 'Detalji potvrde',
+    en: 'Confirmation Details',
+    de: 'Bestätigungsdetails',
+  },
+  guestName: {
+    hr: 'Ime gosta',
+    en: 'Guest Name',
+    de: 'Gastname',
+  },
+  room: {
+    hr: 'Soba',
+    en: 'Room',
+    de: 'Zimmer',
+  },
+  nights: {
+    hr: 'Noći',
+    en: 'Nights',
+    de: 'Nächte',
+  },
+  totalPrice: {
+    hr: 'Ukupna cijena',
+    en: 'Total Price',
+    de: 'Gesamtpreis',
+  },
+  emailConfirmationSent: {
+    hr: 'Potvrda rezervacije je poslana na vašu email adresu',
+    en: 'Confirmation email has been sent to your email address',
+    de: 'Bestätigungs-E-Mail wurde an Ihre E-Mail-Adresse gesendet',
+  },
   scrollToExplore: {
     hr: 'Skrolaj za istraživanje',
     en: 'Scroll to explore',
@@ -66,6 +106,26 @@ const translations: Translations = {
     hr: 'Nedjelja',
     en: 'Sunday',
     de: 'Sonntag',
+  },
+  email: {
+    hr: 'Email',
+    en: 'Email',
+    de: 'E-Mail',
+  },
+  checkIn: {
+    hr: 'Prijava',
+    en: 'Check-in',
+    de: 'Check-in',
+  },
+  checkOut: {
+    hr: 'Odjava',
+    en: 'Check-out',
+    de: 'Check-out',
+  },
+  close: {
+    hr: 'Zatvori',
+    en: 'Close',
+    de: 'Schließen',
   },
 }
 

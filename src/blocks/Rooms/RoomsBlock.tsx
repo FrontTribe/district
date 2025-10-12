@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { RoomSlider } from './RoomSlider'
+import BookingDrawer from '@/components/BookingDrawer'
 
 type Badge = { text?: string }
 type RoomImage = {
@@ -17,6 +18,9 @@ type Room = {
   images?: RoomImage[]
   image?: any // For backward compatibility
   badges?: Badge[]
+  rentlioUnitTypeId?: string
+  rentlioPropertyId?: string
+  rentlioSalesChannelId?: string
 }
 
 type Props = {
@@ -26,6 +30,7 @@ type Props = {
   cta?: { label?: string; href?: string }
   rooms?: Room[]
   sectionId?: string
+  locale?: string
 }
 
 export const RoomsBlock: React.FC<Props> = ({
@@ -35,8 +40,21 @@ export const RoomsBlock: React.FC<Props> = ({
   cta,
   rooms = [],
   sectionId,
+  locale,
 }) => {
   const sectionRef = useRef<HTMLElement | null>(null)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
+
+  const handleBookNow = (room: Room) => {
+    setSelectedRoom(room)
+    setIsDrawerOpen(true)
+  }
+
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false)
+    setSelectedRoom(null)
+  }
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger, CustomEase)
@@ -78,13 +96,13 @@ export const RoomsBlock: React.FC<Props> = ({
         }
 
         if (overlay) gsap.set(overlay, { autoAlpha: 0 })
-        if (bookNow) gsap.set(bookNow, { autoAlpha: 0, y: 12 })
+        if (bookNow) gsap.set(bookNow, { autoAlpha: 1, y: 0 }) // Always visible
         if (titleOverlay) gsap.set(titleOverlay, { yPercent: 100 })
         if (titleBase) gsap.set(titleBase, { yPercent: 0 })
         const titleEl = element.querySelector('.room-title')
         const badgeEls = element.querySelectorAll('.room-badge')
-        if (titleEl) gsap.set(titleEl, { opacity: 0, y: 14 })
-        if (badgeEls && badgeEls.length) gsap.set(badgeEls, { opacity: 0, y: 10 })
+        if (titleEl) gsap.set(titleEl, { opacity: 1, y: 0 }) // Always visible
+        if (badgeEls && badgeEls.length) gsap.set(badgeEls, { opacity: 1, y: 0 }) // Always visible
 
         const slideImage = slider?.querySelector('.room-slide-image')
         const timeline = gsap.timeline({
@@ -107,11 +125,7 @@ export const RoomsBlock: React.FC<Props> = ({
         const hoverImage = slider?.querySelector('.room-slide-image')
         if (hoverImage) hoverTl.to(hoverImage, { scale: 1.06, duration: 0.6, ease: roomEase }, 0)
         if (overlay) hoverTl.to(overlay, { autoAlpha: 1, duration: 0.35, ease: roomEase }, 0)
-        if (bookNow)
-          hoverTl.to(bookNow, { autoAlpha: 1, y: 0, duration: 0.45, ease: roomEase }, 0.05)
-        if (titleOverlay)
-          hoverTl.to(titleOverlay, { yPercent: 0, duration: 0.6, ease: roomEase }, 0)
-        if (titleBase) hoverTl.to(titleBase, { yPercent: -100, duration: 0.6, ease: roomEase }, 0)
+        // Remove bookNow and title animations from hover since they're always visible now
 
         const onEnter = () => hoverTl.play()
         const onLeave = () => hoverTl.reverse()
@@ -142,6 +156,7 @@ export const RoomsBlock: React.FC<Props> = ({
             ))}
           </h2>
           {subheading && <p className="rooms-subheading">{subheading}</p>}
+
           {cta?.label && cta?.href && (
             <a className="rooms-cta" href={cta.href}>
               {cta.label}
@@ -163,15 +178,21 @@ export const RoomsBlock: React.FC<Props> = ({
                 <div className="room-media">
                   <RoomSlider images={roomImages} roomTitle={room.title} badges={room.badges} />
                   <div className="room-overlay" />
-                  <div className="room-book-now">Book now</div>
-                </div>
-                <div className="room-info">
                   <h3 className="room-title">
                     <span className="title-mask">
                       <span className="title-base">{room.title}</span>
                       <span className="title-overlay">{room.title}</span>
                     </span>
                   </h3>
+                  <button
+                    className="room-book-now"
+                    onClick={() => handleBookNow(room)}
+                    type="button"
+                  >
+                    Book now
+                  </button>
+                </div>
+                <div className="room-info">
                   {room.description && <p className="room-desc">{room.description}</p>}
                 </div>
               </article>
@@ -179,6 +200,18 @@ export const RoomsBlock: React.FC<Props> = ({
           })}
         </div>
       </div>
+
+      <BookingDrawer
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawer}
+        roomData={selectedRoom}
+        locale={locale}
+        salesChannelId={
+          selectedRoom?.rentlioSalesChannelId
+            ? parseInt(selectedRoom.rentlioSalesChannelId, 10)
+            : 45
+        }
+      />
     </section>
   )
 }

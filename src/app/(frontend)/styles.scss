@@ -2190,6 +2190,7 @@ div {
     transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform;
     object-fit: cover;
+    border: none;
   }
 
   .room-overlay {
@@ -2202,25 +2203,113 @@ div {
     transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
+  .room-title-overlay {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    z-index: 3;
+    pointer-events: none;
+
+    .room-title {
+      font-family: var(--font-marcellus), 'Marcellus', serif;
+      font-size: 32px;
+      font-weight: 400;
+      color: #fff;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+
+      .title-mask {
+        display: inline-block;
+        position: relative;
+        overflow: hidden;
+        line-height: 1.1;
+      }
+
+      .title-base,
+      .title-overlay {
+        display: block;
+        will-change: transform;
+        transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .title-base {
+        transform: translateY(0);
+      }
+
+      .title-overlay {
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: #fff;
+        transform: translateY(100%);
+      }
+    }
+  }
+
+  .room-title {
+    position: absolute;
+    top: 32px;
+    left: 32px;
+    z-index: 3;
+    font-family: var(--font-marcellus), 'Marcellus', serif;
+    font-size: 48px;
+    font-weight: 400;
+    color: #fff;
+    margin: 0;
+
+    .title-mask {
+      display: inline-block;
+      position: relative;
+      overflow: hidden;
+      line-height: 1.1;
+    }
+
+    .title-base,
+    .title-overlay {
+      display: block;
+      will-change: transform;
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .title-base {
+      transform: translateY(0);
+    }
+
+    .title-overlay {
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: #fff;
+      transform: translateY(100%);
+    }
+  }
+
   .room-book-now {
     position: absolute;
+    bottom: 64px;
+    left: 24px;
     right: 24px;
-    bottom: 24px;
-    padding: 10px 20px;
-    font-size: 12px;
+    padding: 16px 24px;
+    font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #111;
     background: #fff;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
-    pointer-events: none;
-    z-index: 2;
-    opacity: 0;
-    transform: translateY(12px);
-    transition:
-      opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 3;
+
+    &:hover {
+      background: #f8f9fa;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
   }
 
   // CSS hover fallback in case JS events are unavailable
@@ -2259,55 +2348,68 @@ div {
     font-family: var(--font-marcellus), 'Marcellus', serif;
   }
 
-  .room-info {
-    // padding: 18px 8px 30px 8px;
-    display: contents;
-  }
+  // Sales Channel Selector
+  .sales-channel-selector {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 
-  .room-title {
-    font-family: var(--font-marcellus), 'Marcellus', serif;
-    font-size: 36px;
-    font-weight: 400;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    text-align: left;
-    margin: 0;
-    padding: 32px;
-    pointer-events: none;
-
-    .title-mask {
-      display: inline-block;
-      position: relative;
-      overflow: hidden;
-      line-height: 1.1;
+    label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      white-space: nowrap;
     }
 
-    .title-base,
-    .title-overlay {
-      display: block;
-      will-change: transform;
-      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-    }
+    .sales-channel-dropdown {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+      font-size: 14px;
+      min-width: 150px;
+      cursor: pointer;
 
-    .title-base {
-      transform: translateY(0);
-    }
-
-    .title-overlay {
-      position: absolute;
-      left: 0;
-      top: 0;
-      color: #fff;
-      transform: translateY(100%);
+      &:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+      }
     }
   }
 
-  .room-desc {
-    color: rgba(0, 0, 0, 0.7);
-    margin: 0;
-    font-style: italic;
+  // Responsive styles
+  @media (max-width: 768px) {
+    .room-title {
+      top: 20px;
+      left: 20px;
+      font-size: 32px;
+    }
+
+    .room-book-now {
+      bottom: 48px;
+      left: 16px;
+      right: 16px;
+      padding: 14px 20px;
+      font-size: 13px;
+    }
+
+    .room-badges {
+      top: 20px;
+      left: 20px;
+    }
+
+    .sales-channel-selector {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+
+      .sales-channel-dropdown {
+        width: 100%;
+        min-width: auto;
+      }
+    }
   }
 }
 
@@ -2534,3 +2636,6 @@ div {
 @import '../../blocks/ImageGrid/ImageGrid.scss';
 @import '../../blocks/JobOpportunity/JobOpportunity.scss';
 @import '../../blocks/Text/Text.scss';
+
+/* Component styles imports */
+@import '../../components/ReservationToast.scss';
