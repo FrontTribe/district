@@ -9,15 +9,15 @@ const nextConfig = {
         port: '3000',
       },
       {
-        hostname: 'hotels.test',
+        hostname: 'boutique.test',
+        port: '3000',
+      },
+      {
+        hostname: 'momento.test',
         port: '3000',
       },
       {
         hostname: 'real-estate.test',
-        port: '3000',
-      },
-      {
-        hostname: 'restaurants.test',
         port: '3000',
       },
     ],

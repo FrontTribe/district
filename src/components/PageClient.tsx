@@ -2,6 +2,7 @@
 
 import { Page as PageType } from '@/payload-types'
 import { BlockRenderer } from './BlockRenderer'
+import { useState, useEffect } from 'react'
 
 export default function PageClient({
   page: initialPage,
@@ -10,6 +11,15 @@ export default function PageClient({
   page: PageType
   locale?: string
 }) {
+  const [_hasRendered, setHasRendered] = useState(false)
+
+  // Track if we've rendered content
+  useEffect(() => {
+    if (initialPage?.layout && initialPage.layout.length > 0) {
+      setHasRendered(true)
+    }
+  }, [initialPage])
+
   // If we have no data at all, don't render anything
   if (!initialPage) {
     return null
