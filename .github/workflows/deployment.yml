@@ -21,13 +21,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # 🧠 Step 3: Setup PNPM (use same version as package.json)
+      # 🧠 Step 3: Setup PNPM (auto-detect version from package.json)
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10.11.0
 
-      # ⚡ Optional: Cache node_modules to speed up CI (local build only)
+      # ⚡ Step 4: Cache pnpm store for faster installs
       - name: Cache pnpm store
         uses: actions/cache@v4
         with:
@@ -36,11 +34,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
-      # 🔗 Step 4: Test SSH connection (to ensure deployment will work)
+      # 🔗 Step 5: Test SSH connection
       - name: Test SSH Connection
         run: ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "echo ✅ Connected to server"
 
-      # 🚀 Step 5: Deploy based on branch (main → prod, development → dev)
+      # 🚀 Step 6: Deploy to server based on branch
       - name: Deploy to Server
         env:
           BRANCH_NAME: ${{ github.ref_name }}
