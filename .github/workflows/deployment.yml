@@ -9,63 +9,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 🧩 Step 1: Checkout the repository
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
           persist-credentials: false
 
-      # 🔐 Step 2: Setup SSH key to connect to your server
       - name: Setup SSH Key for Server
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # 🧠 Step 3: Setup PNPM (auto-detect version from package.json)
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      # ⚡ Step 4: Cache pnpm store for faster installs
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
-
-      # 🔗 Step 5: Test SSH connection
       - name: Test SSH Connection
         run: ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "echo ✅ Connected to server"
 
-      # 🚀 Step 6: Deploy to server based on branch
       - name: Deploy to Server
         env:
           BRANCH_NAME: ${{ github.ref_name }}
         run: |
           if [ "$BRANCH_NAME" = "main" ]; then
-            echo "🚀 Deploying to Production..."
             ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "
               set -e
               cd /var/www/district-prod
               git fetch origin main
               git reset --hard origin/main
-              pnpm install --frozen-lockfile
-              pnpm run build
+              npm i -f
+              npm run build
               pm2 restart district-prod
             "
           elif [ "$BRANCH_NAME" = "development" ]; then
-            echo "🚧 Deploying to Development..."
             ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "
               set -e
               cd /var/www/district-dev
               git fetch origin development
               git reset --hard origin/development
-              pnpm install --frozen-lockfile
-              pnpm run build
+              npm i -f
+              npm run build
               pm2 restart district-dev
             "
-          else
-            echo "❌ Unknown branch: $BRANCH_NAME"
-            exit 1
           fi
