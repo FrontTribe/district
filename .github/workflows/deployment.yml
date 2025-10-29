@@ -9,46 +9,59 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 🧩 Step 1: Checkout the repository
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
           persist-credentials: false
 
+      # 🔐 Step 2: Setup SSH key for server connection
       - name: Setup SSH Key
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      # ⚙️ Step 3: Setup PNPM
       - name: Setup PNPM
         uses: pnpm/action-setup@v4
         with:
           version: 10.11.0
 
+      # 🧠 Step 4: Test SSH connection
       - name: Test SSH
-        run: ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "echo ✅ Connected"
+        run: ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "echo ✅ Connected to server"
 
+      # 🚀 Step 5: Deploy project (runs in background to prevent timeout)
       - name: Deploy
         env:
           BRANCH_NAME: ${{ github.ref_name }}
         run: |
           if [ "$BRANCH_NAME" = "main" ]; then
             ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "
-              set -e
-              cd /var/www/district-prod
-              git fetch origin main
-              git reset --hard origin/main
-              pnpm i --frozen-lockfile
-              pnpm run build
-              pm2 restart district-prod
+              cd /var/www/district-prod &&
+              nohup bash -c '
+                echo \"🌀 Starting main branch deployment...\" &&
+                git fetch origin main &&
+                git reset --hard origin/main &&
+                pnpm i --frozen-lockfile --silent &&
+                pnpm run build --silent &&
+                pm2 restart district-prod &&
+                echo \"✅ Deployment completed successfully.\"
+              ' > ~/deploy-district-prod.log 2>&1 &
+              echo '🚀 Build started in background for main branch. Check logs: ~/deploy-district-prod.log'
             "
           elif [ "$BRANCH_NAME" = "development" ]; then
             ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "
-              set -e
-              cd /var/www/district-dev
-              git fetch origin development
-              git reset --hard origin/development
-              pnpm i --frozen-lockfile
-              pnpm run build
-              pm2 restart district-dev
+              cd /var/www/district-dev &&
+              nohup bash -c '
+                echo \"🌀 Starting development branch deployment...\" &&
+                git fetch origin development &&
+                git reset --hard origin/development &&
+                pnpm i --frozen-lockfile --silent &&
+                pnpm run build --silent &&
+                pm2 restart district-dev &&
+                echo \"✅ Deployment completed successfully.\"
+              ' > ~/deploy-district-dev.log 2>&1 &
+              echo '🚀 Build started in background for development branch. Check logs: ~/deploy-district-dev.log'
             "
           fi
