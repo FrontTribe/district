@@ -16,6 +16,10 @@ const nextConfig = {
         hostname: 'momento.test',
         port: '3000',
       },
+      {
+        hostname: 'real-estate.test',
+        port: '3000',
+      },
     ],
   },
   // Your Next.js config here

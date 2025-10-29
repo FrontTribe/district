@@ -77,6 +77,7 @@ export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://localhost:3000',
   cors: [
     'https://boutique.test:3000',
+    'https://real-estate.test:3000',
     'https://localhost:3000', // Good to keep this for other tools
   ],
   typescript: {
