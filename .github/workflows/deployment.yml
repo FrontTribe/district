@@ -31,37 +31,44 @@ jobs:
       - name: Test SSH
         run: ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "echo ✅ Connected to server"
 
-      # 🚀 Step 5: Deploy project (runs in background to prevent timeout)
+      # 🚀 Step 5: Deploy project (fails fast and runs inline for better logs)
       - name: Deploy
         env:
           BRANCH_NAME: ${{ github.ref_name }}
         run: |
+          set -euo pipefail
+
           if [ "$BRANCH_NAME" = "main" ]; then
-            ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "
-              cd /var/www/district-prod &&
-              nohup bash -c '
-                echo \"🌀 Starting main branch deployment...\" &&
-                git fetch origin main &&
-                git reset --hard origin/main &&
-                pnpm i --frozen-lockfile --silent &&
-                pnpm run build --silent &&
-                pm2 restart district-prod &&
-                echo \"✅ Deployment completed successfully.\"
-              ' > ~/deploy-district-prod.log 2>&1 &
-              echo '🚀 Build started in background for main branch. Check logs: ~/deploy-district-prod.log'
-            "
+            REMOTE_DIR="/var/www/district-prod"
+            REMOTE_SERVICE="district-prod"
+            LOG_LABEL="production"
           elif [ "$BRANCH_NAME" = "development" ]; then
-            ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "
-              cd /var/www/district-dev &&
-              nohup bash -c '
-                echo \"🌀 Starting development branch deployment...\" &&
-                git fetch origin development &&
-                git reset --hard origin/development &&
-                pnpm i --frozen-lockfile --silent &&
-                pnpm run build --silent &&
-                pm2 restart district-dev &&
-                echo \"✅ Deployment completed successfully.\"
-              ' > ~/deploy-district-dev.log 2>&1 &
-              echo '🚀 Build started in background for development branch. Check logs: ~/deploy-district-dev.log'
-            "
+            REMOTE_DIR="/var/www/district-dev"
+            REMOTE_SERVICE="district-dev"
+            LOG_LABEL="development"
+          else
+            echo "⚠️  Deployment skipped: branch $BRANCH_NAME is not configured."
+            exit 0
           fi
+
+          echo "🚀 Starting $LOG_LABEL deployment for branch $BRANCH_NAME"
+
+          ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} <<EOF
+set -euo pipefail
+
+cd "$REMOTE_DIR"
+echo "ℹ️  Updating repository in \$PWD"
+git fetch origin "$BRANCH_NAME"
+git reset --hard "origin/$BRANCH_NAME"
+
+echo "ℹ️  Installing dependencies"
+pnpm install --frozen-lockfile --silent
+
+echo "ℹ️  Building application"
+pnpm run build --silent
+
+echo "🔁 Restarting $REMOTE_SERVICE via pm2"
+pm2 restart "$REMOTE_SERVICE"
+
+echo "✅ Deployment completed for branch $BRANCH_NAME"
+EOF
