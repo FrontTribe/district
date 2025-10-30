@@ -43,14 +43,15 @@ jobs:
                 -o ServerAliveInterval=60 \
                 -o ServerAliveCountMax=30 \
                 deployer@${{ secrets.SERVER_IP }} "\
-                  set -e && \
+                  set -euo pipefail && \
                   export CI=1 && \
-                  export NPM_CONFIG_YES=true && \
+                  export PNPM_HOME=\$HOME/.local/share/pnpm && \
+                  export PATH=\$PNPM_HOME:\$PATH && \
                   cd /var/www/district-prod && \
                   git fetch origin main && \
                   git reset --hard origin/main && \
-                  npm install --no-audit --no-fund --legacy-peer-deps && \
-                  npm run build && \
+                  pnpm install --frozen-lockfile --prefer-offline --reporter append-only && \
+                  pnpm run build && \
                   pm2 restart district-prod && \
                   echo \"✅ Deployment completed for main\" \
                 "
@@ -59,14 +60,15 @@ jobs:
                 -o ServerAliveInterval=60 \
                 -o ServerAliveCountMax=30 \
                 deployer@${{ secrets.SERVER_IP }} "\
-                  set -e && \
+                  set -euo pipefail && \
                   export CI=1 && \
-                  export NPM_CONFIG_YES=true && \
+                  export PNPM_HOME=\$HOME/.local/share/pnpm && \
+                  export PATH=\$PNPM_HOME:\$PATH && \
                   cd /var/www/district-dev && \
                   git fetch origin development && \
                   git reset --hard origin/development && \
-                  npm install --no-audit --no-fund --legacy-peer-deps && \
-                  npm run build && \
+                  pnpm install --frozen-lockfile --prefer-offline --reporter append-only && \
+                  pnpm run build && \
                   pm2 restart district-dev && \
                   echo \"✅ Deployment completed for development\" \
                 "
