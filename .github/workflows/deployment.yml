@@ -52,23 +52,17 @@ jobs:
           fi
 
           echo "🚀 Starting $LOG_LABEL deployment for branch $BRANCH_NAME"
-
-          ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} <<EOF
-set -euo pipefail
-
-cd "$REMOTE_DIR"
-echo "ℹ️  Updating repository in \$PWD"
-git fetch origin "$BRANCH_NAME"
-git reset --hard "origin/$BRANCH_NAME"
-
-echo "ℹ️  Installing dependencies"
-pnpm install --frozen-lockfile --silent
-
-echo "ℹ️  Building application"
-pnpm run build --silent
-
-echo "🔁 Restarting $REMOTE_SERVICE via pm2"
-pm2 restart "$REMOTE_SERVICE"
-
-echo "✅ Deployment completed for branch $BRANCH_NAME"
-EOF
+          ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "\
+            set -euo pipefail && \
+            cd \"$REMOTE_DIR\" && \
+            echo \"ℹ️  Updating repository in \$PWD\" && \
+            git fetch origin \"$BRANCH_NAME\" && \
+            git reset --hard \"origin/$BRANCH_NAME\" && \
+            echo \"ℹ️  Installing dependencies\" && \
+            pnpm install --frozen-lockfile --silent && \
+            echo \"ℹ️  Building application\" && \
+            pnpm run build --silent && \
+            echo \"🔁 Restarting $REMOTE_SERVICE via pm2\" && \
+            pm2 restart \"$REMOTE_SERVICE\" && \
+            echo \"✅ Deployment completed for branch $BRANCH_NAME\" \
+          "
