@@ -39,25 +39,37 @@ jobs:
         run: |
           set -e
           if [ "$BRANCH_NAME" = "main" ]; then
-            ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "
-              set -e
-              cd /var/www/district-prod
-              git fetch origin main
-              git reset --hard origin/main
-              pnpm install
-              pnpm run build
-              pm2 restart district-prod
-            "
+            ssh -o StrictHostKeyChecking=no \
+                -o ServerAliveInterval=60 \
+                -o ServerAliveCountMax=30 \
+                deployer@${{ secrets.SERVER_IP }} "\
+                  set -e && \
+                  export CI=1 && \
+                  export NPM_CONFIG_YES=true && \
+                  cd /var/www/district-prod && \
+                  git fetch origin main && \
+                  git reset --hard origin/main && \
+                  npm install --no-audit --no-fund --legacy-peer-deps && \
+                  npm run build && \
+                  pm2 restart district-prod && \
+                  echo \"✅ Deployment completed for main\" \
+                "
           elif [ "$BRANCH_NAME" = "development" ]; then
-            ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "
-              set -e
-              cd /var/www/district-dev
-              git fetch origin development
-              git reset --hard origin/development
-              pnpm install
-              pnpm run build
-              pm2 restart district-dev
-            "
+            ssh -o StrictHostKeyChecking=no \
+                -o ServerAliveInterval=60 \
+                -o ServerAliveCountMax=30 \
+                deployer@${{ secrets.SERVER_IP }} "\
+                  set -e && \
+                  export CI=1 && \
+                  export NPM_CONFIG_YES=true && \
+                  cd /var/www/district-dev && \
+                  git fetch origin development && \
+                  git reset --hard origin/development && \
+                  npm install --no-audit --no-fund --legacy-peer-deps && \
+                  npm run build && \
+                  pm2 restart district-dev && \
+                  echo \"✅ Deployment completed for development\" \
+                "
           else
             echo "⚠️ Deployment skipped: branch $BRANCH_NAME is not configured."
           fi
