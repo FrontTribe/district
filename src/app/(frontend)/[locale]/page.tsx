@@ -183,7 +183,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         menuId={menuGlobal?.identifier || 'main-menu'}
         hideHamburger={!currentTenant}
       />
-      <h1 className="text-xl text-red-900">Hi</h1>
       <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Render blocks from pages */}
         {pages.length > 0 ? (
