@@ -27,6 +27,7 @@ const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'district.hr'
 const tenantRootDomain = process.env.NEXT_PUBLIC_TENANT_ROOT_DOMAIN || rootDomain
 const devOrigins = [
   'https://boutique.test:3000',
+  'https://momento.test:3000',
   'https://localhost:3000',
   'http://localhost:3000',
 ]
@@ -39,8 +40,24 @@ const prodOrigins = [
   `https://www.${rootDomain}`,
   `https://${tenantRootDomain}`,
   `https://www.${tenantRootDomain}`,
+  `https://boutique.${rootDomain}`,
+  `https://momento.${rootDomain}`,
 ]
-const corsOrigins = Array.from(new Set([...devOrigins, ...prodOrigins, ...envOrigins]))
+const allOrigins = Array.from(new Set([...devOrigins, ...prodOrigins, ...envOrigins]))
+
+// Dynamic CORS: allow any subdomain of rootDomain
+const corsConfig = {
+  origins: (origin: string | undefined) => {
+    if (!origin) return true // Allow requests with no origin (like mobile apps or curl)
+    
+    // Check if origin matches any static origins
+    if (allOrigins.includes(origin)) return true
+    
+    // Allow any subdomain of rootDomain
+    const subdomainPattern = new RegExp(`^https://([a-z0-9-]+\\.)?${rootDomain.replace('.', '\\.')}$`)
+    return subdomainPattern.test(origin)
+  },
+}
 
 export default buildConfig({
   admin: {
@@ -92,10 +109,8 @@ export default buildConfig({
   collections: [Users, Media, Tenants, Pages, Menu, Footer],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
-  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://localhost:3000',
-  cors: {
-    origins: corsOrigins,
-  },
+  // Leave serverURL empty for multi-tenant - admin will use relative URLs
+  cors: corsConfig,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
