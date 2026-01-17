@@ -15,14 +15,6 @@ import { ConceptBarMenuBlock } from '@/blocks/ConceptBarMenu'
 import { JobOpportunityBlock } from '@/blocks/JobOpportunity'
 import { ImageGridBlock } from '@/blocks/ImageGrid'
 import { IntroBlock } from '@/blocks/Intro'
-import { RealEstateHeroBlock } from '@/blocks/RealEstateHero'
-import { RealEstateAboutBlock } from '@/blocks/RealEstateAbout'
-import { RealEstateProjectsBlock } from '@/blocks/RealEstateProjects'
-import { RealEstateOffersBlock } from '@/blocks/RealEstateOffers'
-import { RealEstateInteractiveBlock } from '@/blocks/RealEstateInteractive'
-import { RealEstateJobBlock } from '@/blocks/RealEstateJob'
-import { RealEstateSpecsBlock } from '@/blocks/RealEstateSpecs'
-import { RealEstateContactBlock } from '@/blocks/RealEstateContact'
 
 const blockComponents = {
   section: SectionBlock,
@@ -40,14 +32,6 @@ const blockComponents = {
   'job-opportunity': JobOpportunityBlock,
   intro: IntroBlock,
   'image-grid': ImageGridBlock,
-  'real-estate-hero': RealEstateHeroBlock,
-  'real-estate-about': RealEstateAboutBlock,
-  'real-estate-projects': RealEstateProjectsBlock,
-  'real-estate-offers': RealEstateOffersBlock,
-  'real-estate-interactive': RealEstateInteractiveBlock,
-  'real-estate-job': RealEstateJobBlock,
-  'real-estate-specs': RealEstateSpecsBlock,
-  'real-estate-contact': RealEstateContactBlock,
 }
 
 type _Block = NonNullable<Page['layout']>[number]

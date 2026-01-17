@@ -15,14 +15,6 @@ import JobOpportunity from '@/blocks/JobOpportunity'
 import Image from '@/blocks/Image'
 import { Intro } from '@/blocks/Intro'
 import { ImageGrid } from '@/blocks/ImageGrid'
-import { RealEstateHero } from '@/blocks/RealEstateHero'
-import { RealEstateAbout } from '@/blocks/RealEstateAbout'
-import { RealEstateProjects } from '@/blocks/RealEstateProjects'
-import { RealEstateOffers } from '@/blocks/RealEstateOffers'
-import { RealEstateInteractive } from '@/blocks/RealEstateInteractive'
-import { RealEstateJob } from '@/blocks/RealEstateJob'
-import { RealEstateSpecs } from '@/blocks/RealEstateSpecs'
-import { RealEstateContact } from '@/blocks/RealEstateContact'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
@@ -135,14 +127,6 @@ const Pages: CollectionConfig = {
         Image,
         Intro,
         ImageGrid,
-        RealEstateHero,
-        RealEstateAbout,
-        RealEstateProjects,
-        RealEstateOffers,
-        RealEstateInteractive,
-        RealEstateJob,
-        RealEstateSpecs,
-        RealEstateContact,
       ],
       localized: true,
       admin: {

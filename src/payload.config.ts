@@ -74,12 +74,8 @@ export default buildConfig({
   collections: [Users, Media, Tenants, Pages, Menu, Footer],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
-  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://localhost:3000',
-  cors: [
-    'https://boutique.test:3000',
-    'https://real-estate.test:3000',
-    'https://localhost:3000', // Good to keep this for other tools
-  ],
+  // Allow all origins - nginx handles security
+  cors: '*',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

@@ -9,23 +9,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 🧩 Step 1: Checkout the repository
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      # 🔐 Step 2: Setup SSH key for server connection
-      - name: Setup SSH Key for Server
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
 
-      # ⚙️ Step 3: Setup PNPM
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.11.0
-
-      # 🧠 Step 4: Test SSH connection
       - name: Test SSH Connection
         env:
           SERVER_USER: ${{ secrets.SERVER_USER }}
@@ -33,7 +22,6 @@ jobs:
           SERVER_PASS: ${{ secrets.SERVER_PASS }}
         run: sshpass -p "$SERVER_PASS" ssh -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "echo Connected to server"
 
-      # 🚀 Step 5: Deploy project
       - name: Deploy to Server
         env:
           BRANCH_NAME: ${{ github.ref_name }}
@@ -42,43 +30,24 @@ jobs:
           SERVER_PASS: ${{ secrets.SERVER_PASS }}
           SERVER_PORT: ${{ secrets.SERVER_PORT }}
         run: |
-          set -e
+          set -euo pipefail
+          DEPLOY_PORT="${SERVER_PORT:-22}"
+
           if [ "$BRANCH_NAME" = "main" ]; then
-            ssh -o StrictHostKeyChecking=no \
-                -o ServerAliveInterval=60 \
-                -o ServerAliveCountMax=30 \
-                deployer@${{ secrets.SERVER_IP }} "\
-                  set -euo pipefail && \
-                  export CI=1 && \
-                  export PNPM_HOME=\$HOME/.local/share/pnpm && \
-                  export PATH=\$PNPM_HOME:\$PATH && \
-                  cd /var/www/district-prod && \
-                  git fetch origin main && \
-                  git reset --hard origin/main && \
-                  pnpm install --frozen-lockfile --prefer-offline --reporter append-only && \
-                  pnpm run build && \
-                  pm2 restart district-prod && \
-                  echo \"✅ Deployment completed for main\" \
-                "
+            DEPLOY_PATH="/var/www/district-prod"
+            APP_NAME="district-prod"
+            APP_PORT="3000"
+            NODE_ENV="production"
+            RUN_CMD="start"
           elif [ "$BRANCH_NAME" = "development" ]; then
-            ssh -o StrictHostKeyChecking=no \
-                -o ServerAliveInterval=60 \
-                -o ServerAliveCountMax=30 \
-                deployer@${{ secrets.SERVER_IP }} "\
-                  set -euo pipefail && \
-                  export CI=1 && \
-                  export PNPM_HOME=\$HOME/.local/share/pnpm && \
-                  export PATH=\$PNPM_HOME:\$PATH && \
-                  cd /var/www/district-dev && \
-                  git fetch origin development && \
-                  git reset --hard origin/development && \
-                  pnpm install --frozen-lockfile --prefer-offline --reporter append-only && \
-                  pnpm run build && \
-                  pm2 restart district-dev && \
-                  echo \"✅ Deployment completed for development\" \
-                "
+            DEPLOY_PATH="/var/www/district-dev"
+            APP_NAME="district-dev"
+            APP_PORT="3001"
+            NODE_ENV="development"
+            RUN_CMD="dev"
           else
-            echo "⚠️ Deployment skipped: branch $BRANCH_NAME is not configured."
+            echo "No deploy target for branch $BRANCH_NAME"
+            exit 0
           fi
 
           TARBALL="$(mktemp -t district-deploy-XXXXXX.tgz)"
