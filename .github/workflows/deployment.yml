@@ -11,40 +11,56 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
-        with:
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          persist-credentials: false
 
-      - name: Setup SSH Key for Server
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
 
       - name: Test SSH Connection
-        run: ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "echo ✅ Connected to server"
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PASS: ${{ secrets.SERVER_PASS }}
+        run: sshpass -p "$SERVER_PASS" ssh -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "echo Connected to server"
 
       - name: Deploy to Server
         env:
           BRANCH_NAME: ${{ github.ref_name }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PASS: ${{ secrets.SERVER_PASS }}
         run: |
           if [ "$BRANCH_NAME" = "main" ]; then
-            ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "
+            sshpass -p "$SERVER_PASS" ssh -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "
               set -e
               cd /var/www/district-prod
               git fetch origin main
               git reset --hard origin/main
               npm i -f
               npm run build
-              pm2 restart district-prod
+              if ! command -v pm2 >/dev/null 2>&1; then
+                npm i -g pm2
+              fi
+              if pm2 describe district-prod >/dev/null 2>&1; then
+                PORT=3000 NODE_ENV=production pm2 restart district-prod --update-env
+              else
+                PORT=3000 NODE_ENV=production pm2 start npm --name district-prod -- start
+              fi
             "
           elif [ "$BRANCH_NAME" = "development" ]; then
-            ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "
+            sshpass -p "$SERVER_PASS" ssh -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "
               set -e
               cd /var/www/district-dev
               git fetch origin development
               git reset --hard origin/development
               npm i -f
               npm run build
-              pm2 restart district-dev
+              if ! command -v pm2 >/dev/null 2>&1; then
+                npm i -g pm2
+              fi
+              if pm2 describe district-dev >/dev/null 2>&1; then
+                PORT=3001 NODE_ENV=development pm2 restart district-dev --update-env
+              else
+                PORT=3001 NODE_ENV=development pm2 start npm --name district-dev -- run dev
+              fi
             "
           fi
