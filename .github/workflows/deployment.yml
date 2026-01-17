@@ -108,27 +108,57 @@ jobs:
 
           cd "$DEPLOY_PATH"
 
+          if [ "$NODE_ENV" = "production" ]; then
+            rm -rf .next
+          fi
+
           if ! command -v pnpm >/dev/null 2>&1; then
             if command -v corepack >/dev/null 2>&1; then
-              corepack enable
+              if ! corepack enable >/dev/null 2>&1; then
+                if [ -n "$SUDO_PASS" ]; then
+                  echo "$SUDO_PASS" | sudo -S corepack enable >/dev/null 2>&1 || true
+                fi
+              fi
+              if ! command -v pnpm >/dev/null 2>&1; then
+                if [ -n "$SUDO_PASS" ]; then
+                  echo "$SUDO_PASS" | sudo -S corepack prepare pnpm@latest --activate
+                else
+                  corepack prepare pnpm@latest --activate
+                fi
+              fi
+            fi
+          fi
+
+          if ! command -v pnpm >/dev/null 2>&1; then
+            if [ -n "$SUDO_PASS" ]; then
+              echo "$SUDO_PASS" | sudo -S npm install -g pnpm
             else
-              echo "pnpm not found and corepack not available. Install pnpm on the server."
-              exit 1
+              npm install -g pnpm
             fi
           fi
 
           if ! command -v pm2 >/dev/null 2>&1; then
-            npm install -g pm2
+            if [ -n "$SUDO_PASS" ]; then
+              echo "$SUDO_PASS" | sudo -S npm install -g pm2
+            else
+              npm install -g pm2
+            fi
           fi
 
           pnpm install --frozen-lockfile
 
           if [ "$NODE_ENV" = "production" ]; then
-            pnpm build
+            NODE_ENV=production pnpm build
+            if [ ! -f ".next/BUILD_ID" ]; then
+              echo "Build artifacts missing in $DEPLOY_PATH/.next"
+              ls -la "$DEPLOY_PATH" || true
+              ls -la "$DEPLOY_PATH/.next" || true
+              exit 1
+            fi
           fi
 
           pm2 delete "$APP_NAME" >/dev/null 2>&1 || true
-          PORT="$APP_PORT" NODE_ENV="$NODE_ENV" pm2 start pnpm --name "$APP_NAME" -- "$RUN_CMD"
+          PORT="$APP_PORT" NODE_ENV="$NODE_ENV" pm2 start pnpm --name "$APP_NAME" --cwd "$DEPLOY_PATH" -- "$RUN_CMD"
 
           sleep 2
           PID="$(pm2 pid "$APP_NAME" | head -n 1 | tr -d '[:space:]')"
