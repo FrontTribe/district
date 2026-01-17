@@ -49,12 +49,14 @@ const allOrigins = Array.from(new Set([...devOrigins, ...prodOrigins, ...envOrig
 const corsConfig = {
   origins: (origin: string | undefined) => {
     if (!origin) return true // Allow requests with no origin (like mobile apps or curl)
-    
+
     // Check if origin matches any static origins
     if (allOrigins.includes(origin)) return true
-    
+
     // Allow any subdomain of rootDomain
-    const subdomainPattern = new RegExp(`^https://([a-z0-9-]+\\.)?${rootDomain.replace('.', '\\.')}$`)
+    const subdomainPattern = new RegExp(
+      `^https://([a-z0-9-]+\\.)?${rootDomain.replace('.', '\\.')}$`,
+    )
     return subdomainPattern.test(origin)
   },
 }
