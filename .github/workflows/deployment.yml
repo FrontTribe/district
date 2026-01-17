@@ -127,10 +127,19 @@ jobs:
             pnpm build
           fi
 
-          if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
-            PORT="$APP_PORT" NODE_ENV="$NODE_ENV" pm2 restart "$APP_NAME" --update-env
-          else
-            PORT="$APP_PORT" NODE_ENV="$NODE_ENV" pm2 start pnpm --name "$APP_NAME" -- "$RUN_CMD"
+          pm2 delete "$APP_NAME" >/dev/null 2>&1 || true
+          PORT="$APP_PORT" NODE_ENV="$NODE_ENV" pm2 start pnpm --name "$APP_NAME" \
+            --max-restarts 5 \
+            --min-uptime 10000 \
+            --restart-delay 2000 \
+            -- "$RUN_CMD"
+
+          sleep 2
+          PID="$(pm2 pid "$APP_NAME" | head -n 1 | tr -d '[:space:]')"
+          if [ -z "$PID" ] || [ "$PID" = "0" ]; then
+            echo "PM2 process failed to stay online. Showing recent logs:"
+            pm2 logs "$APP_NAME" --lines 50 || true
+            exit 1
           fi
 
           pm2 save
