@@ -17,8 +17,8 @@ const nextConfig = {
         port: '3000',
       },
       {
-        protocol: 'https',
-        hostname: 'district.hr',
+        hostname: 'real-estate.test',
+        port: '3000',
       },
     ],
   },
