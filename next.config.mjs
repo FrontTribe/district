@@ -16,6 +16,10 @@ const nextConfig = {
         hostname: 'momento.test',
         port: '3000',
       },
+      {
+        protocol: 'https',
+        hostname: 'district.hr',
+      },
     ],
   },
   // Your Next.js config here
