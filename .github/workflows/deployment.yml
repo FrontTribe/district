@@ -12,9 +12,6 @@ jobs:
       # 🧩 Step 1: Checkout the repository
       - name: Checkout Repo
         uses: actions/checkout@v4
-        with:
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          persist-credentials: false
 
       # 🔐 Step 2: Setup SSH key for server connection
       - name: Setup SSH Key for Server
@@ -30,12 +27,20 @@ jobs:
 
       # 🧠 Step 4: Test SSH connection
       - name: Test SSH Connection
-        run: ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "echo ✅ Connected to server"
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PASS: ${{ secrets.SERVER_PASS }}
+        run: sshpass -p "$SERVER_PASS" ssh -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "echo Connected to server"
 
       # 🚀 Step 5: Deploy project
       - name: Deploy to Server
         env:
           BRANCH_NAME: ${{ github.ref_name }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PASS: ${{ secrets.SERVER_PASS }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
         run: |
           set -e
           if [ "$BRANCH_NAME" = "main" ]; then
@@ -75,3 +80,124 @@ jobs:
           else
             echo "⚠️ Deployment skipped: branch $BRANCH_NAME is not configured."
           fi
+
+          TARBALL="$(mktemp -t district-deploy-XXXXXX.tgz)"
+          cleanup() { rm -f "$TARBALL"; }
+          trap cleanup EXIT
+
+          tar -czf "$TARBALL" \
+            --exclude='./.git' \
+            --exclude='./.next' \
+            --exclude='./node_modules' \
+            --exclude='./.env' \
+            --exclude='./.env.*' \
+            --exclude='./coverage' \
+            --exclude='./playwright-report' \
+            --exclude='./test-results' \
+            -C "$GITHUB_WORKSPACE" .
+
+          REMOTE_TARBALL="/tmp/${APP_NAME}.tgz"
+          sshpass -p "$SERVER_PASS" scp -P "$DEPLOY_PORT" -o StrictHostKeyChecking=no \
+            "$TARBALL" "$SERVER_USER@$SERVER_HOST:$REMOTE_TARBALL"
+
+          sshpass -p "$SERVER_PASS" ssh -p "$DEPLOY_PORT" -o StrictHostKeyChecking=no \
+            "$SERVER_USER@$SERVER_HOST" \
+            "DEPLOY_PATH='$DEPLOY_PATH' APP_NAME='$APP_NAME' REMOTE_TARBALL='$REMOTE_TARBALL' APP_PORT='$APP_PORT' NODE_ENV='$NODE_ENV' RUN_CMD='$RUN_CMD' DEPLOY_USER='$SERVER_USER' SUDO_PASS='$SERVER_PASS' bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          DEPLOY_PATH="${DEPLOY_PATH:?}"
+          APP_NAME="${APP_NAME:?}"
+          REMOTE_TARBALL="${REMOTE_TARBALL:?}"
+          APP_PORT="${APP_PORT:?}"
+          NODE_ENV="${NODE_ENV:?}"
+          RUN_CMD="${RUN_CMD:?}"
+          DEPLOY_USER="${DEPLOY_USER:?}"
+          SUDO_PASS="${SUDO_PASS:-}"
+
+          cleanup() { rm -f "$REMOTE_TARBALL"; }
+          trap cleanup EXIT
+
+          if ! mkdir -p "$DEPLOY_PATH" 2>/dev/null; then
+            if [ -n "$SUDO_PASS" ]; then
+              echo "$SUDO_PASS" | sudo -S mkdir -p "$DEPLOY_PATH"
+            else
+              echo "Unable to create $DEPLOY_PATH. Check permissions or provide sudo access."
+              exit 1
+            fi
+          fi
+
+          if [ ! -w "$DEPLOY_PATH" ]; then
+            if [ -n "$SUDO_PASS" ]; then
+              echo "$SUDO_PASS" | sudo -S chown -R "$DEPLOY_USER":"$DEPLOY_USER" "$DEPLOY_PATH"
+            else
+              echo "No write permission for $DEPLOY_PATH. Check ownership or provide sudo access."
+              exit 1
+            fi
+          fi
+
+          tar -xzf "$REMOTE_TARBALL" -C "$DEPLOY_PATH" --no-same-owner --no-same-permissions
+
+          cd "$DEPLOY_PATH"
+
+          if [ "$NODE_ENV" = "production" ]; then
+            rm -rf .next
+          fi
+
+          if ! command -v pnpm >/dev/null 2>&1; then
+            if command -v corepack >/dev/null 2>&1; then
+              if ! corepack enable >/dev/null 2>&1; then
+                if [ -n "$SUDO_PASS" ]; then
+                  echo "$SUDO_PASS" | sudo -S corepack enable >/dev/null 2>&1 || true
+                fi
+              fi
+              if ! command -v pnpm >/dev/null 2>&1; then
+                if [ -n "$SUDO_PASS" ]; then
+                  echo "$SUDO_PASS" | sudo -S corepack prepare pnpm@latest --activate
+                else
+                  corepack prepare pnpm@latest --activate
+                fi
+              fi
+            fi
+          fi
+
+          if ! command -v pnpm >/dev/null 2>&1; then
+            if [ -n "$SUDO_PASS" ]; then
+              echo "$SUDO_PASS" | sudo -S npm install -g pnpm
+            else
+              npm install -g pnpm
+            fi
+          fi
+
+          if ! command -v pm2 >/dev/null 2>&1; then
+            if [ -n "$SUDO_PASS" ]; then
+              echo "$SUDO_PASS" | sudo -S npm install -g pm2
+            else
+              npm install -g pm2
+            fi
+          fi
+
+          pnpm install --frozen-lockfile
+
+          if [ "$NODE_ENV" = "production" ]; then
+            NODE_ENV=production pnpm build
+            if [ ! -f ".next/BUILD_ID" ]; then
+              echo "Build artifacts missing in $DEPLOY_PATH/.next"
+              ls -la "$DEPLOY_PATH" || true
+              ls -la "$DEPLOY_PATH/.next" || true
+              exit 1
+            fi
+          fi
+
+          pm2 delete "$APP_NAME" >/dev/null 2>&1 || true
+          PORT="$APP_PORT" NODE_ENV="$NODE_ENV" pm2 start pnpm --name "$APP_NAME" --cwd "$DEPLOY_PATH" -- "$RUN_CMD"
+
+          sleep 2
+          PID="$(pm2 pid "$APP_NAME" | head -n 1 | tr -d '[:space:]')"
+          if [ -z "$PID" ] || [ "$PID" = "0" ]; then
+            echo "PM2 process failed to stay online. Showing recent logs:"
+            pm2 logs "$APP_NAME" --lines 50 || true
+            exit 1
+          fi
+
+          pm2 save
+          REMOTE
