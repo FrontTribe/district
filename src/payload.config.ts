@@ -23,43 +23,6 @@ import { loadRentlioOptions } from './utils/rentlio'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'district.hr'
-const tenantRootDomain = process.env.NEXT_PUBLIC_TENANT_ROOT_DOMAIN || rootDomain
-const devOrigins = [
-  'https://boutique.test:3000',
-  'https://momento.test:3000',
-  'https://localhost:3000',
-  'http://localhost:3000',
-]
-const envOrigins = (process.env.PAYLOAD_CORS_ORIGINS || '')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean)
-const prodOrigins = [
-  `https://${rootDomain}`,
-  `https://www.${rootDomain}`,
-  `https://${tenantRootDomain}`,
-  `https://www.${tenantRootDomain}`,
-  `https://boutique.${rootDomain}`,
-  `https://momento.${rootDomain}`,
-]
-const allOrigins = Array.from(new Set([...devOrigins, ...prodOrigins, ...envOrigins]))
-
-// Dynamic CORS: allow any subdomain of rootDomain
-const corsConfig = {
-  origins: (origin: string | undefined) => {
-    if (!origin) return true // Allow requests with no origin (like mobile apps or curl)
-
-    // Check if origin matches any static origins
-    if (allOrigins.includes(origin)) return true
-
-    // Allow any subdomain of rootDomain
-    const subdomainPattern = new RegExp(
-      `^https://([a-z0-9-]+\\.)?${rootDomain.replace('.', '\\.')}$`,
-    )
-    return subdomainPattern.test(origin)
-  },
-}
 
 export default buildConfig({
   admin: {
@@ -111,8 +74,8 @@ export default buildConfig({
   collections: [Users, Media, Tenants, Pages, Menu, Footer],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
-  // Leave serverURL empty for multi-tenant - admin will use relative URLs
-  cors: corsConfig,
+  // Allow all origins - nginx handles security
+  cors: '*',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
