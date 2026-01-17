@@ -23,6 +23,14 @@ import { loadRentlioOptions } from './utils/rentlio'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'district.hr'
+const devOrigins = new Set([
+  'https://boutique.test:3000',
+  'https://localhost:3000',
+  'http://localhost:3000',
+])
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+const allowedProdOrigin = new RegExp(`^https://([a-z0-9-]+\\.)?${escapeRegex(rootDomain)}$`, 'i')
 
 export default buildConfig({
   admin: {
@@ -75,10 +83,19 @@ export default buildConfig({
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://localhost:3000',
-  cors: [
-    'https://boutique.test:3000',
-    'https://localhost:3000', // Good to keep this for other tools
-  ],
+  cors: {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
+      if (!origin || devOrigins.has(origin) || allowedProdOrigin.test(origin)) {
+        callback(null, true)
+        return
+      }
+
+      callback(new Error(`Origin not allowed by CORS: ${origin}`))
+    },
+  },
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
