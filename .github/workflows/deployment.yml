@@ -71,7 +71,7 @@ jobs:
 
           sshpass -p "$SERVER_PASS" ssh -p "$DEPLOY_PORT" -o StrictHostKeyChecking=no \
             "$SERVER_USER@$SERVER_HOST" \
-            "DEPLOY_PATH='$DEPLOY_PATH' APP_NAME='$APP_NAME' REMOTE_TARBALL='$REMOTE_TARBALL' APP_PORT='$APP_PORT' NODE_ENV='$NODE_ENV' RUN_CMD='$RUN_CMD' bash -s" <<'REMOTE'
+            "DEPLOY_PATH='$DEPLOY_PATH' APP_NAME='$APP_NAME' REMOTE_TARBALL='$REMOTE_TARBALL' APP_PORT='$APP_PORT' NODE_ENV='$NODE_ENV' RUN_CMD='$RUN_CMD' DEPLOY_USER='$SERVER_USER' SUDO_PASS='$SERVER_PASS' bash -s" <<'REMOTE'
           set -euo pipefail
 
           DEPLOY_PATH="${DEPLOY_PATH:?}"
@@ -80,12 +80,31 @@ jobs:
           APP_PORT="${APP_PORT:?}"
           NODE_ENV="${NODE_ENV:?}"
           RUN_CMD="${RUN_CMD:?}"
+          DEPLOY_USER="${DEPLOY_USER:?}"
+          SUDO_PASS="${SUDO_PASS:-}"
 
           cleanup() { rm -f "$REMOTE_TARBALL"; }
           trap cleanup EXIT
 
-          mkdir -p "$DEPLOY_PATH"
-          tar -xzf "$REMOTE_TARBALL" -C "$DEPLOY_PATH"
+          if ! mkdir -p "$DEPLOY_PATH" 2>/dev/null; then
+            if [ -n "$SUDO_PASS" ]; then
+              echo "$SUDO_PASS" | sudo -S mkdir -p "$DEPLOY_PATH"
+            else
+              echo "Unable to create $DEPLOY_PATH. Check permissions or provide sudo access."
+              exit 1
+            fi
+          fi
+
+          if [ ! -w "$DEPLOY_PATH" ]; then
+            if [ -n "$SUDO_PASS" ]; then
+              echo "$SUDO_PASS" | sudo -S chown -R "$DEPLOY_USER":"$DEPLOY_USER" "$DEPLOY_PATH"
+            else
+              echo "No write permission for $DEPLOY_PATH. Check ownership or provide sudo access."
+              exit 1
+            fi
+          fi
+
+          tar -xzf "$REMOTE_TARBALL" -C "$DEPLOY_PATH" --no-same-owner --no-same-permissions
 
           cd "$DEPLOY_PATH"
 
