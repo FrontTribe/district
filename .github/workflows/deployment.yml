@@ -28,39 +28,91 @@ jobs:
           SERVER_USER: ${{ secrets.SERVER_USER }}
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_PASS: ${{ secrets.SERVER_PASS }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
         run: |
+          set -euo pipefail
+          DEPLOY_PORT="${SERVER_PORT:-22}"
+
           if [ "$BRANCH_NAME" = "main" ]; then
-            sshpass -p "$SERVER_PASS" ssh -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "
-              set -e
-              cd /var/www/district-prod
-              git fetch origin main
-              git reset --hard origin/main
-              npm i -f
-              npm run build
-              if ! command -v pm2 >/dev/null 2>&1; then
-                npm i -g pm2
-              fi
-              if pm2 describe district-prod >/dev/null 2>&1; then
-                PORT=3000 NODE_ENV=production pm2 restart district-prod --update-env
-              else
-                PORT=3000 NODE_ENV=production pm2 start npm --name district-prod -- start
-              fi
-            "
+            DEPLOY_PATH="/var/www/district-prod"
+            APP_NAME="district-prod"
+            APP_PORT="3000"
+            NODE_ENV="production"
+            RUN_CMD="start"
           elif [ "$BRANCH_NAME" = "development" ]; then
-            sshpass -p "$SERVER_PASS" ssh -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "
-              set -e
-              cd /var/www/district-dev
-              git fetch origin development
-              git reset --hard origin/development
-              npm i -f
-              npm run build
-              if ! command -v pm2 >/dev/null 2>&1; then
-                npm i -g pm2
-              fi
-              if pm2 describe district-dev >/dev/null 2>&1; then
-                PORT=3001 NODE_ENV=development pm2 restart district-dev --update-env
-              else
-                PORT=3001 NODE_ENV=development pm2 start npm --name district-dev -- run dev
-              fi
-            "
+            DEPLOY_PATH="/var/www/district-dev"
+            APP_NAME="district-dev"
+            APP_PORT="3001"
+            NODE_ENV="development"
+            RUN_CMD="dev"
+          else
+            echo "No deploy target for branch $BRANCH_NAME"
+            exit 0
           fi
+
+          TARBALL="$(mktemp -t district-deploy-XXXXXX.tgz)"
+          cleanup() { rm -f "$TARBALL"; }
+          trap cleanup EXIT
+
+          tar -czf "$TARBALL" \
+            --exclude='./.git' \
+            --exclude='./.next' \
+            --exclude='./node_modules' \
+            --exclude='./.env' \
+            --exclude='./.env.*' \
+            --exclude='./coverage' \
+            --exclude='./playwright-report' \
+            --exclude='./test-results' \
+            -C "$GITHUB_WORKSPACE" .
+
+          REMOTE_TARBALL="/tmp/${APP_NAME}.tgz"
+          sshpass -p "$SERVER_PASS" scp -P "$DEPLOY_PORT" -o StrictHostKeyChecking=no \
+            "$TARBALL" "$SERVER_USER@$SERVER_HOST:$REMOTE_TARBALL"
+
+          sshpass -p "$SERVER_PASS" ssh -p "$DEPLOY_PORT" -o StrictHostKeyChecking=no \
+            "$SERVER_USER@$SERVER_HOST" \
+            "DEPLOY_PATH='$DEPLOY_PATH' APP_NAME='$APP_NAME' REMOTE_TARBALL='$REMOTE_TARBALL' APP_PORT='$APP_PORT' NODE_ENV='$NODE_ENV' RUN_CMD='$RUN_CMD' bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          DEPLOY_PATH="${DEPLOY_PATH:?}"
+          APP_NAME="${APP_NAME:?}"
+          REMOTE_TARBALL="${REMOTE_TARBALL:?}"
+          APP_PORT="${APP_PORT:?}"
+          NODE_ENV="${NODE_ENV:?}"
+          RUN_CMD="${RUN_CMD:?}"
+
+          cleanup() { rm -f "$REMOTE_TARBALL"; }
+          trap cleanup EXIT
+
+          mkdir -p "$DEPLOY_PATH"
+          tar -xzf "$REMOTE_TARBALL" -C "$DEPLOY_PATH"
+
+          cd "$DEPLOY_PATH"
+
+          if ! command -v pnpm >/dev/null 2>&1; then
+            if command -v corepack >/dev/null 2>&1; then
+              corepack enable
+            else
+              echo "pnpm not found and corepack not available. Install pnpm on the server."
+              exit 1
+            fi
+          fi
+
+          if ! command -v pm2 >/dev/null 2>&1; then
+            npm install -g pm2
+          fi
+
+          pnpm install --frozen-lockfile
+
+          if [ "$NODE_ENV" = "production" ]; then
+            pnpm build
+          fi
+
+          if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
+            PORT="$APP_PORT" NODE_ENV="$NODE_ENV" pm2 restart "$APP_NAME" --update-env
+          else
+            PORT="$APP_PORT" NODE_ENV="$NODE_ENV" pm2 start pnpm --name "$APP_NAME" -- "$RUN_CMD"
+          fi
+
+          pm2 save
+REMOTE
