@@ -29,17 +29,7 @@ jobs:
         run: |
           if [ "$BRANCH_NAME" = "main" ]; then
             ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "
-              set -euxo pipefail
-              if [ -s \"\$HOME/.nvm/nvm.sh\" ]; then
-                . \"\$HOME/.nvm/nvm.sh\"
-              fi
-              echo \"PATH=\$PATH\"
-              which node || true
-              node -v || true
-              which npm || true
-              npm -v || true
-              which pm2 || true
-              pm2 -v || true
+              set -e
               cd /var/www/district-prod
               git fetch origin main
               git reset --hard origin/main
@@ -49,17 +39,7 @@ jobs:
             "
           elif [ "$BRANCH_NAME" = "development" ]; then
             ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_IP }} "
-              set -euxo pipefail
-              if [ -s \"\$HOME/.nvm/nvm.sh\" ]; then
-                . \"\$HOME/.nvm/nvm.sh\"
-              fi
-              echo \"PATH=\$PATH\"
-              which node || true
-              node -v || true
-              which npm || true
-              npm -v || true
-              which pm2 || true
-              pm2 -v || true
+              set -e
               cd /var/www/district-dev
               git fetch origin development
               git reset --hard origin/development
