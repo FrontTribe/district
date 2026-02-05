@@ -2,6 +2,7 @@ import { withPayload } from '@payloadcms/next/withPayload'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   sassOptions: {
     silenceDeprecations: ['legacy-js-api', 'import'],
   },
@@ -22,6 +23,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'district.hr',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.district.hr',
       },
     ],
   },

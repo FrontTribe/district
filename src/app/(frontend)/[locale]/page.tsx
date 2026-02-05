@@ -16,6 +16,18 @@ import PageClient from '@/components/PageClient'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
 import { generateMetadataFromPages } from '@/utils/generateMetadata'
 
+// Make this route dynamic to handle different tenants
+export const dynamic = 'force-dynamic'
+
+/**
+ * Generate static params for all supported locales
+ */
+export async function generateStaticParams() {
+  return localeLang.map((lang) => ({
+    locale: lang.code,
+  }))
+}
+
 /**
  * Fetch pages for metadata generation
  */

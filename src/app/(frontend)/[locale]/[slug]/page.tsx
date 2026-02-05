@@ -10,6 +10,9 @@ import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantD
 import { localeLang } from '@/utils/locale'
 import { generateMetadataFromPage } from '@/utils/generateMetadata'
 
+// Make this route dynamic to handle different tenants
+export const dynamic = 'force-dynamic'
+
 type PageProps = {
   params: Promise<{
     slug: string
