@@ -41,6 +41,10 @@ const restrictTenantLogin = async ({ req, user }: { req: any; user: any }) => {
 
 const Users: CollectionConfig = {
   slug: 'users',
+  labels: {
+    singular: { en: 'User', hr: 'Korisnik' },
+    plural: { en: 'Users', hr: 'Korisnici' },
+  },
   auth: {
     cookies: {
       sameSite: 'Lax',
@@ -52,8 +56,11 @@ const Users: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'email',
-    group: 'System Management',
-    description: 'Manage user accounts and permissions',
+    group: { en: 'System Management', hr: 'Upravljanje sustavom' },
+    description: {
+      en: 'Manage user accounts and permissions',
+      hr: 'Upravljanje korisničkim računima i dozvolama',
+    },
   },
   access: {
     read: ({ req: { user } }) => user?.role === 'superadmin',

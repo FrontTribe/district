@@ -7,6 +7,8 @@ import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
+import { hr } from '@payloadcms/translations/languages/hr'
+import { en } from '@payloadcms/translations/languages/en'
 import { localeLang } from './utils/locale'
 
 // storage
@@ -19,6 +21,8 @@ import Pages from './collections/pages'
 import Media from './collections/Media'
 import Menu from './collections/Menu'
 import Footer from './collections/Footer'
+import Documents from './collections/documents'
+import Buildings from './collections/buildings'
 import { loadRentlioOptions } from './utils/rentlio'
 
 const filename = fileURLToPath(import.meta.url)
@@ -71,7 +75,7 @@ export default buildConfig({
       },
     },
   },
-  collections: [Users, Media, Tenants, Pages, Menu, Footer],
+  collections: [Users, Media, Documents, Tenants, Pages, Menu, Footer, Buildings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   // Allow all origins - nginx handles security
@@ -89,6 +93,10 @@ export default buildConfig({
     defaultLocale: 'hr',
     fallback: true,
   },
+  i18n: {
+    supportedLanguages: { hr, en },
+    fallbackLanguage: 'hr',
+  },
   sharp,
   plugins: [
     payloadCloudPlugin(),
@@ -101,18 +109,19 @@ export default buildConfig({
     formBuilderPlugin({
       formOverrides: {
         admin: {
-          group: 'Forms',
+          group: { en: 'Forms', hr: 'Obrasci' },
         },
       },
       formSubmissionOverrides: {
         admin: {
-          group: 'Forms',
+          group: { en: 'Forms', hr: 'Obrasci' },
         },
       },
     }),
     s3Storage({
       collections: {
         media: true,
+        documents: true,
       },
       bucket: process.env.S3_BUCKET || '',
       config: {

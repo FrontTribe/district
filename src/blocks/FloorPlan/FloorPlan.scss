@@ -1,0 +1,27 @@
+.floor-plan {
+  .floor-plan__title {
+    text-align: center;
+  }
+
+  .floor-plan__container {
+    width: 100%;
+  }
+
+  .floor-plan__tooltip {
+    transition: opacity 0.15s ease;
+  }
+
+  /* Floating label on hovered unit (readable on any plan background) */
+  .floor-plan__hover-label-text {
+    fill: #0f172a;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    paint-order: stroke fill;
+    stroke: #f8fafc;
+  }
+
+  .floor-plan__hover-label-layer {
+    z-index: 2;
+  }
+}

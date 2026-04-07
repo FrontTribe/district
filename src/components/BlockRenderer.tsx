@@ -15,6 +15,14 @@ import { ConceptBarMenuBlock } from '@/blocks/ConceptBarMenu'
 import { JobOpportunityBlock } from '@/blocks/JobOpportunity'
 import { ImageGridBlock } from '@/blocks/ImageGrid'
 import { IntroBlock } from '@/blocks/Intro'
+import { FloorPlanBlock } from '@/blocks/FloorPlan'
+import { RealEstateHeroBlock } from '@/blocks/RealEstateHero'
+import { RealEstateAboutUsBlock } from '@/blocks/RealEstateAboutUs'
+import { RealEstateProjectsWeDidBlock } from '@/blocks/RealEstateProjectsWeDid'
+import { RealEstateCurrentProjectsBlock } from '@/blocks/RealEstateCurrentProjects'
+import { RealEstateLiveCameraBlock } from '@/blocks/RealEstateLiveCamera'
+import { RealEstateLookingForJobBlock } from '@/blocks/RealEstateLookingForJob'
+import { RealEstateContactBlock } from '@/blocks/RealEstateContact'
 
 const blockComponents = {
   section: SectionBlock,
@@ -32,6 +40,14 @@ const blockComponents = {
   'job-opportunity': JobOpportunityBlock,
   intro: IntroBlock,
   'image-grid': ImageGridBlock,
+  'floor-plan': FloorPlanBlock,
+  'real-estate-hero': RealEstateHeroBlock,
+  'real-estate-about-us': RealEstateAboutUsBlock,
+  'real-estate-projects-we-did': RealEstateProjectsWeDidBlock,
+  'real-estate-current-projects': RealEstateCurrentProjectsBlock,
+  'real-estate-live-camera': RealEstateLiveCameraBlock,
+  'real-estate-looking-for-job': RealEstateLookingForJobBlock,
+  'real-estate-contact': RealEstateContactBlock,
 }
 
 type _Block = NonNullable<Page['layout']>[number]

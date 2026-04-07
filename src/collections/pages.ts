@@ -15,13 +15,28 @@ import JobOpportunity from '@/blocks/JobOpportunity'
 import Image from '@/blocks/Image'
 import { Intro } from '@/blocks/Intro'
 import { ImageGrid } from '@/blocks/ImageGrid'
+import { FloorPlan } from '@/blocks/FloorPlan'
+import RealEstateHero from '@/blocks/RealEstateHero'
+import RealEstateAboutUs from '@/blocks/RealEstateAboutUs'
+import RealEstateProjectsWeDid from '@/blocks/RealEstateProjectsWeDid'
+import RealEstateCurrentProjects from '@/blocks/RealEstateCurrentProjects'
+import RealEstateLiveCamera from '@/blocks/RealEstateLiveCamera'
+import RealEstateLookingForJob from '@/blocks/RealEstateLookingForJob'
+import RealEstateContact from '@/blocks/RealEstateContact'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
+  labels: {
+    singular: { en: 'Page', hr: 'Stranica' },
+    plural: { en: 'Pages', hr: 'Stranice' },
+  },
   admin: {
     useAsTitle: 'title',
-    group: 'Site Content',
-    description: 'Manage pages for tenants and main domain',
+    group: { en: 'Site Content', hr: 'Sadržaj stranice' },
+    description: {
+      en: 'Manage pages for tenants and main domain',
+      hr: 'Upravljanje stranicama za stanare i glavnu domenu',
+    },
   },
   access: {
     read: ({ req }) => {
@@ -127,6 +142,14 @@ const Pages: CollectionConfig = {
         Image,
         Intro,
         ImageGrid,
+        FloorPlan,
+        RealEstateHero,
+        RealEstateAboutUs,
+        RealEstateProjectsWeDid,
+        RealEstateCurrentProjects,
+        RealEstateLiveCamera,
+        RealEstateLookingForJob,
+        RealEstateContact,
       ],
       localized: true,
       admin: {
