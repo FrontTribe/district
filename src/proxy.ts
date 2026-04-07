@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const headers = new Headers(request.headers)
   const host = request.headers.get('host')
   const mainDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'district.hr'
   const devDomain =
-    process.env.NEXT_PUBLIC_DEV_ROOT_DOMAIN ||
-    (mainDomain ? `dev.${mainDomain}` : '')
+    process.env.NEXT_PUBLIC_DEV_ROOT_DOMAIN || (mainDomain ? `dev.${mainDomain}` : '')
   const defaultTenant = 'district'
 
   if (!host) {
