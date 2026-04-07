@@ -102,7 +102,7 @@ jobs:
           timeout:     5m
           script_stop: true
           script: |
-            set -euo pipefail
+            set -euxo pipefail
 
             DEPLOY_PATH="${{ steps.target.outputs.path }}"
             APP_NAME="${{ steps.target.outputs.app }}"
