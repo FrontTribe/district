@@ -69,12 +69,15 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    documents: Document;
     tenants: Tenant;
     pages: Page;
     menu: Menu;
     footer: Footer;
+    buildings: Building;
     forms: Form;
     'form-submissions': FormSubmission;
+    'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -83,12 +86,15 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    documents: DocumentsSelect<false> | DocumentsSelect<true>;
     tenants: TenantsSelect<false> | TenantsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     menu: MenuSelect<false> | MenuSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    buildings: BuildingsSelect<false> | BuildingsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
+    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -96,12 +102,14 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('hr' | 'en' | 'de') | ('hr' | 'en' | 'de')[];
   globals: {};
   globalsSelect: {};
   locale: 'hr' | 'en' | 'de';
-  user: User & {
-    collection: 'users';
+  widgets: {
+    collections: CollectionsWidget;
   };
+  user: User;
   jobs: {
     tasks: unknown;
     workflows: unknown;
@@ -152,6 +160,7 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+  collection: 'users';
 }
 /**
  * Manage tenant organizations (hotels, restaurants, etc.)
@@ -269,6 +278,30 @@ export interface Media {
       filename?: string | null;
     };
   };
+}
+/**
+ * PDF documents only. Upload unit-details PDFs here. For Buildings, use "Unit details PDF" or add a document from this collection.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents".
+ */
+export interface Document {
+  id: number;
+  /**
+   * Optional label (e.g. "Unit details – Building A")
+   */
+  title?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * Manage pages for tenants and main domain
@@ -474,6 +507,18 @@ export interface Page {
              */
             rooms?:
               | {
+                  /**
+                   * Rentlio properties are loading… If this remains a plain input, enter the ID manually or fix the API credentials.
+                   */
+                  rentlioPropertyId?: string | null;
+                  /**
+                   * Sales channels are loading… If this remains a plain input, enter the ID manually or fix the API credentials.
+                   */
+                  rentlioSalesChannelId: string;
+                  /**
+                   * Select a property first to load unit types. If options do not appear, enter the ID manually.
+                   */
+                  rentlioUnitTypeId?: string | null;
                   title: string;
                   description?: string | null;
                   badges?:
@@ -691,6 +736,155 @@ export interface Page {
             blockName?: string | null;
             blockType: 'image-grid';
           }
+        | {
+            /**
+             * Optional heading above the floor plan
+             */
+            title?: string | null;
+            /**
+             * Building with floor plan image and unit regions
+             */
+            building: number | Building;
+            /**
+             * Optional ID for anchor links
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'floor-plan';
+          }
+        | {
+            heading: string;
+            subheading?: string | null;
+            /**
+             * Optional hero background image
+             */
+            backgroundImage?: (number | null) | Media;
+            /**
+             * Optional ID for anchor links (e.g. hero)
+             */
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'real-estate-hero';
+          }
+        | {
+            /**
+             * Small label above the heading
+             */
+            eyebrow?: string | null;
+            heading: string;
+            /**
+             * HTML allowed (e.g. <p>...</p>)
+             */
+            body: string;
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'real-estate-about-us';
+          }
+        | {
+            eyebrow?: string | null;
+            heading: string;
+            subtitle?: string | null;
+            projects?:
+              | {
+                  title: string;
+                  description?: string | null;
+                  image?: (number | null) | Media;
+                  location?: string | null;
+                  year?: string | null;
+                  galleryImages?:
+                    | {
+                        image: number | Media;
+                        id?: string | null;
+                      }[]
+                    | null;
+                  id?: string | null;
+                }[]
+              | null;
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'real-estate-projects-we-did';
+          }
+        | {
+            eyebrow?: string | null;
+            heading: string;
+            subtitle?: string | null;
+            projects?:
+              | {
+                  /**
+                   * Floor plan and units are defined on the Building. Opening this project on the site shows the plan; tap a unit to open its PDF page.
+                   */
+                  building?: (number | null) | Building;
+                  title: string;
+                  /**
+                   * Shown on the project card and in the drawer.
+                   */
+                  description?: string | null;
+                  /**
+                   * Thumbnail on the project card (grid).
+                   */
+                  image?: (number | null) | Media;
+                  status?: string | null;
+                  ctaText?: string | null;
+                  ctaUrl?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'real-estate-current-projects';
+          }
+        | {
+            heading: string;
+            subtitle?: string | null;
+            /**
+             * YouTube embed URL, Vimeo, or iframe src. Leave empty for placeholder.
+             */
+            streamUrl?: string | null;
+            /**
+             * Shown when no stream URL is set
+             */
+            fallbackImage?: (number | null) | Media;
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'real-estate-live-camera';
+          }
+        | {
+            badge?: string | null;
+            heading: string;
+            subtitle?: string | null;
+            description: string;
+            features?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
+            buttonText: string;
+            buttonUrl: string;
+            ctaNote?: string | null;
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'real-estate-looking-for-job';
+          }
+        | {
+            eyebrow?: string | null;
+            heading: string;
+            leftText?: string | null;
+            address?: string | null;
+            email?: string | null;
+            phone?: string | null;
+            sectionId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'real-estate-contact';
+          }
       )[]
     | null;
   meta?: {
@@ -879,6 +1073,64 @@ export interface Form {
   createdAt: string;
 }
 /**
+ * One building = one floor plan image + one unit-details PDF (e.g. STANOVI.pdf). Draw each unit on the plan, then set label (e.g. A.1.2) and PDF page number for each.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "buildings".
+ */
+export interface Building {
+  id: number;
+  /**
+   * e.g. "Building A", "Dilatacija A"
+   */
+  title: string;
+  /**
+   * Floor plan as image (PNG/JPG). If you have a PDF, export the first page as image. Save this document after uploading so you can draw units below.
+   */
+  floorPlanImage: number | Media;
+  /**
+   * e.g. STANOVI.pdf — page 1 = first unit, page 2 = second, etc. Upload under Media & Assets → Documents, then select here.
+   */
+  unitDetailsPdf: number | Document;
+  /**
+   * Each row = one unit (e.g. A.1.1, A.1.2). Draw regions on the plan above; set label and PDF page number here.
+   */
+  units?:
+    | {
+        /**
+         * e.g. "A.1.1", "DVOSOBNI STAN A.1.1"
+         */
+        label: string;
+        /**
+         * Page number in Unit details PDF (1 = first page)
+         */
+        detailPageNumber: number;
+        /**
+         * Polygon: draw by clicking points on the plan, then "Complete unit".
+         */
+        shape: {
+          /**
+           * Points (x,y %). Filled by drawing on the plan.
+           */
+          points: {
+            /**
+             * x %
+             */
+            x: number;
+            /**
+             * y %
+             */
+            y: number;
+            id?: string | null;
+          }[];
+        };
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage navigation menus for tenants and main domain
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1003,6 +1255,23 @@ export interface FormSubmission {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv".
+ */
+export interface PayloadKv {
+  id: number;
+  key: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -1015,6 +1284,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'documents';
+        value: number | Document;
       } | null)
     | ({
         relationTo: 'tenants';
@@ -1031,6 +1304,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'footer';
         value: number | Footer;
+      } | null)
+    | ({
+        relationTo: 'buildings';
+        value: number | Building;
       } | null)
     | ({
         relationTo: 'forms';
@@ -1231,6 +1508,24 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents_select".
+ */
+export interface DocumentsSelect<T extends boolean = true> {
+  title?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tenants_select".
  */
 export interface TenantsSelect<T extends boolean = true> {
@@ -1387,6 +1682,9 @@ export interface PagesSelect<T extends boolean = true> {
               rooms?:
                 | T
                 | {
+                    rentlioPropertyId?: T;
+                    rentlioSalesChannelId?: T;
+                    rentlioUnitTypeId?: T;
                     title?: T;
                     description?: T;
                     badges?:
@@ -1552,6 +1850,127 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        'floor-plan'?:
+          | T
+          | {
+              title?: T;
+              building?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'real-estate-hero'?:
+          | T
+          | {
+              heading?: T;
+              subheading?: T;
+              backgroundImage?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'real-estate-about-us'?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              body?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'real-estate-projects-we-did'?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              subtitle?: T;
+              projects?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    image?: T;
+                    location?: T;
+                    year?: T;
+                    galleryImages?:
+                      | T
+                      | {
+                          image?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                  };
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'real-estate-current-projects'?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              subtitle?: T;
+              projects?:
+                | T
+                | {
+                    building?: T;
+                    title?: T;
+                    description?: T;
+                    image?: T;
+                    status?: T;
+                    ctaText?: T;
+                    ctaUrl?: T;
+                    id?: T;
+                  };
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'real-estate-live-camera'?:
+          | T
+          | {
+              heading?: T;
+              subtitle?: T;
+              streamUrl?: T;
+              fallbackImage?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'real-estate-looking-for-job'?:
+          | T
+          | {
+              badge?: T;
+              heading?: T;
+              subtitle?: T;
+              description?: T;
+              features?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              buttonText?: T;
+              buttonUrl?: T;
+              ctaNote?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'real-estate-contact'?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              leftText?: T;
+              address?: T;
+              email?: T;
+              phone?: T;
+              sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
       };
   meta?:
     | T
@@ -1642,6 +2061,35 @@ export interface FooterSelect<T extends boolean = true> {
               id?: T;
             };
         madeBy?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "buildings_select".
+ */
+export interface BuildingsSelect<T extends boolean = true> {
+  title?: T;
+  floorPlanImage?: T;
+  unitDetailsPdf?: T;
+  units?:
+    | T
+    | {
+        label?: T;
+        detailPageNumber?: T;
+        shape?:
+          | T
+          | {
+              points?:
+                | T
+                | {
+                    x?: T;
+                    y?: T;
+                    id?: T;
+                  };
+            };
+        id?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1797,6 +2245,14 @@ export interface FormSubmissionsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv_select".
+ */
+export interface PayloadKvSelect<T extends boolean = true> {
+  key?: T;
+  data?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents_select".
  */
 export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
@@ -1826,6 +2282,16 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
