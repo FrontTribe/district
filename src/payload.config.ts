@@ -28,16 +28,16 @@ import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-// const isProductionRuntime = process.env.NODE_ENV === 'production'
-// const requestedSchemaPush = process.env.PAYLOAD_DB_PUSH === 'true'
+const isProductionRuntime = process.env.NODE_ENV === 'production'
+const requestedSchemaPush = process.env.PAYLOAD_DB_PUSH === 'true'
 
-// if (isProductionRuntime && requestedSchemaPush) {
-//   throw new Error(
-//     'Refusing to start: PAYLOAD_DB_PUSH=true is not allowed in production. Run migrations explicitly and keep PAYLOAD_DB_PUSH=false.',
-//   )
-// }
+if (isProductionRuntime && requestedSchemaPush) {
+  throw new Error(
+    'Refusing to start: PAYLOAD_DB_PUSH=true is not allowed in production. Run migrations explicitly and keep PAYLOAD_DB_PUSH=false.',
+  )
+}
 
-// const allowSchemaPush = requestedSchemaPush && !isProductionRuntime
+const allowSchemaPush = requestedSchemaPush && !isProductionRuntime
 
 export default buildConfig({
   admin: {
@@ -96,7 +96,10 @@ export default buildConfig({
   },
   db: postgresAdapter({
     // Never push DB schema unless explicitly enabled in a non-production runtime.
-    // push: allowSchemaPush,
+    push: allowSchemaPush,
+    // Never run migrations automatically on app boot.
+    // Run migrations explicitly from CI/CD to avoid interactive prompts in prod.
+    prodMigrations: undefined,
     pool: {
       connectionString: process.env.DATABASE_URI,
     },
