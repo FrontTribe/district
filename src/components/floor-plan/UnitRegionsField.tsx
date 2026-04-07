@@ -74,7 +74,11 @@ export const UnitRegionsField: ArrayFieldClientComponent = (props) => {
     const units = data && typeof data === 'object' && path in data ? (data as Record<string, unknown>)[path] : undefined
     return toArray(units)
   }) as { shape?: { points?: unknown; x?: number; y?: number; width?: number; height?: number }; label?: string; detailPageNumber?: number }[]
-  const value = (valueFromForm != null && valueFromForm.length > 0 ? valueFromForm : toArray(fieldValue)) as { shape?: { points?: Point[]; x?: number; y?: number; width?: number; height?: number } }[]
+  const value = (valueFromForm != null && valueFromForm.length > 0 ? valueFromForm : toArray(fieldValue)) as {
+    label?: string
+    detailPageNumber?: number
+    shape?: { points?: Point[]; x?: number; y?: number; width?: number; height?: number }
+  }[]
   const docInfo = useDocumentInfo()
   const [drawing, setDrawing] = useState(false)
   const [currentPoints, setCurrentPoints] = useState<Point[]>([])
@@ -180,8 +184,7 @@ export const UnitRegionsField: ArrayFieldClientComponent = (props) => {
     const points = currentPoints
     if (points.length < 3) return
     const existing = value
-    const nextPage =
-      Math.max(1, ...existing.map((u: { detailPageNumber?: number }) => u.detailPageNumber ?? 0)) + 1
+    const nextPage = Math.max(1, ...existing.map((u) => u.detailPageNumber ?? 0)) + 1
     // New unit with polygon shape: points as array of { x, y } for Payload shape.points schema
     const newUnit = {
       label: `Unit ${existing.length + 1}`,
@@ -292,8 +295,8 @@ export const UnitRegionsField: ArrayFieldClientComponent = (props) => {
 
   return (
     <div className="unit-regions-field">
-      <FieldLabel field={field} />
-      <FieldDescription field={field} />
+      <FieldLabel label={field?.label} path={path} required={field?.required} />
+      <FieldDescription description={field?.admin?.description} path={path} />
 
       {steps}
 
