@@ -111,20 +111,24 @@ jobs:
             # Ensure deploy dir exists
             mkdir -p "$DEPLOY_PATH"
 
-            # Backup .env.local before extracting
-            if [ -f "$DEPLOY_PATH/.env.local" ]; then
-              cp "$DEPLOY_PATH/.env.local" /tmp/.env.local.bak
-            fi
+            # Backup env files before extracting
+            for env_file in .env .env.local .env.production; do
+              if [ -f "$DEPLOY_PATH/$env_file" ]; then
+                cp "$DEPLOY_PATH/$env_file" "/tmp/$(basename $env_file).bak"
+              fi
+            done
 
             # Extract artifact directly into deploy dir (overwrites existing files)
             tar -xzf /tmp/deploy.tgz -C "$DEPLOY_PATH"
             rm -f /tmp/deploy.tgz
 
-            # Restore .env.local
-            if [ -f /tmp/.env.local.bak ]; then
-              cp /tmp/.env.local.bak "$DEPLOY_PATH/.env.local"
-              rm -f /tmp/.env.local.bak
-            fi
+            # Restore env files
+            for env_file in .env .env.local .env.production; do
+              if [ -f "/tmp/$(basename $env_file).bak" ]; then
+                cp "/tmp/$(basename $env_file).bak" "$DEPLOY_PATH/$env_file"
+                rm -f "/tmp/$(basename $env_file).bak"
+              fi
+            done
 
             # Restart or register with PM2
             if pm2 describe "$APP_NAME" > /dev/null 2>&1; then
