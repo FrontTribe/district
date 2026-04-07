@@ -108,21 +108,23 @@ jobs:
             APP_NAME="${{ steps.target.outputs.app }}"
             APP_PORT="${{ steps.target.outputs.port }}"
 
-            # Extract artifact to a temp dir
-            TEMP=$(mktemp -d)
-            tar -xzf /tmp/deploy.tgz -C "$TEMP"
-            rm -f /tmp/deploy.tgz
+            # Ensure deploy dir exists
+            mkdir -p "$DEPLOY_PATH"
 
-            # Preserve .env.local — lives on the server, never in the artifact
+            # Backup .env.local before extracting
             if [ -f "$DEPLOY_PATH/.env.local" ]; then
-              cp "$DEPLOY_PATH/.env.local" "$TEMP/.env.local"
+              cp "$DEPLOY_PATH/.env.local" /tmp/.env.local.bak
             fi
 
-            # Atomic swap
-            rm -rf "${DEPLOY_PATH}_old"
-            [ -d "$DEPLOY_PATH" ] && mv "$DEPLOY_PATH" "${DEPLOY_PATH}_old"
-            mv "$TEMP" "$DEPLOY_PATH"
-            rm -rf "${DEPLOY_PATH}_old"
+            # Extract artifact directly into deploy dir (overwrites existing files)
+            tar -xzf /tmp/deploy.tgz -C "$DEPLOY_PATH"
+            rm -f /tmp/deploy.tgz
+
+            # Restore .env.local
+            if [ -f /tmp/.env.local.bak ]; then
+              cp /tmp/.env.local.bak "$DEPLOY_PATH/.env.local"
+              rm -f /tmp/.env.local.bak
+            fi
 
             # Restart or register with PM2
             if pm2 describe "$APP_NAME" > /dev/null 2>&1; then
