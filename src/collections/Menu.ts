@@ -2,10 +2,17 @@ import { CollectionConfig } from 'payload'
 
 const Menu: CollectionConfig = {
   slug: 'menu',
+  labels: {
+    singular: { en: 'Menu', hr: 'Izbornik' },
+    plural: { en: 'Menus', hr: 'Izbornici' },
+  },
   admin: {
     useAsTitle: 'title',
-    group: 'Site Content',
-    description: 'Manage navigation menus for tenants and main domain',
+    group: { en: 'Site Content', hr: 'Sadržaj stranice' },
+    description: {
+      en: 'Manage navigation menus for tenants and main domain',
+      hr: 'Upravljanje izbornicima za stanare i glavnu domenu',
+    },
   },
   access: {
     read: ({ req }) => {
@@ -44,22 +51,24 @@ const Menu: CollectionConfig = {
     {
       name: 'identifier',
       type: 'select',
-      label: 'Menu Identifier',
+      label: { en: 'Menu Identifier', hr: 'Identifikator izbornika' },
       required: true,
       defaultValue: 'main-menu',
       options: [
         {
-          label: 'Main Menu (Frontend)',
+          label: { en: 'Main Menu (Frontend)', hr: 'Glavni izbornik (frontend)' },
           value: 'main-menu',
         },
         {
-          label: 'Tenant Menu',
+          label: { en: 'Tenant Menu', hr: 'Izbornik stanara' },
           value: 'tenant-menu',
         },
       ],
       admin: {
-        description:
-          'Unique identifier for this menu type. Main Menu gets centered logo styling, Tenant Menu gets standard top-left styling.',
+        description: {
+          en: 'Unique identifier for this menu type. Main Menu gets centered logo styling, Tenant Menu gets standard top-left styling.',
+          hr: 'Jedinstveni identifikator za ovaj tip izbornika. Glavni izbornik ima centriran logo, Izbornik stanara standardni stil gore lijevo.',
+        },
       },
     },
     {
@@ -68,7 +77,10 @@ const Menu: CollectionConfig = {
       required: true,
       localized: true,
       admin: {
-        description: 'Internal title for this menu (e.g., "Hotel ABC Menu", "Restaurant XYZ Menu")',
+        description: {
+          en: 'Internal title for this menu (e.g., "Hotel ABC Menu", "Restaurant XYZ Menu")',
+          hr: 'Interni naslov izbornika (npr. "Izbornik hotela ABC", "Izbornik restorana XYZ")',
+        },
       },
     },
     {
@@ -99,16 +111,21 @@ const Menu: CollectionConfig = {
           required: true,
           localized: true,
           admin: {
-            description: 'URL or path for this menu item (required even if using scroll target)',
+            description: {
+              en: 'URL or path for this menu item (required even if using scroll target)',
+              hr: 'URL ili putanja za ovu stavku izbornika (obavezno čak i ako koristite scroll cilj)',
+            },
           },
         },
         {
           name: 'scrollTarget',
           type: 'text',
-          label: 'Scroll Target (Section ID)',
+          label: { en: 'Scroll Target (Section ID)', hr: 'Cilj skrolanja (ID sekcije)' },
           admin: {
-            description:
-              'Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.',
+            description: {
+              en: 'Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.',
+              hr: 'Opcionalni ID sekcije za skrolanje (npr. "hero", "features"). Ostavite prazno za link iznad.',
+            },
           },
         },
         {
@@ -133,17 +150,21 @@ const Menu: CollectionConfig = {
               required: true,
               localized: true,
               admin: {
-                description:
-                  'URL or path for this menu item (required even if using scroll target)',
+                description: {
+                  en: 'URL or path for this menu item (required even if using scroll target)',
+                  hr: 'URL ili putanja za ovu stavku izbornika (obavezno čak i ako koristite scroll cilj)',
+                },
               },
             },
             {
               name: 'scrollTarget',
               type: 'text',
-              label: 'Scroll Target (Section ID)',
+              label: { en: 'Scroll Target (Section ID)', hr: 'Cilj skrolanja (ID sekcije)' },
               admin: {
-                description:
-                  'Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.',
+                description: {
+                  en: 'Optional section ID to scroll to (e.g., "hero", "features"). Leave empty to use the link above.',
+                  hr: 'Opcionalni ID sekcije za skrolanje (npr. "hero", "features"). Ostavite prazno za link iznad.',
+                },
               },
             },
             {
@@ -170,24 +191,27 @@ const Menu: CollectionConfig = {
     {
       name: 'positioning',
       type: 'select',
-      label: 'Menu Positioning',
+      label: { en: 'Menu Positioning', hr: 'Pozicioniranje izbornika' },
       defaultValue: 'fixed',
       options: [
         {
-          label: 'Fixed (Stays at top when scrolling)',
+          label: { en: 'Fixed (Stays at top when scrolling)', hr: 'Fiksno (ostaje na vrhu pri skrolanju)' },
           value: 'fixed',
         },
         {
-          label: 'Absolute (Scrolls with content)',
+          label: { en: 'Absolute (Scrolls with content)', hr: 'Apsolutno (skrola s sadržajem)' },
           value: 'absolute',
         },
         {
-          label: 'Relative (Normal document flow)',
+          label: { en: 'Relative (Normal document flow)', hr: 'Relativno (normalan tijek dokumenta)' },
           value: 'relative',
         },
       ],
       admin: {
-        description: 'Choose how the menu should be positioned on the page',
+        description: {
+          en: 'Choose how the menu should be positioned on the page',
+          hr: 'Odaberite kako će izbornik biti pozicioniran na stranici',
+        },
       },
     },
   ],
