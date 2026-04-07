@@ -24,6 +24,7 @@ import Footer from './collections/Footer'
 import Documents from './collections/documents'
 import Buildings from './collections/buildings'
 import { loadRentlioOptions } from './utils/rentlio'
+import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -87,6 +88,8 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI,
     },
+    migrationDir: path.resolve(dirname, 'migrations'),
+    prodMigrations: migrations,
   }),
   localization: {
     locales: localeLang,
