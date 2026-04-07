@@ -111,6 +111,12 @@ jobs:
             # Stop old process before touching files to avoid serving half-deleted builds
             pm2 delete "$APP_NAME" > /dev/null 2>&1 || true
 
+            # Cleanup legacy production aliases so an old process definition does not restart-loop.
+            if [ "$APP_NAME" = "district-prod" ]; then
+              pm2 delete district > /dev/null 2>&1 || true
+              pm2 delete distric > /dev/null 2>&1 || true
+            fi
+
             # Backup env files before wiping
             for env_file in .env .env.local .env.production; do
               if [ -f "$DEPLOY_PATH/$env_file" ]; then
@@ -137,7 +143,7 @@ jobs:
 
             # Standalone builds must be started with Node against the generated entrypoint
             test -f "$DEPLOY_PATH/server.js"
-            PORT="$APP_PORT" NODE_ENV=production pm2 start \
+            PORT="$APP_PORT" NODE_ENV=production PAYLOAD_DB_PUSH=false pm2 start \
               "$DEPLOY_PATH/server.js" \
               --name "$APP_NAME" \
               --cwd  "$DEPLOY_PATH" \

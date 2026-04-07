@@ -96,9 +96,9 @@ export default buildConfig({
   db: postgresAdapter({
     // Never push DB schema unless explicitly enabled in a non-production runtime.
     push: allowSchemaPush,
-    // Prevent interactive migration prompts during app boot in production.
-    // Run migrations explicitly in your deployment pipeline instead.
-    prodMigrations: [],
+    // Never run migrations automatically on app boot.
+    // Run migrations explicitly from CI/CD to avoid interactive prompts in prod.
+    prodMigrations: undefined,
     pool: {
       connectionString: process.env.DATABASE_URI,
     },
