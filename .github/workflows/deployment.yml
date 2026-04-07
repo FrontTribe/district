@@ -132,17 +132,12 @@ jobs:
               fi
             done
 
-            # Restart or register with PM2
-            # Use || true so drone-ssh doesn't treat pm2 describe exit code 1 as failure
-            pm2 describe "$APP_NAME" > /dev/null 2>&1 && PM2_EXISTS=true || PM2_EXISTS=false
-            if [ "$PM2_EXISTS" = "true" ]; then
-              PORT="$APP_PORT" pm2 restart "$APP_NAME" --update-env
-            else
-              PORT="$APP_PORT" NODE_ENV=production pm2 start \
-                "node server.js" \
-                --name "$APP_NAME" \
-                --cwd  "$DEPLOY_PATH"
-            fi
+            # Always delete then re-register with PM2 (avoids if/else with drone-ssh)
+            pm2 delete "$APP_NAME" > /dev/null 2>&1 || true
+            PORT="$APP_PORT" NODE_ENV=production pm2 start \
+              "node server.js" \
+              --name "$APP_NAME" \
+              --cwd  "$DEPLOY_PATH"
 
             pm2 save
             echo "✓ $APP_NAME deployed on port $APP_PORT"
