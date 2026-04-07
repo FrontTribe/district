@@ -27,6 +27,8 @@ import { loadRentlioOptions } from './utils/rentlio'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const allowSchemaPush =
+  process.env.PAYLOAD_DB_PUSH === 'true' && process.env.NODE_ENV !== 'production'
 
 export default buildConfig({
   admin: {
@@ -84,6 +86,8 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: postgresAdapter({
+    // Never push DB schema unless explicitly enabled in a non-production runtime.
+    push: allowSchemaPush,
     pool: {
       connectionString: process.env.DATABASE_URI,
     },

@@ -57,6 +57,25 @@ async function fetchPagesForMetadata(locale: string, subdomain?: string | null):
     } catch (_error) {
       // Error fetching pages
     }
+
+    // Fallback to main-domain pages if tenant exists but has no localized pages.
+    if (pages.length === 0) {
+      try {
+        const mainPagesResponse = await payload.find({
+          collection: 'pages',
+          depth: 2,
+          locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
+          where: {
+            tenant: {
+              exists: false,
+            },
+          },
+        })
+        pages = mainPagesResponse.docs as Page[]
+      } catch (_error) {
+        // Error fetching main domain pages
+      }
+    }
   } else {
     try {
       const mainPagesResponse = await payload.find({
@@ -133,6 +152,29 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     } catch (_error) {
       // Error fetching pages
     }
+
+    // Fallback to main-domain pages if tenant exists but has no localized pages.
+    if (pages.length === 0) {
+      try {
+        const mainPagesResponse = await payload.find({
+          collection: 'pages',
+          depth: 2,
+          locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
+          where: {
+            tenant: {
+              exists: false,
+            },
+          },
+        })
+        pages = mainPagesResponse.docs as Page[]
+        // If we fell back to main pages, use main-domain menu/footer as well.
+        if (pages.length > 0) {
+          currentTenant = null
+        }
+      } catch (_error) {
+        // Error fetching main domain pages
+      }
+    }
   } else {
     try {
       const mainPagesResponse = await payload.find({
@@ -156,7 +198,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
 
   return (
-    <MainPageLoader isMainDomain={!subdomain}>
+    <MainPageLoader isMainDomain={!currentTenant}>
       <RefreshRouteOnSave />
 
       {/* Menu Wrapper */}
