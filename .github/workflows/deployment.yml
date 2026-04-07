@@ -78,7 +78,7 @@ jobs:
 
       # ── 8. Package ──────────────────────────────────────────────────────────
       - name: Package artifact
-        run: tar -czf /tmp/deploy.tgz -C .next/standalone .
+        run: tar -czf deploy.tgz -C .next/standalone .
 
       # ── 9. Upload to server ──────────────────────────────────────────────────
       - name: Upload artifact
@@ -88,7 +88,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key:      ${{ secrets.SERVER_SSH_KEY }}
           port:     22
-          source:   /tmp/deploy.tgz
+          source:   deploy.tgz
           target:   /tmp/
 
       # ── 10. Extract + restart ────────────────────────────────────────────────
@@ -111,7 +111,7 @@ jobs:
             # Extract artifact to a temp dir
             TEMP=$(mktemp -d)
             tar -xzf /tmp/deploy.tgz -C "$TEMP"
-            rm /tmp/deploy.tgz
+            rm -f /tmp/deploy.tgz
 
             # Preserve .env.local — lives on the server, never in the artifact
             if [ -f "$DEPLOY_PATH/.env.local" ]; then
