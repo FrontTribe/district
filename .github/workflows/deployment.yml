@@ -30,8 +30,6 @@ jobs:
       # ── 3. Setup pnpm + Node (build happens on the fast GH runner, not server)
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
