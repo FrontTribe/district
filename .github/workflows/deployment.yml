@@ -143,7 +143,7 @@ jobs:
 
             # Standalone builds must be started with Node against the generated entrypoint
             test -f "$DEPLOY_PATH/server.js"
-            PORT="$APP_PORT" NODE_ENV=production PAYLOAD_DB_PUSH=false pm2 start \
+            PORT="$APP_PORT" NODE_ENV=production PAYLOAD_DB_PUSH=false PAYLOAD_RUN_MIGRATIONS_ON_BOOT=false pm2 start \
               "$DEPLOY_PATH/server.js" \
               --name "$APP_NAME" \
               --cwd  "$DEPLOY_PATH" \

@@ -30,6 +30,7 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const isProductionRuntime = process.env.NODE_ENV === 'production'
 const requestedSchemaPush = process.env.PAYLOAD_DB_PUSH === 'true'
+const runMigrationsOnBoot = process.env.PAYLOAD_RUN_MIGRATIONS_ON_BOOT === 'true'
 
 if (isProductionRuntime && requestedSchemaPush) {
   throw new Error(
@@ -101,7 +102,8 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URI,
     },
     migrationDir: path.resolve(dirname, 'migrations'),
-    prodMigrations: migrations,
+    // Keep runtime boot non-interactive; only run migrations on boot if explicitly requested.
+    prodMigrations: runMigrationsOnBoot ? migrations : undefined,
   }),
   localization: {
     locales: localeLang,
