@@ -115,7 +115,8 @@ jobs:
               fi
             done
 
-            # Wipe and recreate deploy dir (removes old source/node_modules/etc)
+            # Force permissions then wipe (node_modules can have restrictive modes)
+            chmod -R 777 "$DEPLOY_PATH" 2>/dev/null || true
             rm -rf "$DEPLOY_PATH"
             mkdir -p "$DEPLOY_PATH"
 
