@@ -9,164 +9,132 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repo
+      # ── 1. Resolve branch → deploy target ──────────────────────────────────
+      - name: Set deploy target
+        id: target
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "path=/var/www/district-prod" >> $GITHUB_OUTPUT
+            echo "app=district-prod"           >> $GITHUB_OUTPUT
+            echo "port=3000"                   >> $GITHUB_OUTPUT
+          else
+            echo "path=/var/www/district-dev"  >> $GITHUB_OUTPUT
+            echo "app=district-dev"            >> $GITHUB_OUTPUT
+            echo "port=3001"                   >> $GITHUB_OUTPUT
+          fi
+
+      # ── 2. Checkout ─────────────────────────────────────────────────────────
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install sshpass
-        run: sudo apt-get update && sudo apt-get install -y sshpass
+      # ── 3. Setup pnpm + Node (build happens on the fast GH runner, not server)
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
-      - name: Test SSH Connection
-        env:
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_PASS: ${{ secrets.SERVER_PASS }}
-        run: sshpass -p "$SERVER_PASS" ssh -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "echo Connected to server"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
 
-      - name: Deploy to Server
-        env:
-          BRANCH_NAME: ${{ github.ref_name }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_PASS: ${{ secrets.SERVER_PASS }}
-          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+      # ── 4. Install ──────────────────────────────────────────────────────────
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # ── 5. Write .env.local for build ───────────────────────────────────────
+      #    Only NEXT_PUBLIC_* vars are strictly needed at build time (they get
+      #    baked into the JS bundle). Runtime vars (DB, secrets) stay on server.
+      - name: Write build env
         run: |
-          set -euo pipefail
-          DEPLOY_PORT="${SERVER_PORT:-22}"
-
-          if [ "$BRANCH_NAME" = "main" ]; then
-            DEPLOY_PATH="/var/www/district-prod"
-            APP_NAME="district-prod"
-            APP_PORT="3000"
-            NODE_ENV="production"
-            RUN_CMD="start"
-          elif [ "$BRANCH_NAME" = "development" ]; then
-            DEPLOY_PATH="/var/www/district-dev"
-            APP_NAME="district-dev"
-            APP_PORT="3001"
-            NODE_ENV="development"
-            RUN_CMD="dev"
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            cat <<'EOF' > .env.local
+          NEXT_PUBLIC_ROOT_DOMAIN=${{ secrets.NEXT_PUBLIC_ROOT_DOMAIN }}
+          NEXT_PUBLIC_SERVER_URL=${{ secrets.NEXT_PUBLIC_SERVER_URL_PROD }}
+          NEXT_PUBLIC_PAYLOAD_URL=${{ secrets.NEXT_PUBLIC_SERVER_URL_PROD }}
+          NEXT_PUBLIC_DEV_ROOT_DOMAIN=dev.district.hr
+          NEXT_PUBLIC_RENTLIO_API_KEY=${{ secrets.NEXT_PUBLIC_RENTLIO_API_KEY }}
+          EOF
           else
-            echo "No deploy target for branch $BRANCH_NAME"
-            exit 0
+            cat <<'EOF' > .env.local
+          NEXT_PUBLIC_ROOT_DOMAIN=${{ secrets.NEXT_PUBLIC_ROOT_DOMAIN }}
+          NEXT_PUBLIC_SERVER_URL=${{ secrets.NEXT_PUBLIC_SERVER_URL_DEV }}
+          NEXT_PUBLIC_PAYLOAD_URL=${{ secrets.NEXT_PUBLIC_SERVER_URL_DEV }}
+          NEXT_PUBLIC_DEV_ROOT_DOMAIN=dev.district.hr
+          NEXT_PUBLIC_RENTLIO_API_KEY=${{ secrets.NEXT_PUBLIC_RENTLIO_API_KEY }}
+          EOF
           fi
 
-          TARBALL="$(mktemp -t district-deploy-XXXXXX.tgz)"
-          cleanup() { rm -f "$TARBALL"; }
-          trap cleanup EXIT
+      # ── 6. Build on GitHub runner (7 GB RAM, free) ──────────────────────────
+      - name: Build
+        run: NODE_ENV=production pnpm build
 
-          tar -czf "$TARBALL" \
-            --exclude='./.git' \
-            --exclude='./.next' \
-            --exclude='./node_modules' \
-            --exclude='./.env' \
-            --exclude='./.env.*' \
-            --exclude='./coverage' \
-            --exclude='./playwright-report' \
-            --exclude='./test-results' \
-            -C "$GITHUB_WORKSPACE" .
+      # ── 7. Assemble standalone artifact ─────────────────────────────────────
+      #    output: standalone bundles its own minimal node_modules.
+      #    Static assets + public must be copied in manually.
+      - name: Prepare standalone
+        run: |
+          cp -r public         .next/standalone/public
+          cp -r .next/static   .next/standalone/.next/static
 
-          REMOTE_TARBALL="/tmp/${APP_NAME}.tgz"
-          sshpass -p "$SERVER_PASS" scp -P "$DEPLOY_PORT" -o StrictHostKeyChecking=no \
-            "$TARBALL" "$SERVER_USER@$SERVER_HOST:$REMOTE_TARBALL"
+      # ── 8. Package ──────────────────────────────────────────────────────────
+      - name: Package artifact
+        run: tar -czf /tmp/deploy.tgz -C .next/standalone .
 
-          sshpass -p "$SERVER_PASS" ssh -p "$DEPLOY_PORT" -o StrictHostKeyChecking=no \
-            "$SERVER_USER@$SERVER_HOST" \
-            "DEPLOY_PATH='$DEPLOY_PATH' APP_NAME='$APP_NAME' REMOTE_TARBALL='$REMOTE_TARBALL' APP_PORT='$APP_PORT' NODE_ENV='$NODE_ENV' RUN_CMD='$RUN_CMD' DEPLOY_USER='$SERVER_USER' SUDO_PASS='$SERVER_PASS' bash -s" <<'REMOTE'
-          set -euo pipefail
+      # ── 9. Upload to server ──────────────────────────────────────────────────
+      - name: Upload artifact
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host:     ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key:      ${{ secrets.SERVER_SSH_KEY }}
+          port:     22
+          source:   /tmp/deploy.tgz
+          target:   /tmp/
 
-          DEPLOY_PATH="${DEPLOY_PATH:?}"
-          APP_NAME="${APP_NAME:?}"
-          REMOTE_TARBALL="${REMOTE_TARBALL:?}"
-          APP_PORT="${APP_PORT:?}"
-          NODE_ENV="${NODE_ENV:?}"
-          RUN_CMD="${RUN_CMD:?}"
-          DEPLOY_USER="${DEPLOY_USER:?}"
-          SUDO_PASS="${SUDO_PASS:-}"
+      # ── 10. Extract + restart ────────────────────────────────────────────────
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host:        ${{ secrets.SERVER_HOST }}
+          username:    ${{ secrets.SERVER_USER }}
+          key:         ${{ secrets.SERVER_SSH_KEY }}
+          port:        22
+          timeout:     5m
+          script_stop: true
+          script: |
+            set -euo pipefail
 
-          cleanup() { rm -f "$REMOTE_TARBALL"; }
-          trap cleanup EXIT
+            DEPLOY_PATH="${{ steps.target.outputs.path }}"
+            APP_NAME="${{ steps.target.outputs.app }}"
+            APP_PORT="${{ steps.target.outputs.port }}"
 
-          if ! mkdir -p "$DEPLOY_PATH" 2>/dev/null; then
-            if [ -n "$SUDO_PASS" ]; then
-              echo "$SUDO_PASS" | sudo -S mkdir -p "$DEPLOY_PATH"
+            # Extract artifact to a temp dir
+            TEMP=$(mktemp -d)
+            tar -xzf /tmp/deploy.tgz -C "$TEMP"
+            rm /tmp/deploy.tgz
+
+            # Preserve .env.local — lives on the server, never in the artifact
+            if [ -f "$DEPLOY_PATH/.env.local" ]; then
+              cp "$DEPLOY_PATH/.env.local" "$TEMP/.env.local"
+            fi
+
+            # Atomic swap
+            rm -rf "${DEPLOY_PATH}_old"
+            [ -d "$DEPLOY_PATH" ] && mv "$DEPLOY_PATH" "${DEPLOY_PATH}_old"
+            mv "$TEMP" "$DEPLOY_PATH"
+            rm -rf "${DEPLOY_PATH}_old"
+
+            # Restart or register with PM2
+            if pm2 describe "$APP_NAME" > /dev/null 2>&1; then
+              PORT="$APP_PORT" pm2 restart "$APP_NAME" --update-env
             else
-              echo "Unable to create $DEPLOY_PATH. Check permissions or provide sudo access."
-              exit 1
+              PORT="$APP_PORT" NODE_ENV=production pm2 start \
+                "node server.js" \
+                --name "$APP_NAME" \
+                --cwd  "$DEPLOY_PATH"
             fi
-          fi
 
-          if [ ! -w "$DEPLOY_PATH" ]; then
-            if [ -n "$SUDO_PASS" ]; then
-              echo "$SUDO_PASS" | sudo -S chown -R "$DEPLOY_USER":"$DEPLOY_USER" "$DEPLOY_PATH"
-            else
-              echo "No write permission for $DEPLOY_PATH. Check ownership or provide sudo access."
-              exit 1
-            fi
-          fi
-
-          tar -xzf "$REMOTE_TARBALL" -C "$DEPLOY_PATH" --no-same-owner --no-same-permissions
-
-          cd "$DEPLOY_PATH"
-
-          if [ "$NODE_ENV" = "production" ]; then
-            rm -rf .next
-          fi
-
-          if ! command -v pnpm >/dev/null 2>&1; then
-            if command -v corepack >/dev/null 2>&1; then
-              if ! corepack enable >/dev/null 2>&1; then
-                if [ -n "$SUDO_PASS" ]; then
-                  echo "$SUDO_PASS" | sudo -S corepack enable >/dev/null 2>&1 || true
-                fi
-              fi
-              if ! command -v pnpm >/dev/null 2>&1; then
-                if [ -n "$SUDO_PASS" ]; then
-                  echo "$SUDO_PASS" | sudo -S corepack prepare pnpm@latest --activate
-                else
-                  corepack prepare pnpm@latest --activate
-                fi
-              fi
-            fi
-          fi
-
-          if ! command -v pnpm >/dev/null 2>&1; then
-            if [ -n "$SUDO_PASS" ]; then
-              echo "$SUDO_PASS" | sudo -S npm install -g pnpm
-            else
-              npm install -g pnpm
-            fi
-          fi
-
-          if ! command -v pm2 >/dev/null 2>&1; then
-            if [ -n "$SUDO_PASS" ]; then
-              echo "$SUDO_PASS" | sudo -S npm install -g pm2
-            else
-              npm install -g pm2
-            fi
-          fi
-
-          pnpm install --frozen-lockfile
-
-          if [ "$NODE_ENV" = "production" ]; then
-            NODE_ENV=production pnpm build
-            if [ ! -f ".next/BUILD_ID" ]; then
-              echo "Build artifacts missing in $DEPLOY_PATH/.next"
-              ls -la "$DEPLOY_PATH" || true
-              ls -la "$DEPLOY_PATH/.next" || true
-              exit 1
-            fi
-          fi
-
-          pm2 delete "$APP_NAME" >/dev/null 2>&1 || true
-          PORT="$APP_PORT" NODE_ENV="$NODE_ENV" pm2 start pnpm --name "$APP_NAME" --cwd "$DEPLOY_PATH" -- "$RUN_CMD"
-
-          sleep 2
-          PID="$(pm2 pid "$APP_NAME" | head -n 1 | tr -d '[:space:]')"
-          if [ -z "$PID" ] || [ "$PID" = "0" ]; then
-            echo "PM2 process failed to stay online. Showing recent logs:"
-            pm2 logs "$APP_NAME" --lines 50 || true
-            exit 1
-          fi
-
-          pm2 save
-          REMOTE
+            pm2 save
+            echo "✓ $APP_NAME deployed on port $APP_PORT"
