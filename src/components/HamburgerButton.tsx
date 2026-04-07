@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef, useEffect } from 'react'
-import { gsap } from 'gsap'
+import { gsap } from '@/lib/gsap'
 
 interface HamburgerButtonProps {
   isOpen: boolean

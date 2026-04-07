@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { gsap } from 'gsap'
+import { gsap } from '@/lib/gsap'
 import EnhancedLanguageSwitcher from './EnhancedLanguageSwitcher'
 
 interface MenuItem {

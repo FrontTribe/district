@@ -3,6 +3,13 @@ import { withPayload } from '@payloadcms/next/withPayload'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  allowedDevOrigins: [
+    'district.test',
+    'boutique.test',
+    'concept-bar.test',
+    'real-estate.test',
+    'momento.test',
+  ],
   sassOptions: {
     silenceDeprecations: ['legacy-js-api', 'import'],
   },

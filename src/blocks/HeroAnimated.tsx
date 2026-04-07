@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { gsap, ScrollTrigger } from '@/lib/gsap'
 import { getTranslation } from '@/utils/translations'
 
 type Props = {
@@ -18,16 +17,6 @@ export default function HeroAnimated({ heading, subheading, locale = 'hr' }: Pro
   const scrollRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    // Ensure ScrollTrigger is properly registered
-    if (typeof ScrollTrigger === 'undefined') {
-      return
-    }
-
-    if ((gsap as any).registeredScrollTrigger !== true) {
-      gsap.registerPlugin(ScrollTrigger)
-      ;(gsap as any).registeredScrollTrigger = true
-    }
-
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
     const h = headingRef.current
     const s = subRef.current
@@ -92,8 +81,7 @@ export default function HeroAnimated({ heading, subheading, locale = 'hr' }: Pro
         })
         parTl.to(h, { yPercent: -8, scale: 0.985, ease: 'none' }, 0)
         parTl.to(s, { yPercent: -6, ease: 'none' }, 0)
-      } catch (error) {
-      }
+      } catch (error) {}
     }
 
     return () => {

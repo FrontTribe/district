@@ -2,28 +2,21 @@
 
 import React, { useEffect } from 'react'
 import Lenis from 'lenis'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { gsap, ScrollTrigger } from '@/lib/gsap'
 import { usePathname } from 'next/navigation'
 
 type Props = {
   children?: React.ReactNode
 }
 
-// Initializes Lenis smooth scroll on the client side.
-// It renders no DOM and simply mounts/unmounts the Lenis instance.
 export default function LenisProvider({ children }: Props) {
   const pathname = usePathname()
 
   useEffect(() => {
-    // Register GSAP plugin once
-    if (typeof window !== 'undefined' && (gsap as any).registeredScrollTrigger !== true) {
-      gsap.registerPlugin(ScrollTrigger)
-      ;(gsap as any).registeredScrollTrigger = true
-    }
-
+    // autoRaf: false — we drive Lenis from gsap.ticker to share one frame loop.
+    // Without this, Lenis runs its own RAF AND gets ticked by GSAP → double updates.
     const lenis = new Lenis({
-      // Defaults that feel close to design expectations; adjustable later
+      autoRaf: false,
       duration: 1.2,
       easing: (t: number) => 1 - Math.pow(1 - t, 3),
       smoothWheel: true,
@@ -31,68 +24,40 @@ export default function LenisProvider({ children }: Props) {
       touchMultiplier: 1.2,
     })
 
-    // Expose Lenis instance globally for route change handling
     ;(window as any).lenis = lenis
 
-    // Disable browser scroll restoration
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual'
     }
 
-    // Force scroll to top immediately on initialization
-    window.scrollTo(0, 0)
     lenis.scrollTo(0, { immediate: true })
 
-    // Ensure scroll to top after Lenis is fully ready
-    const ensureScrollToTop = () => {
-      window.scrollTo(0, 0)
-      lenis.scrollTo(0, { immediate: true })
-    }
-
-    // Try multiple times to ensure it works
-    ensureScrollToTop()
-    setTimeout(ensureScrollToTop, 100)
-    setTimeout(ensureScrollToTop, 300)
-
-    // Also ensure scroll to top when window is fully loaded
-    window.addEventListener('load', ensureScrollToTop)
-
-    // Sync Lenis with ScrollTrigger
+    // Keep ScrollTrigger in sync with every Lenis scroll event
     lenis.on('scroll', ScrollTrigger.update)
 
-    ScrollTrigger.scrollerProxy(document.body, {
-      scrollTop(value) {
-        return arguments.length ? lenis.scrollTo(value as number) : window.scrollY
-      },
-      getBoundingClientRect() {
-        return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight }
-      },
-      // pinType detects if body uses transform for scrolling (it doesn't with Lenis on body)
-      pinType: document.body.style.transform ? 'transform' : 'fixed',
-    })
+    // Drive Lenis from GSAP's ticker (time is in seconds, lenis.raf expects ms)
+    const onTick = (time: number) => lenis.raf(time * 1000)
+    gsap.ticker.add(onTick)
+    gsap.ticker.lagSmoothing(0)
 
-    function raf(time: number) {
-      lenis.raf(time)
-      requestAnimationFrame(raf)
-    }
-
-    requestAnimationFrame(raf)
+    // Recalculate all ScrollTrigger positions now that Lenis is connected.
+    // Child component effects run before parent effects in React, so ScrollTriggers
+    // are already registered at this point — they just need a fresh measurement.
+    ScrollTrigger.refresh()
 
     return () => {
-      window.removeEventListener('load', ensureScrollToTop)
-      if (typeof (lenis as any)?.destroy === 'function') (lenis as any).destroy()
-      // Don't kill all ScrollTriggers as it might interfere with other components
-      // ScrollTrigger.killAll()
+      gsap.ticker.remove(onTick)
+      lenis.destroy()
+      delete (window as any).lenis
     }
   }, [])
 
-  // Handle scroll to top on route changes
-  // Handle route changes - use Lenis for smooth scrolling
   useEffect(() => {
-    // Scroll to top when pathname changes (navigation)
-    if (typeof window !== 'undefined' && (window as any).lenis) {
-      ;(window as any).lenis.scrollTo(0, { immediate: true })
-    }
+    const lenis = (window as any).lenis as Lenis | undefined
+    if (!lenis) return
+    lenis.scrollTo(0, { immediate: true })
+    // Refresh triggers after navigation so they recalculate against the new page layout
+    ScrollTrigger.refresh()
   }, [pathname])
 
   return <>{children}</>

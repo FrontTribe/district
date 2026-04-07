@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { gsap, ScrollTrigger } from '@/lib/gsap'
 
 type Props = {
   src: string
@@ -20,16 +19,6 @@ export default function ImageAnimated({ src, alt = '', width, height, caption, c
   useEffect(() => {
     // Add a small delay to ensure ScrollTrigger is fully initialized
     const initAnimation = () => {
-      // Ensure ScrollTrigger is properly registered
-      if (typeof ScrollTrigger === 'undefined') {
-        return
-      }
-
-      if ((gsap as any).registeredScrollTrigger !== true) {
-        gsap.registerPlugin(ScrollTrigger)
-        ;(gsap as any).registeredScrollTrigger = true
-      }
-
       if (!imgRef.current || !wrapperRef.current) return
 
       const img = imgRef.current
@@ -65,8 +54,7 @@ export default function ImageAnimated({ src, alt = '', width, height, caption, c
         try {
           if (st) st.kill()
           tl.kill()
-        } catch (error) {
-        }
+        } catch (error) {}
       }
     }
 

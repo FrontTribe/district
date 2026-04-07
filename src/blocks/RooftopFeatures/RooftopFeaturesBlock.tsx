@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { gsap, ScrollTrigger } from '@/lib/gsap'
 
 type Feature = {
   icon?: string
@@ -19,11 +18,6 @@ export const RooftopFeaturesBlock: React.FC<{
   const headingRef = useRef<HTMLHeadingElement | null>(null)
 
   useEffect(() => {
-    if ((gsap as any).registeredScrollTrigger !== true) {
-      gsap.registerPlugin(ScrollTrigger)
-      ;(gsap as any).registeredScrollTrigger = true
-    }
-
     const ctx = gsap.context(() => {
       if (headingRef.current) {
         gsap.from(headingRef.current, {

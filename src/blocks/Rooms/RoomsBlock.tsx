@@ -1,9 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
-import { gsap } from 'gsap'
-import { CustomEase } from 'gsap/CustomEase'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { gsap, ScrollTrigger, CustomEase } from '@/lib/gsap'
 import { RoomSlider } from './RoomSlider'
 import BookingDrawer from '@/components/BookingDrawer'
 
@@ -56,9 +54,7 @@ export const RoomsBlock: React.FC<Props> = ({
     setSelectedRoom(null)
   }
 
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger, CustomEase)
-    const listeners: Array<{ el: HTMLElement; enter: () => void; leave: () => void }> = []
+  useEffect(() => {    const listeners: Array<{ el: HTMLElement; enter: () => void; leave: () => void }> = []
     const ctx = gsap.context(() => {
       const q = gsap.utils.selector(sectionRef)
       gsap.set(q('.rooms-eyebrow, .rooms-heading .line, .rooms-subheading, .rooms-cta'), {

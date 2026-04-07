@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useRef } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { gsap, ScrollTrigger } from '@/lib/gsap'
 import { getOptimizedImageUrl } from '@/utils/getOptimizedImageUrl'
 
 type RooftopImage = {
@@ -27,13 +26,6 @@ export const RooftopBlock: React.FC<{
 
   useEffect(() => {
     if (!trackRef.current) return
-
-    // Register once in case not already
-    if ((gsap as any).registeredScrollTrigger !== true) {
-      gsap.registerPlugin(ScrollTrigger)
-      ;(gsap as any).registeredScrollTrigger = true
-    }
-
     const track = trackRef.current
 
     const createTween = () => {
@@ -87,7 +79,7 @@ export const RooftopBlock: React.FC<{
 
     // Add error handling for ScrollTrigger.create
     try {
-      if (typeof ScrollTrigger !== 'undefined' && containerRef.current) {
+      if (containerRef.current) {
         st = ScrollTrigger.create({
           trigger: containerRef.current,
           start: 'top bottom',
@@ -103,8 +95,7 @@ export const RooftopBlock: React.FC<{
           },
         })
       }
-    } catch (error) {
-    }
+    } catch (error) {}
 
     // Recreate on resize
     const ro = new ResizeObserver(() => createTween())
@@ -114,24 +105,13 @@ export const RooftopBlock: React.FC<{
       marqueeTween.current?.kill()
       try {
         if (st) st.kill()
-      } catch (error) {
-      }
+      } catch (error) {}
       ro.disconnect()
       window.removeEventListener('load', onWindowLoad)
     }
   }, [images, baseDuration])
 
   useEffect(() => {
-    // heading and card reveal on enter
-    if (typeof ScrollTrigger === 'undefined') {
-      return
-    }
-
-    if ((gsap as any).registeredScrollTrigger !== true) {
-      gsap.registerPlugin(ScrollTrigger)
-      ;(gsap as any).registeredScrollTrigger = true
-    }
-
     const ctx = gsap.context(() => {
       try {
         if (headingRef.current) {
@@ -158,8 +138,7 @@ export const RooftopBlock: React.FC<{
           // ensure triggers are aware after layout/tween init
           requestAnimationFrame(() => ScrollTrigger.refresh())
         }
-      } catch (error) {
-      }
+      } catch (error) {}
     }, containerRef.current || undefined)
 
     return () => ctx.revert()

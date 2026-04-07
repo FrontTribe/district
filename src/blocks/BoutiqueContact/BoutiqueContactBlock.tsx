@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { gsap, ScrollTrigger } from '@/lib/gsap'
 import type { Form } from '@/payload-types'
 
 type Props = {
@@ -28,9 +27,7 @@ export const BoutiqueContactBlock: React.FC<Props> = ({
 }) => {
   const sectionRef = useRef<HTMLElement | null>(null)
 
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger)
-    const ctx = gsap.context(() => {
+  useEffect(() => {    const ctx = gsap.context(() => {
       const q = gsap.utils.selector(sectionRef)
       const targets = q(
         '.bc-eyebrow, .bc-heading-line, .bc-left p, .bc-contact a, .bc-contact span, .bc-form',

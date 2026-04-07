@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
+import { gsap } from '@/lib/gsap'
 import { getOptimizedImageUrl } from '@/utils/getOptimizedImageUrl'
 
 type RoomImage = {
