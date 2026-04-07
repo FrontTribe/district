@@ -115,10 +115,10 @@ jobs:
               fi
             done
 
-            # Force permissions then wipe (node_modules can have restrictive modes)
-            chmod -R 777 "$DEPLOY_PATH" 2>/dev/null || true
-            rm -rf "$DEPLOY_PATH"
+            # Force permissions then wipe contents (can't remove the dir itself)
             mkdir -p "$DEPLOY_PATH"
+            chmod -R u+rwX "$DEPLOY_PATH" 2>/dev/null || true
+            find "$DEPLOY_PATH" -mindepth 1 -delete 2>/dev/null || rm -rf "$DEPLOY_PATH"/* "$DEPLOY_PATH"/.[!.]* 2>/dev/null || true
 
             # Extract standalone artifact into clean dir
             tar -xzf /tmp/deploy.tgz -C "$DEPLOY_PATH"
