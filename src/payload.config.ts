@@ -31,6 +31,7 @@ const dirname = path.dirname(filename)
 const isProductionRuntime = process.env.NODE_ENV === 'production'
 const requestedSchemaPush = process.env.PAYLOAD_DB_PUSH === 'true'
 const runMigrationsOnBoot = process.env.PAYLOAD_RUN_MIGRATIONS_ON_BOOT === 'true'
+const s3Endpoint = process.env.S3_ENDPOINT
 
 if (isProductionRuntime && requestedSchemaPush) {
   throw new Error(
@@ -147,6 +148,7 @@ export default buildConfig({
           secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
         },
         region: process.env.S3_REGION || 'us-east-1',
+        ...(s3Endpoint ? { endpoint: s3Endpoint, forcePathStyle: true } : {}),
       },
     }),
   ],
