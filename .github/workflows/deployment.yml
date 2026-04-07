@@ -108,17 +108,18 @@ jobs:
             APP_NAME="${{ steps.target.outputs.app }}"
             APP_PORT="${{ steps.target.outputs.port }}"
 
-            # Ensure deploy dir exists
-            mkdir -p "$DEPLOY_PATH"
-
-            # Backup env files before extracting
+            # Backup env files before wiping
             for env_file in .env .env.local .env.production; do
               if [ -f "$DEPLOY_PATH/$env_file" ]; then
                 cp "$DEPLOY_PATH/$env_file" "/tmp/$(basename $env_file).bak"
               fi
             done
 
-            # Extract artifact directly into deploy dir (overwrites existing files)
+            # Wipe and recreate deploy dir (removes old source/node_modules/etc)
+            rm -rf "$DEPLOY_PATH"
+            mkdir -p "$DEPLOY_PATH"
+
+            # Extract standalone artifact into clean dir
             tar -xzf /tmp/deploy.tgz -C "$DEPLOY_PATH"
             rm -f /tmp/deploy.tgz
 
