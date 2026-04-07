@@ -42,8 +42,6 @@ const Documents: CollectionConfig = {
     disableLocalStorage: true,
     mimeTypes: ['application/pdf'],
     adminThumbnail: 'default',
-    /** Allow larger PDFs (e.g. 100-page unit details). Default is often 12MB. */
-    maxSize: 100 * 1024 * 1024, // 100MB
   },
 }
 

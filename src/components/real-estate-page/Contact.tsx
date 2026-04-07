@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { gsap, ScrollTrigger } from '@/lib/gsap'
 
 export type RealEstateContactProps = {
   eyebrow?: string
@@ -30,7 +29,6 @@ export function RealEstateContact({
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    gsap.registerPlugin(ScrollTrigger)
     const ctx = gsap.context(() => {
       const q = gsap.utils.selector(sectionRef)
       gsap.set(q('.re-contact__eyebrow, .re-contact__heading, .re-contact__left, .re-contact__form'), {

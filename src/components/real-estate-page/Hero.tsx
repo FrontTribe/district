@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { gsap, ScrollTrigger } from '@/lib/gsap'
 
 export type RealEstateHeroProps = {
   heading: string
@@ -24,7 +23,6 @@ export function RealEstateHero({
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    gsap.registerPlugin(ScrollTrigger)
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
     const h = headingRef.current
     const s = subRef.current

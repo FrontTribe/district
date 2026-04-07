@@ -63,13 +63,13 @@ const RealEstateCurrentProjects: Block = {
           type: 'upload',
           relationTo: 'media',
           label: { en: 'Image', hr: 'Slika' },
+          filterOptions: {
+            mimeType: { contains: 'image' },
+          },
           admin: {
             description: {
               en: 'Thumbnail on the project card (grid).',
               hr: 'Sličica na kartici projekta (mreža).',
-            },
-            filterOptions: {
-              mimeType: { contains: 'image' },
             },
           },
         },
