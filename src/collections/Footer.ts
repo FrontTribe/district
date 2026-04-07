@@ -2,10 +2,17 @@ import { CollectionConfig } from 'payload'
 
 const Footer: CollectionConfig = {
   slug: 'footer',
+  labels: {
+    singular: { en: 'Footer', hr: 'Podnožje' },
+    plural: { en: 'Footers', hr: 'Podnožja' },
+  },
   admin: {
     useAsTitle: 'title',
-    group: 'Site Content',
-    description: 'Manage footer content for tenants and main domain',
+    group: { en: 'Site Content', hr: 'Sadržaj stranice' },
+    description: {
+      en: 'Manage footer content for tenants and main domain',
+      hr: 'Upravljanje sadržajem podnožja za stanare i glavnu domenu',
+    },
   },
   access: {
     read: ({ req }) => {
@@ -47,8 +54,10 @@ const Footer: CollectionConfig = {
       required: true,
       localized: true,
       admin: {
-        description:
-          'Internal title for this footer (e.g., "Hotel ABC Footer", "Restaurant XYZ Footer")',
+        description: {
+          en: 'Internal title for this footer (e.g., "Hotel ABC Footer", "Restaurant XYZ Footer")',
+          hr: 'Interni naslov podnožja (npr. "Podnožje hotela ABC", "Podnožje restorana XYZ")',
+        },
       },
     },
     {
@@ -65,20 +74,20 @@ const Footer: CollectionConfig = {
     {
       name: 'leftContent',
       type: 'group',
-      label: 'Left Content',
+      label: { en: 'Left Content', hr: 'Lijevi sadržaj' },
       localized: true,
       fields: [
         {
           name: 'heading',
           type: 'textarea',
-          label: 'Main Heading',
+          label: { en: 'Main Heading', hr: 'Glavni naslov' },
           required: true,
           localized: true,
         },
         {
           name: 'subheading',
           type: 'text',
-          label: 'Subheading (optional)',
+          label: { en: 'Subheading (optional)', hr: 'Podnaslov (opcionalno)' },
           localized: true,
         },
       ],
@@ -86,38 +95,41 @@ const Footer: CollectionConfig = {
     {
       name: 'rightContent',
       type: 'group',
-      label: 'Right Content',
+      label: { en: 'Right Content', hr: 'Desni sadržaj' },
       localized: true,
       fields: [
         {
           name: 'contact',
           type: 'group',
-          label: 'Contact Information',
+          label: { en: 'Contact Information', hr: 'Kontakt podaci' },
           fields: [
             {
               name: 'heading',
               type: 'text',
-              label: 'Contact Heading',
+              label: { en: 'Contact Heading', hr: 'Kontakt naslov' },
               required: true,
               localized: true,
             },
             {
               name: 'email',
               type: 'email',
-              label: 'Email Address',
+              label: { en: 'Email Address', hr: 'Email adresa' },
               required: true,
             },
             {
               name: 'phone',
               type: 'text',
-              label: 'Phone Number',
+              label: { en: 'Phone Number', hr: 'Broj telefona' },
             },
             {
               name: 'instagram',
               type: 'text',
-              label: 'Instagram Handle',
+              label: { en: 'Instagram Handle', hr: 'Instagram račun' },
               admin: {
-                description: 'Enter without @ symbol (e.g., legendslounge)',
+                description: {
+                  en: 'Enter without @ symbol (e.g., legendslounge)',
+                  hr: 'Unesite bez simbola @ (npr. legendslounge)',
+                },
               },
             },
           ],
@@ -125,40 +137,40 @@ const Footer: CollectionConfig = {
         {
           name: 'address',
           type: 'group',
-          label: 'Address Information',
+          label: { en: 'Address Information', hr: 'Podaci o adresi' },
           fields: [
             {
               name: 'heading',
               type: 'text',
-              label: 'Address Heading',
+              label: { en: 'Address Heading', hr: 'Naslov adrese' },
               required: true,
               localized: true,
             },
             {
               name: 'venue',
               type: 'text',
-              label: 'Venue Name',
+              label: { en: 'Venue Name', hr: 'Naziv lokacije' },
               required: true,
               localized: true,
             },
             {
               name: 'street',
               type: 'text',
-              label: 'Street Address',
+              label: { en: 'Street Address', hr: 'Ulica i broj' },
               required: true,
               localized: true,
             },
             {
               name: 'city',
               type: 'text',
-              label: 'City and Postal Code',
+              label: { en: 'City and Postal Code', hr: 'Grad i poštanski broj' },
               required: true,
               localized: true,
             },
             {
               name: 'country',
               type: 'text',
-              label: 'Country',
+              label: { en: 'Country', hr: 'Država' },
               required: true,
               localized: true,
             },
@@ -169,12 +181,12 @@ const Footer: CollectionConfig = {
     {
       name: 'bottomContent',
       type: 'group',
-      label: 'Bottom Content',
+      label: { en: 'Bottom Content', hr: 'Donji sadržaj' },
       fields: [
         {
           name: 'copyright',
           type: 'text',
-          label: 'Copyright Text',
+          label: { en: 'Copyright Text', hr: 'Tekst autorskih prava' },
           required: true,
           defaultValue: 'All Rights Reserved © 2025',
           localized: true,
@@ -182,26 +194,26 @@ const Footer: CollectionConfig = {
         {
           name: 'links',
           type: 'array',
-          label: 'Footer Links',
+          label: { en: 'Footer Links', hr: 'Linkovi u podnožju' },
           localized: true,
           fields: [
             {
               name: 'text',
               type: 'text',
-              label: 'Link Text',
+              label: { en: 'Link Text', hr: 'Tekst linka' },
               required: true,
               localized: true,
             },
             {
               name: 'url',
               type: 'text',
-              label: 'Link URL',
+              label: { en: 'Link URL', hr: 'URL linka' },
               required: true,
             },
             {
               name: 'openInNewTab',
               type: 'checkbox',
-              label: 'Open in new tab',
+              label: { en: 'Open in new tab', hr: 'Otvori u novoj kartici' },
               defaultValue: false,
             },
           ],
@@ -209,7 +221,7 @@ const Footer: CollectionConfig = {
         {
           name: 'madeBy',
           type: 'text',
-          label: 'Made By Text',
+          label: { en: 'Made By Text', hr: 'Tekst „Izradio"' },
           required: true,
           defaultValue: 'Designed with passion by De Jongens van Boven',
           localized: true,

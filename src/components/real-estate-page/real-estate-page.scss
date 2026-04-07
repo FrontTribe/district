@@ -1,0 +1,1320 @@
+// Real Estate Tenant Page – dedicated design system
+// Light, premium real estate aesthetic (no green/gold)
+
+$re-page-bg: #fafafa;
+$re-section-bg: #ffffff;
+$re-section-alt: #f4f5f6;
+$re-text: #1a1a1a;
+$re-text-secondary: #5c5c5c;
+$re-text-muted: #737373;
+$re-accent: #0f172a;       // slate-900 – primary accent
+$re-accent-hover: #1e293b; // slate-800
+$re-border: #e5e7eb;
+$re-border-light: #f0f0f0;
+$re-white: #ffffff;
+$re-max: 1200px;
+$re-gap: 28px;
+$re-radius: 10px;
+$re-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+$re-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+// Scoped wrapper so body text color from main site doesn’t override
+.real-estate-preview {
+  color: $re-text;
+  background: $re-page-bg;
+}
+
+// ----- Hero -----
+.re-hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.re-hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+}
+
+.re-hero__gradient {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.4) 0%,
+    rgba(15, 23, 42, 0.6) 40%,
+    rgba(15, 23, 42, 0.92) 100%
+  );
+}
+
+.re-hero__content {
+  position: relative;
+  z-index: 3;
+  padding: 0 1.5rem;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.re-hero__heading {
+  font-family: var(--font-marcellus), 'Marcellus', serif;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  line-height: 1.12;
+  color: $re-white;
+  margin: 0 0 1rem;
+  letter-spacing: -0.02em;
+
+  @media (max-width: 768px) {
+    font-size: clamp(2rem, 8vw, 2.75rem);
+  }
+}
+
+.re-hero__subheading {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0;
+}
+
+.re-hero__scroll {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.re-hero__scroll-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: $re-white;
+  animation: re-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes re-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+}
+
+// ----- About Us -----
+.re-about {
+  background: $re-section-bg;
+  padding: clamp(4.5rem, 11vw, 7rem) 0;
+}
+
+.re-about__container {
+  max-width: $re-max;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  max-width: 700px;
+}
+
+.re-about__eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: $re-accent;
+  margin: 0 0 0.875rem;
+}
+
+.re-about__heading {
+  font-family: var(--font-marcellus), 'Marcellus', serif;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.2;
+  color: $re-text;
+  margin: 0 0 1.5rem;
+  letter-spacing: -0.01em;
+}
+
+.re-about__body {
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  line-height: 1.75;
+  color: $re-text-secondary;
+
+  p {
+    margin: 0 0 1rem;
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// ----- Projects We Did (past) -----
+.re-past {
+  background: $re-section-alt;
+  padding: clamp(4.5rem, 11vw, 7rem) 0;
+}
+
+.re-past__container {
+  max-width: $re-max;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.re-past__eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: $re-accent;
+  margin: 0 0 0.875rem;
+}
+
+.re-past__heading {
+  font-family: var(--font-marcellus), 'Marcellus', serif;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.2;
+  color: $re-text;
+  margin: 0 0 0.5rem;
+}
+
+.re-past__subtitle {
+  font-size: 1.0625rem;
+  color: $re-text-secondary;
+  margin: 0 0 2.5rem;
+}
+
+.re-past__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: $re-gap;
+}
+
+.re-past__card {
+  background: $re-section-bg;
+  border: 1px solid $re-border-light;
+  border-radius: $re-radius;
+  overflow: hidden;
+  box-shadow: $re-shadow;
+  transition: box-shadow 0.25s, transform 0.25s, border-color 0.25s;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: $re-shadow-hover;
+    transform: translateY(-4px);
+    border-color: $re-border;
+  }
+}
+
+.re-past__card-media {
+  aspect-ratio: 4/3;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .re-past__card:hover & img {
+    transform: scale(1.03);
+  }
+}
+
+.re-past__card-content {
+  padding: 1.5rem;
+}
+
+.re-past__card-meta {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $re-accent;
+  margin: 0 0 0.5rem;
+}
+
+.re-past__card-title {
+  font-family: var(--font-marcellus), 'Marcellus', serif;
+  font-size: 1.25rem;
+  color: $re-text;
+  margin: 0 0 0.5rem;
+}
+
+.re-past__card-desc {
+  font-size: 0.9375rem;
+  color: $re-text-secondary;
+  margin: 0;
+  line-height: 1.55;
+}
+
+// ----- Current Projects -----
+.re-current {
+  background: $re-section-bg;
+  padding: clamp(4.5rem, 11vw, 7rem) 0;
+}
+
+.re-current__container {
+  max-width: $re-max;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.re-current__header {
+  margin-bottom: 2.5rem;
+}
+
+.re-current__eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: $re-accent;
+  margin: 0 0 0.875rem;
+}
+
+.re-current__heading {
+  font-family: var(--font-marcellus), 'Marcellus', serif;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.2;
+  color: $re-text;
+  margin: 0 0 0.5rem;
+}
+
+.re-current__subtitle {
+  font-size: 1.0625rem;
+  color: $re-text-secondary;
+  margin: 0;
+}
+
+.re-current__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: $re-gap;
+}
+
+.re-current__card {
+  background: $re-section-bg;
+  border: 1px solid $re-border-light;
+  border-radius: $re-radius;
+  overflow: hidden;
+  box-shadow: $re-shadow;
+  transition: box-shadow 0.25s, transform 0.25s, border-color 0.25s;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: $re-shadow-hover;
+    transform: translateY(-4px);
+    border-color: $re-border;
+  }
+}
+
+.re-current__card-media {
+  position: relative;
+  aspect-ratio: 16/10;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .re-current__card:hover & img {
+    transform: scale(1.03);
+  }
+}
+
+.re-current__card-status {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.4rem 0.875rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: $re-accent;
+  color: $re-white;
+  border-radius: 6px;
+}
+
+.re-current__card-content {
+  padding: 1.5rem;
+}
+
+.re-current__card-title {
+  font-family: var(--font-marcellus), 'Marcellus', serif;
+  font-size: 1.25rem;
+  color: $re-text;
+  margin: 0 0 0.5rem;
+}
+
+.re-current__card-desc {
+  font-size: 0.9375rem;
+  color: $re-text-secondary;
+  margin: 0 0 1rem;
+  line-height: 1.55;
+}
+
+.re-current__card-cta {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $re-accent;
+  text-decoration: none;
+  transition: color 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    color: $re-accent-hover;
+  }
+}
+
+// ----- Live Camera -----
+.re-camera {
+  background: $re-section-alt;
+  padding: clamp(4.5rem, 11vw, 7rem) 0;
+}
+
+.re-camera__container {
+  max-width: $re-max;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.re-camera__header {
+  margin-bottom: 2rem;
+}
+
+.re-camera__heading {
+  font-family: var(--font-marcellus), 'Marcellus', serif;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.2;
+  color: $re-text;
+  margin: 0 0 0.5rem;
+}
+
+.re-camera__subtitle {
+  font-size: 1.0625rem;
+  color: $re-text-secondary;
+  margin: 0;
+}
+
+// Full-width of viewport: break out of container
+.re-camera__frame-wrap {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 2rem;
+  margin-bottom: 0;
+}
+
+.re-camera__frame {
+  width: 100%;
+  border-radius: 0;
+  overflow: hidden;
+  background: #0f172a;
+  aspect-ratio: 16/9;
+  max-height: min(56vw, 560px);
+  box-shadow: none;
+}
+
+.re-camera__embed {
+  width: 100%;
+  height: 100%;
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+}
+
+.re-camera__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.re-camera__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.re-camera__placeholder-fallback {
+  text-align: center;
+  padding: 2rem;
+  color: $re-text-muted;
+  font-size: 0.9375rem;
+  background: $re-section-alt;
+}
+
+.re-camera__placeholder-icon {
+  display: block;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 1rem;
+  background: $re-border;
+  border-radius: 50%;
+}
+
+.re-camera__placeholder-note {
+  font-size: 0.8125rem;
+  margin-top: 0.5rem;
+  color: $re-text-muted;
+}
+
+// ----- Looking for Job -----
+.re-jobs {
+  background: $re-accent;
+  padding: clamp(4.5rem, 11vw, 7rem) 0;
+  color: $re-white;
+}
+
+.re-jobs__container {
+  max-width: $re-max;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.re-jobs__content {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.re-jobs__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  margin-bottom: 1.5rem;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.re-jobs__badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.re-jobs__heading {
+  font-family: var(--font-marcellus), 'Marcellus', serif;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.2;
+  color: $re-white;
+  margin: 0 0 0.75rem;
+}
+
+.re-jobs__subtitle {
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 1.5rem;
+}
+
+.re-jobs__description {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.82);
+  margin: 0 0 2rem;
+}
+
+.re-jobs__features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.875rem;
+}
+
+.re-jobs__feature {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.re-jobs__feature-icon {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.re-jobs__cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.re-jobs__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: $re-white;
+  color: $re-accent;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    background: #f8fafc;
+  }
+}
+
+.re-jobs__button-arrow {
+  transition: transform 0.2s;
+}
+
+.re-jobs__button:hover .re-jobs__button-arrow {
+  transform: translateX(4px);
+}
+
+.re-jobs__cta-note {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  font-style: italic;
+}
+
+// ----- Contact -----
+.re-contact {
+  background: $re-section-bg;
+  padding: clamp(4.5rem, 11vw, 7rem) 0;
+}
+
+.re-contact__container {
+  max-width: $re-max;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.re-contact__header {
+  margin-bottom: 2.5rem;
+}
+
+.re-contact__eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: $re-accent;
+  margin: 0 0 0.875rem;
+}
+
+.re-contact__heading {
+  font-family: var(--font-marcellus), 'Marcellus', serif;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.2;
+  color: $re-text;
+  margin: 0;
+}
+
+.re-contact__grid {
+  display: grid;
+  grid-template-columns: 0.5fr 1fr;
+  gap: 3rem 4rem;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.re-contact__intro {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: $re-text-secondary;
+  margin: 0 0 1.5rem;
+}
+
+.re-contact__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  font-size: 0.9375rem;
+  color: $re-text-secondary;
+}
+
+.re-contact__address {
+  display: block;
+}
+
+.re-contact__email,
+.re-contact__phone {
+  color: $re-accent;
+  text-decoration: none;
+  transition: color 0.2s;
+
+  &:hover {
+    color: $re-accent-hover;
+  }
+}
+
+.re-contact__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.re-contact__input,
+.re-contact__textarea {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-family: inherit;
+  font-size: 1rem;
+  color: $re-text;
+  background: $re-page-bg;
+  border: 1px solid $re-border;
+  border-radius: 8px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &::placeholder {
+    color: $re-text-muted;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $re-accent;
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+  }
+}
+
+.re-contact__textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.re-contact__error {
+  font-size: 0.875rem;
+  color: #b91c1c;
+}
+
+.re-contact__submit {
+  align-self: flex-start;
+  padding: 0.875rem 2rem;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $re-white;
+  background: $re-accent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+
+  &:hover:not(:disabled) {
+    background: $re-accent-hover;
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.re-contact__success {
+  padding: 1.5rem;
+  font-size: 1rem;
+  color: $re-accent;
+  background: rgba(15, 23, 42, 0.06);
+  border: 1px solid $re-border;
+  border-radius: 8px;
+}
+
+// ----- Project gallery modal (lightbox style) -----
+.re-gallery {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  animation: re-fadeIn 0.3s ease-out;
+}
+
+.re-gallery__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(12px);
+}
+
+.re-gallery__header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, transparent 100%);
+}
+
+.re-gallery__title {
+  font-family: var(--font-marcellus), 'Marcellus', serif;
+  font-size: 1.375rem;
+  font-weight: 400;
+  color: $re-white;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.re-gallery__close {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  cursor: pointer;
+  color: $re-white;
+  transition: background 0.2s, transform 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.22);
+    transform: scale(1.05);
+  }
+}
+
+.re-gallery__stage {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 4rem;
+  min-height: 0;
+
+  @media (max-width: 768px) {
+    padding: 1rem 3.5rem;
+  }
+}
+
+.re-gallery__empty {
+  margin: 0;
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+}
+
+.re-gallery__frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  max-height: 78vh;
+}
+
+.re-gallery__img {
+  max-width: 100%;
+  max-height: 78vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 4px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  animation: re-imgFade 0.35s ease-out;
+
+  &--enter {
+    animation: re-imgFade 0.35s ease-out;
+  }
+}
+
+.re-gallery__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: $re-white;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.25s;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-50%) scale(1.08);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  &--prev {
+    left: 1rem;
+  }
+
+  &--next {
+    right: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    width: 44px;
+    height: 44px;
+    &--prev {
+      left: 0.5rem;
+    }
+    &--next {
+      right: 0.5rem;
+    }
+  }
+}
+
+.re-gallery__footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
+}
+
+.re-gallery__counter {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.re-gallery__counter-sep {
+  margin: 0 0.2em;
+  opacity: 0.6;
+}
+
+.re-gallery__thumbs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+  }
+}
+
+.re-gallery__thumb {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
+  transition: border-color 0.2s, opacity 0.2s, transform 0.2s;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &:hover {
+    opacity: 1;
+    border-color: rgba(255, 255, 255, 0.35);
+  }
+
+  &--active {
+    border-color: $re-white;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
+  }
+}
+
+@keyframes re-imgFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes re-fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes re-scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// ----- Current project bottom drawer -----
+.re-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: re-fadeIn 0.25s ease-out;
+  overscroll-behavior: none;
+}
+
+.re-drawer__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  /* Swipes on dimmed area should not scroll the page behind */
+  touch-action: none;
+}
+
+.re-drawer__panel {
+  position: relative;
+  z-index: 1;
+  background: $re-section-bg;
+  width: 100%;
+  max-width: 900px;
+  /* Cap height so inner body can scroll; min-height:0 lets flex children shrink */
+  max-height: min(92dvh, 92vh);
+  min-height: 0;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  animation: re-slideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  touch-action: auto;
+}
+
+/* Unit PDF sheet: fixed height so iframe flex child gets real space (otherwise it collapses to a thin strip) */
+.re-drawer__panel--unit {
+  height: min(92dvh, 92vh);
+  max-height: min(92dvh, 92vh);
+}
+
+.re-drawer__handle {
+  width: 40px;
+  height: 4px;
+  background: $re-border;
+  border-radius: 2px;
+  margin: 0.75rem auto 0;
+  flex-shrink: 0;
+}
+
+.re-drawer__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem 1.25rem;
+  border-bottom: 1px solid $re-border-light;
+  flex-shrink: 0;
+}
+
+.re-drawer__header-inner {
+  flex: 1;
+  min-width: 0;
+}
+
+.re-drawer__title {
+  font-family: var(--font-marcellus), 'Marcellus', serif;
+  font-size: 1.5rem;
+  color: $re-text;
+  margin: 0 0 0.25rem;
+}
+
+.re-drawer__status {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $re-accent;
+}
+
+.re-drawer__close {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: $re-page-bg;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: $re-text-secondary;
+  transition: background 0.2s, color 0.2s;
+
+  &:hover {
+    background: $re-border;
+    color: $re-text;
+  }
+}
+
+.re-drawer__body {
+  padding: 1.25rem;
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  /* flex-basis 0% is required so this region scrolls inside max-height panel */
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Trap scroll inside sheet; block scroll chaining to document */
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+}
+
+.re-drawer__description {
+  font-size: 0.9375rem;
+  color: $re-text-secondary;
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+
+.re-drawer__floor-plan {
+  margin-top: 0.5rem;
+}
+
+.re-drawer__floor-plan-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $re-text;
+  margin: 0 0 0.75rem;
+}
+
+.re-drawer__floor-plan-placeholder {
+  background: $re-page-bg;
+  border: 2px dashed $re-border;
+  border-radius: $re-radius;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+.re-drawer__floor-plan-note {
+  font-size: 0.9375rem;
+  color: $re-text-secondary;
+  margin: 0 0 0.5rem;
+  line-height: 1.5;
+}
+
+.re-drawer__floor-plan-hint {
+  font-size: 0.8125rem;
+  color: $re-text-muted;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.re-drawer__floor-plan-container {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  touch-action: pan-x pan-y;
+}
+
+/* Full-size SVG hit layer must not steal vertical scroll from .re-drawer__body (mobile) */
+.re-drawer__floor-plan-hit {
+  touch-action: pan-x pan-y;
+}
+
+.re-drawer__floor-plan-hover-label-layer {
+  z-index: 2;
+}
+
+.re-drawer__floor-plan-hover-label-text {
+  /* Dark fill + light stroke = readable on typical light plans; halo helps on dark lines */
+  fill: #0f172a;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* font-size: set on <text> via user units (HOVER_LABEL_FONT_SIZE_U) — not CSS px */
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  paint-order: stroke fill;
+  stroke: #f8fafc;
+  /* stroke-width: user units on element */
+}
+
+.re-drawer__floor-plan-img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+.re-drawer__floor-plan-tooltip {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: $re-section-alt;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: $re-text-secondary;
+
+  strong {
+    color: $re-text;
+  }
+}
+
+// Back button (unit detail sheet)
+.re-drawer__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0 0 0.25rem;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 0.875rem;
+  color: $re-text-secondary;
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    color: $re-accent;
+    text-decoration: underline;
+  }
+}
+
+.re-drawer__back-text {
+  font-weight: 500;
+}
+
+// Unit detail sheet – PDF view
+.re-drawer__body--pdf {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  min-height: 0;
+  flex: 1 1 0%;
+  overflow: hidden;
+}
+
+.re-drawer__pdf-frame-wrap {
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  position: relative;
+  /* Fallback if flex height is still 0 in edge cases */
+  min-height: min(55vh, 480px);
+}
+
+.re-drawer__pdf-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #f1f5f9;
+}
+
+.re-drawer__pdf-fallback {
+  padding: 1.5rem;
+  margin: 0;
+  text-align: center;
+  color: $re-text-secondary;
+  font-size: 0.9375rem;
+}
+
+@keyframes re-slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}

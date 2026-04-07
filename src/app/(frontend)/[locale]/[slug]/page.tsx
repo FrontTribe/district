@@ -33,8 +33,8 @@ async function fetchPage(slug: string, locale: AllowedLocale): Promise<PageType 
           equals: slug,
         },
       },
-      depth: 2,
-      locale, // <-- add locale here to fetch localized content
+      depth: 4, // blocks -> projects[].building -> floorPlanImage, unitDetailsPdf
+      locale,
     })
 
     return pageQuery.docs[0] || null
@@ -90,6 +90,11 @@ export default async function Page({ params }: PageProps) {
   const tenantId = currentTenant?.id ? String(currentTenant.id) : null
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
 
+  const layout = page.layout ?? []
+  const isRealEstatePage =
+    layout.length > 0 &&
+    layout.every((b: { blockType?: string }) => b.blockType?.startsWith('real-estate-'))
+
   return (
     <>
       {/* Menu Wrapper - only show for tenant pages */}
@@ -130,9 +135,15 @@ export default async function Page({ params }: PageProps) {
         />
       )}
 
-      <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <PageClient page={page} locale={locale} />
-      </div>
+      {isRealEstatePage ? (
+        <main className="real-estate-preview">
+          <PageClient page={page} locale={locale} />
+        </main>
+      ) : (
+        <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <PageClient page={page} locale={locale} />
+        </div>
+      )}
 
       {/* Footer - only show for tenant pages */}
       {currentTenant && footerGlobal && (

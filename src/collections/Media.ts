@@ -2,10 +2,17 @@ import { CollectionConfig } from 'payload'
 
 const Media: CollectionConfig = {
   slug: 'media',
+  labels: {
+    singular: { en: 'Media', hr: 'Medij' },
+    plural: { en: 'Media', hr: 'Mediji' },
+  },
   admin: {
     useAsTitle: 'alt',
-    group: 'Media & Assets',
-    description: 'Manage images, documents and other media files',
+    group: { en: 'Media & Assets', hr: 'Mediji i datoteke' },
+    description: {
+      en: 'Manage images, documents and other media files',
+      hr: 'Upravljanje slikama, dokumentima i ostalim medijskim datotekama',
+    },
   },
   access: {
     read: ({ req }) => {

@@ -2,10 +2,17 @@ import { CollectionConfig } from 'payload'
 
 const Tenants: CollectionConfig = {
   slug: 'tenants',
+  labels: {
+    singular: { en: 'Tenant', hr: 'Organizacija' },
+    plural: { en: 'Tenants', hr: 'Organizacije' },
+  },
   admin: {
     useAsTitle: 'name',
-    group: 'System Management',
-    description: 'Manage tenant organizations (hotels, restaurants, etc.)',
+    group: { en: 'System Management', hr: 'Upravljanje sustavom' },
+    description: {
+      en: 'Manage tenant organizations (hotels, restaurants, etc.)',
+      hr: 'Upravljanje organizacijama stanara (hoteli, restorani itd.)',
+    },
     hidden: ({ user }) => {
       if (!user || typeof user !== 'object') return true
       return (user as { role?: string }).role !== 'superadmin'
