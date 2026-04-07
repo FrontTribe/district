@@ -84,22 +84,22 @@ jobs:
       - name: Upload artifact
         uses: appleboy/scp-action@v0.1.7
         with:
-          host:     ${{ secrets.SERVER_HOST }}
+          host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASS }}
-          port:     22
-          source:   deploy.tgz
-          target:   /tmp/
+          port: 22
+          source: deploy.tgz
+          target: /tmp/
 
       # ── 10. Extract + restart ────────────────────────────────────────────────
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host:        ${{ secrets.SERVER_HOST }}
-          username:    ${{ secrets.SERVER_USER }}
-          password:    ${{ secrets.SERVER_PASS }}
-          port:        22
-          timeout:     5m
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASS }}
+          port: 22
+          timeout: 5m
           script_stop: true
           script: |
             set -euxo pipefail
@@ -107,6 +107,9 @@ jobs:
             DEPLOY_PATH="${{ steps.target.outputs.path }}"
             APP_NAME="${{ steps.target.outputs.app }}"
             APP_PORT="${{ steps.target.outputs.port }}"
+
+            # Stop old process before touching files to avoid serving half-deleted builds
+            pm2 delete "$APP_NAME" > /dev/null 2>&1 || true
 
             # Backup env files before wiping
             for env_file in .env .env.local .env.production; do
@@ -132,12 +135,13 @@ jobs:
               fi
             done
 
-            # Always delete then re-register with PM2 (avoids if/else with drone-ssh)
-            pm2 delete "$APP_NAME" > /dev/null 2>&1 || true
+            # Standalone builds must be started with Node against the generated entrypoint
+            test -f "$DEPLOY_PATH/server.js"
             PORT="$APP_PORT" NODE_ENV=production pm2 start \
-              "node server.js" \
+              "$DEPLOY_PATH/server.js" \
               --name "$APP_NAME" \
-              --cwd  "$DEPLOY_PATH"
+              --cwd  "$DEPLOY_PATH" \
+              --update-env
 
             pm2 save
             echo "✓ $APP_NAME deployed on port $APP_PORT"

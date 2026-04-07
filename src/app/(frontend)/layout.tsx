@@ -11,9 +11,19 @@ const marcellus = Marcellus({
   preload: true,
 })
 
+const siteUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://district.hr'
+const metadataBase = (() => {
+  try {
+    return new URL(siteUrl)
+  } catch {
+    return new URL('https://district.hr')
+  }
+})()
+
 export const metadata: Metadata = {
   title: 'Disctrict',
   description: 'District is a group of brands.',
+  metadataBase,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
