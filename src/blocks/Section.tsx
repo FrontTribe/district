@@ -26,6 +26,7 @@ import { IntroBlock } from '@/blocks/Intro'
 import { ImageGrid } from '@/blocks/ImageGrid'
 import { ImageGridBlock } from '@/blocks/ImageGrid'
 import { FloorPlan, FloorPlanBlock } from '@/blocks/FloorPlan'
+import { Anchor, AnchorBlock } from '@/blocks/Anchor'
 
 const Section: Block = {
   slug: 'section',
@@ -54,6 +55,7 @@ const Section: Block = {
                 Intro,
                 ImageGrid,
                 FloorPlan,
+                Anchor,
               ],
             },
           ],
@@ -349,6 +351,7 @@ const SectionBlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null
     intro: IntroBlock,
     'image-grid': ImageGridBlock,
     'floor-plan': FloorPlanBlock,
+    anchor: AnchorBlock,
   }
 
   return (
