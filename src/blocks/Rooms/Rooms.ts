@@ -1,20 +1,12 @@
 import { Block, type Condition } from 'payload'
 import { loadRentlioOptions } from '@/utils/rentlio'
 
-const propertyFieldValidate = (value: unknown) => {
-  if (value === null || value === undefined || value === '') {
-    return 'Provide a Rentlio property ID'
-  }
-  return true
-}
+const DEFAULT_SALES_CHANNEL_ID = '45'
 
-const unitTypeFieldValidate = (value: unknown) => {
-  // Unit type is always required now since we show all options
-  if (value === null || value === undefined || value === '') {
-    return 'Provide a Rentlio unit type ID'
-  }
-
-  return true
+const normalizeOptionalRentlioId = (value: unknown): string | null | undefined => {
+  if (value === null || value === undefined) return value as null | undefined
+  if (typeof value === 'string' && value.trim() === '') return null
+  return value as string
 }
 
 const roomsFieldCondition: Condition = () => true // Always show rooms since unit types are available without selecting property
@@ -23,7 +15,7 @@ const rentlioSalesChannelField: any = {
   name: 'rentlioSalesChannelId',
   type: 'text',
   label: 'Sales Channel',
-  required: true,
+  defaultValue: DEFAULT_SALES_CHANNEL_ID,
   admin: {
     description:
       'Sales channels are loading… If this remains a plain input, enter the ID manually or fix the API credentials.',
@@ -34,14 +26,22 @@ const rentlioSalesChannelField: any = {
       // salesChannelsByProperty: salesChannelsByPropertyOptions,
     },
   },
-  defaultValue: '45',
+  hooks: {
+    beforeValidate: [
+      ({ value }: { value: unknown }) => {
+        if (value === null || value === undefined || value === '') {
+          return DEFAULT_SALES_CHANNEL_ID
+        }
+        return value
+      },
+    ],
+  },
 }
 
 const rentlioPropertyField: any = {
   name: 'rentlioPropertyId',
   type: 'text',
   label: 'Rentlio Property',
-  validate: propertyFieldValidate,
   admin: {
     description:
       'Rentlio properties are loading… If this remains a plain input, enter the ID manually or fix the API credentials.',
@@ -52,16 +52,18 @@ const rentlioPropertyField: any = {
       // options: rentlioPropertyOptions,
     },
   },
+  hooks: {
+    beforeValidate: [({ value }: { value: unknown }) => normalizeOptionalRentlioId(value)],
+  },
 }
 
 const rentlioUnitTypeField: any = {
   name: 'rentlioUnitTypeId',
   type: 'text',
   label: 'Rentlio Unit Type',
-  validate: unitTypeFieldValidate,
   admin: {
     description:
-      'Select a property first to load unit types. If options do not appear, enter the ID manually.',
+      'Optional. Select a unit type to enable Rentlio bookings for this room. Leave empty if the room is informational only.',
     components: {
       Field: '@/fields/RentlioUnitTypeField',
     },
@@ -69,6 +71,9 @@ const rentlioUnitTypeField: any = {
       // options: rentlioUnitTypeOptions,
       // unitTypesByProperty: rentlioUnitTypesByProperty,
     },
+  },
+  hooks: {
+    beforeValidate: [({ value }: { value: unknown }) => normalizeOptionalRentlioId(value)],
   },
 }
 
