@@ -7,7 +7,8 @@ const Media: CollectionConfig = {
     plural: { en: 'Media', hr: 'Mediji' },
   },
   admin: {
-    useAsTitle: 'alt',
+    useAsTitle: 'filename',
+    defaultColumns: ['filename', 'alt', 'mimeType', 'filesize', 'updatedAt'],
     group: { en: 'Media & Assets', hr: 'Mediji i datoteke' },
     description: {
       en: 'Manage images, documents and other media files',
@@ -89,9 +90,10 @@ const Media: CollectionConfig = {
   upload: {
     disableLocalStorage: true,
     mimeTypes: ['image/*'],
-    adminThumbnail: ({ doc }) => {
-      return `https://${process.env.S3_BUCKET}.s3.${process.env.S3_REGION}.amazonaws.com/${doc.filename}`
-    },
+    // Use the generated "xs" rendition served via Payload's own URL handler
+    // (which proxies to whichever storage adapter is configured).
+    adminThumbnail: 'xs',
+    focalPoint: true,
     resizeOptions: {
       withoutEnlargement: true,
       fit: 'cover',
