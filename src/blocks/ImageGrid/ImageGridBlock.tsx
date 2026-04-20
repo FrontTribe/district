@@ -52,7 +52,9 @@ export const ImageGridBlock: React.FC<Props> = ({
       const track = marqueeRef.current
       if (!track) return
       removeClones(track)
-      gsap.set(track, { clearProps: 'transform,x' })
+      // Reset only the transform — keep display/width inline styles so the
+      // track stays a horizontal flex row of intrinsic content width.
+      gsap.set(track, { x: 0 })
     }
 
     const createMarquee = () => {
@@ -66,8 +68,21 @@ export const ImageGridBlock: React.FC<Props> = ({
       const cards = Array.from(track.querySelectorAll<HTMLElement>('.image-grid__card'))
       if (cards.length === 0) return
 
+      // Make sure the track lays its children out horizontally with intrinsic
+      // width so cards don't get clipped to the parent's 100% width.
+      gsap.set(track, {
+        display: 'flex',
+        width: 'max-content',
+        x: 0,
+      })
+
       const cardWidth = cards[0].getBoundingClientRect().width
-      if (cardWidth === 0) return // layout not ready yet
+      if (cardWidth === 0) {
+        // Layout isn't ready yet (e.g. fonts/images still settling). Try again
+        // on the next frame instead of silently giving up.
+        requestAnimationFrame(createMarquee)
+        return
+      }
 
       const totalWidth = (cardWidth + CARD_GAP_PX) * cards.length
 
@@ -88,7 +103,6 @@ export const ImageGridBlock: React.FC<Props> = ({
           duration,
           ease: 'none',
           repeat: -1,
-          immediateRender: true,
         },
       )
     }
