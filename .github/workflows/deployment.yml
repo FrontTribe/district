@@ -5,7 +5,94 @@ on:
     branches: [main, development]
 
 jobs:
+  # ╔══════════════════════════════════════════════════════════════════════════╗
+  # ║ 1. Migration sanity check (gates the deploy)                            ║
+  # ║    - Boots a throwaway Postgres                                          ║
+  # ║    - Applies every committed migration (catches broken SQL)             ║
+  # ║    - Asks Payload to generate a fresh migration; if a new file appears  ║
+  # ║      a developer changed the schema but forgot to commit the migration  ║
+  # ╚══════════════════════════════════════════════════════════════════════════╝
+  migration-check:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: district_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URI: postgres://postgres:postgres@localhost:5432/district_ci
+      PAYLOAD_SECRET: ci-only-not-a-real-secret
+      PAYLOAD_DB_PUSH: 'false'
+      NODE_ENV: development
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            pg_isready -h localhost -U postgres && exit 0
+            sleep 1
+          done
+          echo "Postgres never became ready" >&2
+          exit 1
+
+      - name: Show pending migrations
+        run: pnpm payload migrate:status || true
+
+      - name: Apply committed migrations
+        run: pnpm payload migrate
+
+      - name: Detect schema drift (missing migration)
+        run: |
+          set -e
+
+          # Snapshot working tree before asking Payload to diff schema
+          BEFORE_TRACKED=$(git diff --name-only -- src/migrations | wc -l)
+          BEFORE_UNTRACKED=$(git ls-files --others --exclude-standard src/migrations | wc -l)
+
+          # --skip-empty: if there's no schema diff, no file is created
+          pnpm payload migrate:create --skip-empty schema-drift-check || true
+
+          AFTER_TRACKED=$(git diff --name-only -- src/migrations | wc -l)
+          AFTER_UNTRACKED=$(git ls-files --others --exclude-standard src/migrations | wc -l)
+
+          if [ "$AFTER_TRACKED" -gt "$BEFORE_TRACKED" ] || [ "$AFTER_UNTRACKED" -gt "$BEFORE_UNTRACKED" ]; then
+            echo "::error title=Missing migration::Schema drift detected. Run 'pnpm payload migrate:create <name>' locally and commit the result."
+            git status --short src/migrations
+            exit 1
+          fi
+          echo "✓ No schema drift — migrations folder matches code."
+
+  # ╔══════════════════════════════════════════════════════════════════════════╗
+  # ║ 2. Build + ship the standalone bundle                                   ║
+  # ╚══════════════════════════════════════════════════════════════════════════╝
   deploy:
+    needs: migration-check
     runs-on: ubuntu-latest
 
     steps:
@@ -94,6 +181,30 @@ jobs:
           target: /tmp/
 
       # ── 10. Extract + restart ────────────────────────────────────────────────
+      #
+      # Stability notes:
+      # - PAYLOAD_RUN_MIGRATIONS_ON_BOOT=true makes Payload apply any pending
+      #   migrations during connect() (see node_modules/@payloadcms/db-postgres/
+      #   dist/connect.js). Idempotent: already-applied migrations are skipped
+      #   based on the payload_migrations table.
+      # - If the boot fails because of a migration error, pm2 will keep
+      #   restart-looping the new process. Check `pm2 logs <APP_NAME>` first.
+      # - FIRST-TIME BASELINE (one-time, do this manually before the first
+      #   deploy on a DB that was originally bootstrapped with push:true):
+      #     psql "$DATABASE_URI" <<'SQL'
+      #       CREATE TABLE IF NOT EXISTS payload_migrations (
+      #         id serial PRIMARY KEY,
+      #         name varchar,
+      #         batch numeric,
+      #         updated_at timestamp(3) with time zone DEFAULT now() NOT NULL,
+      #         created_at timestamp(3) with time zone DEFAULT now() NOT NULL
+      #       );
+      #       INSERT INTO payload_migrations (name, batch)
+      #       VALUES ('20260407_133034', 1)
+      #       ON CONFLICT DO NOTHING;
+      #     SQL
+      #   Otherwise the first auto-migrate will try to CREATE TABLE on a DB
+      #   that already has those tables and the new process will crash.
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -145,7 +256,7 @@ jobs:
 
             # Standalone builds must be started with Node against the generated entrypoint
             test -f "$DEPLOY_PATH/server.js"
-            PORT="$APP_PORT" NODE_ENV=production PAYLOAD_DB_PUSH=false PAYLOAD_RUN_MIGRATIONS_ON_BOOT=false pm2 start \
+            PORT="$APP_PORT" NODE_ENV=production PAYLOAD_DB_PUSH=false PAYLOAD_RUN_MIGRATIONS_ON_BOOT=true pm2 start \
               "$DEPLOY_PATH/server.js" \
               --name "$APP_NAME" \
               --cwd  "$DEPLOY_PATH" \
