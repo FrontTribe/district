@@ -32,18 +32,88 @@ export const ImageGridBlock: React.FC<Props> = ({
   const marqueeRef = useRef<HTMLDivElement | null>(null)
   const marqueeTween = useRef<gsap.core.Tween | null>(null)
 
-  // Create marquee animation for mobile
   useEffect(() => {
     if (typeof window === 'undefined') return
+
+    const MOBILE_BREAKPOINT = 768
+    // Constant pixels-per-second velocity so speed stays the same regardless of
+    // card count or viewport width.
+    const MARQUEE_SPEED_PX_PER_SEC = 50
+    const CARD_GAP_PX = 16
+    const CLONE_FLAG = 'data-marquee-clone'
+
+    const removeClones = (track: HTMLElement) => {
+      track.querySelectorAll(`[${CLONE_FLAG}="true"]`).forEach((node) => node.remove())
+    }
+
+    const teardownMarquee = () => {
+      marqueeTween.current?.kill()
+      marqueeTween.current = null
+      const track = marqueeRef.current
+      if (!track) return
+      removeClones(track)
+      // Reset only the transform — keep display/width inline styles so the
+      // track stays a horizontal flex row of intrinsic content width.
+      gsap.set(track, { x: 0 })
+    }
+
+    const createMarquee = () => {
+      const track = marqueeRef.current
+      if (!track) return
+
+      // Always reset to a known state before (re)building, otherwise repeated
+      // calls would stack clones and accelerate the animation each time.
+      teardownMarquee()
+
+      const cards = Array.from(track.querySelectorAll<HTMLElement>('.image-grid__card'))
+      if (cards.length === 0) return
+
+      // Make sure the track lays its children out horizontally with intrinsic
+      // width so cards don't get clipped to the parent's 100% width.
+      gsap.set(track, {
+        display: 'flex',
+        width: 'max-content',
+        x: 0,
+      })
+
+      const cardWidth = cards[0].getBoundingClientRect().width
+      if (cardWidth === 0) {
+        // Layout isn't ready yet (e.g. fonts/images still settling). Try again
+        // on the next frame instead of silently giving up.
+        requestAnimationFrame(createMarquee)
+        return
+      }
+
+      const totalWidth = (cardWidth + CARD_GAP_PX) * cards.length
+
+      cards.forEach((card) => {
+        const clone = card.cloneNode(true) as HTMLElement
+        clone.setAttribute(CLONE_FLAG, 'true')
+        clone.setAttribute('aria-hidden', 'true')
+        track.appendChild(clone)
+      })
+
+      const duration = totalWidth / MARQUEE_SPEED_PX_PER_SEC
+
+      marqueeTween.current = gsap.fromTo(
+        track,
+        { x: 0 },
+        {
+          x: -totalWidth,
+          duration,
+          ease: 'none',
+          repeat: -1,
+        },
+      )
+    }
+
     const ctx = gsap.context(() => {
       const q = gsap.utils.selector(sectionRef)
+      const isDesktop = window.innerWidth > MOBILE_BREAKPOINT
 
-      // Desktop grid animations
-      if (window.innerWidth > 768) {
-        // Set initial states for content
-        gsap.set(q('.image-grid__content'), { opacity: 0, y: 30 })
+      gsap.set(q('.image-grid__content'), { opacity: 0, y: 30 })
 
-        // Left-to-right reveal animation for images
+      if (isDesktop) {
         const revealImage = (imgElement: HTMLImageElement) => {
           gsap.set(imgElement, { clipPath: 'inset(0 100% 0 0)', willChange: 'clip-path' })
           gsap.to(imgElement, {
@@ -58,121 +128,81 @@ export const ImageGridBlock: React.FC<Props> = ({
           })
         }
 
-        // Apply reveal animation to all images
-        const imageElements = q('.image-grid__img') as HTMLImageElement[]
-        imageElements.forEach((img: HTMLImageElement) => {
-          revealImage(img)
-        })
-
-        // Animate content
-        gsap.to(q('.image-grid__content'), {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          delay: 0.4,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: sectionRef.current!,
-            start: 'top 80%',
-            toggleActions: 'play none none reverse',
-          },
-        })
-      } else {
-        // Mobile marquee animation
-        const createMarquee = () => {
-          if (!marqueeRef.current) {
-            return
-          }
-
-          const track = marqueeRef.current
-          const cards = track.querySelectorAll('.image-grid__card')
-
-          if (cards.length === 0) {
-            return
-          }
-
-          // Clear any existing animation
-          marqueeTween.current?.kill()
-
-          // Set up the track for horizontal scrolling
-          gsap.set(track, {
-            display: 'flex',
-            width: 'max-content',
-            x: 0,
-          })
-
-          // Calculate total width needed
-          const cardWidth = cards[0].getBoundingClientRect().width
-          const gap = 16
-          const totalWidth = (cardWidth + gap) * cards.length
-
-          // Duplicate cards for seamless loop
-          const cloneCards = Array.from(cards).map((card) => card.cloneNode(true) as HTMLElement)
-          cloneCards.forEach((clone) => track.appendChild(clone))
-
-          // Create infinite scroll animation with proper loop
-          marqueeTween.current = gsap.fromTo(
-            track,
-            { x: 0 },
-            {
-              x: -totalWidth,
-              duration: 20,
-              ease: 'none',
-              repeat: -1,
-              immediateRender: true,
-            },
-          )
-        }
-
-        // Wait for images to load
-        const imgs = Array.from(
-          marqueeRef.current?.querySelectorAll('img') || [],
-        ) as HTMLImageElement[]
-        const pending = imgs.filter((img) => !img.complete).length
-
-        if (pending === 0) {
-          requestAnimationFrame(() => requestAnimationFrame(createMarquee))
-        } else {
-          let remaining = pending
-          const onLoad = () => {
-            remaining -= 1
-            if (remaining <= 0) requestAnimationFrame(() => requestAnimationFrame(createMarquee))
-          }
-          imgs.forEach((img) => img.addEventListener('load', onLoad, { once: true }))
-        }
-
-        // Animate content for mobile
-        gsap.to(q('.image-grid__content'), {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          delay: 0.4,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: sectionRef.current!,
-            start: 'top 80%',
-            toggleActions: 'play none none reverse',
-          },
-        })
-
-        // Handle resize for marquee
-        const handleResize = () => {
-          if (window.innerWidth <= 768 && marqueeRef.current) {
-            createMarquee()
-          }
-        }
-
-        window.addEventListener('resize', handleResize)
-
-        return () => {
-          window.removeEventListener('resize', handleResize)
-        }
+        const desktopImages = sectionRef.current?.querySelectorAll<HTMLImageElement>(
+          '.image-grid__container--desktop .image-grid__img',
+        )
+        desktopImages?.forEach((img) => revealImage(img))
       }
+
+      gsap.to(q('.image-grid__content'), {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        delay: 0.4,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: sectionRef.current!,
+          start: 'top 80%',
+          toggleActions: 'play none none reverse',
+        },
+      })
     }, sectionRef)
 
+    // --- Mobile marquee setup (kept outside gsap.context so we own cleanup) ---
+    const isMobile = () => window.innerWidth <= MOBILE_BREAKPOINT
+
+    const setupMarquee = () => {
+      if (!marqueeRef.current) return
+      if (!isMobile()) {
+        teardownMarquee()
+        return
+      }
+      createMarquee()
+    }
+
+    let imgLoadCleanup: (() => void) | undefined
+    if (marqueeRef.current && isMobile()) {
+      const imgs = Array.from(
+        marqueeRef.current.querySelectorAll<HTMLImageElement>('img:not([' + CLONE_FLAG + '])'),
+      )
+      const pending = imgs.filter((img) => !img.complete)
+
+      if (pending.length === 0) {
+        requestAnimationFrame(() => requestAnimationFrame(setupMarquee))
+      } else {
+        let remaining = pending.length
+        const onLoad = () => {
+          remaining -= 1
+          if (remaining <= 0) requestAnimationFrame(() => requestAnimationFrame(setupMarquee))
+        }
+        pending.forEach((img) => img.addEventListener('load', onLoad, { once: true }))
+        imgLoadCleanup = () => {
+          pending.forEach((img) => img.removeEventListener('load', onLoad))
+        }
+      }
+    }
+
+    // iOS Safari fires `resize` whenever the URL/tab bar collapses during
+    // scroll, which used to rebuild the marquee (and double the clones) on
+    // every scroll tick. Rebuild only when the *width* actually changes, and
+    // debounce to coalesce rapid orientation/resize events.
+    let lastWidth = window.innerWidth
+    let resizeTimer: ReturnType<typeof setTimeout> | undefined
+    const handleResize = () => {
+      const nextWidth = window.innerWidth
+      if (nextWidth === lastWidth) return
+      lastWidth = nextWidth
+      if (resizeTimer) clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(setupMarquee, 200)
+    }
+    window.addEventListener('resize', handleResize)
+
     return () => {
+      window.removeEventListener('resize', handleResize)
+      if (resizeTimer) clearTimeout(resizeTimer)
+      imgLoadCleanup?.()
+      teardownMarquee()
       ctx.revert()
-      marqueeTween.current?.kill()
     }
   }, [images])
 

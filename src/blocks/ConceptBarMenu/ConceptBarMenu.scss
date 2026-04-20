@@ -51,7 +51,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    // Required so `position: sticky` works inside CSS Grid in Safari —
+    // without this the grid item stretches to fill the row and there is no
+    // room left for the element to actually stick.
+    align-self: start;
+    z-index: 0;
   }
+
 
   .concept-bar__image-container {
     width: 100%;
@@ -77,6 +83,11 @@
   .concept-bar__menu-sections {
     grid-column: 1;
     padding-right: 40px;
+    // Establish a stacking context so the list items render *above* the
+    // sticky image. Fixes the Safari issue where the sticky image visually
+    // overlapped the menu items as they scrolled past.
+    position: relative;
+    z-index: 1;
   }
 
   .concept-bar__category-section {
