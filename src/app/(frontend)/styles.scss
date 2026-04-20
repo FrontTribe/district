@@ -1303,20 +1303,14 @@ div {
 }
 
 .hero-heading {
-  font-size: clamp(160px, 10vw, 200px);
+  font-size: clamp(2.25rem, 10vw, 12.5rem);
   line-height: 1.2;
   font-family: var(--font-marcellus), 'Marcellus', serif;
   margin: 0 0 30px 0;
+  padding-inline: 15%;
+  box-sizing: border-box;
   color: rgb(255, 255, 255);
   overflow: hidden;
-
-  @media (max-width: 1024px) {
-    font-size: 48px;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 36px;
-  }
 }
 
 .hero-subheading {
@@ -1797,10 +1791,6 @@ div {
 /* Responsive design for three columns - Now using demo page hero styling */
 
 @media (max-width: 768px) {
-  .hero-heading {
-    font-size: 36px;
-  }
-
   .hero-subheading {
     font-size: 18px;
   }

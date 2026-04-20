@@ -885,6 +885,15 @@ export interface Page {
             blockName?: string | null;
             blockType: 'real-estate-contact';
           }
+        | {
+            /**
+             * ID used as the scroll target (e.g. "contact" → links to #contact). Use lowercase letters, numbers, and dashes.
+             */
+            anchorId: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'anchor';
+          }
       )[]
     | null;
   meta?: {
@@ -1968,6 +1977,13 @@ export interface PagesSelect<T extends boolean = true> {
               email?: T;
               phone?: T;
               sectionId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        anchor?:
+          | T
+          | {
+              anchorId?: T;
               id?: T;
               blockName?: T;
             };
