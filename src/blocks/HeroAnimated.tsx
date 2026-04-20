@@ -22,20 +22,46 @@ export default function HeroAnimated({ heading, subheading, locale = 'hr' }: Pro
     const s = subRef.current
     const sc = scrollRef.current
 
-    // Split heading characters for a wave-in
+    // Split heading characters for a wave-in.
+    // IMPORTANT: each character is wrapped in `display: inline-block` so it
+    // can animate independently, but Safari will then happily break a line
+    // *between any two characters* (e.g. "Momento b" / "y District"). To keep
+    // words intact we wrap each word in its own inline-block with
+    // `white-space: nowrap`, and only the actual spaces between words remain
+    // as legitimate line-break opportunities.
     if (h) {
       if (!(h as any).dataset?.split) {
         const text = h.textContent || ''
         h.textContent = ''
         const frag = document.createDocumentFragment()
-        for (const ch of text) {
-          const span = document.createElement('span')
-          span.textContent = ch === ' ' ? '\u00A0' : ch
-          span.setAttribute('data-char', '1')
-          span.style.display = 'inline-block'
-          span.style.willChange = 'transform, filter, opacity'
-          frag.appendChild(span)
+        const words = text.split(/(\s+)/) // keep whitespace tokens
+
+        for (const token of words) {
+          if (token.length === 0) continue
+
+          if (/^\s+$/.test(token)) {
+            // Real whitespace = breakable opportunity between words.
+            frag.appendChild(document.createTextNode(' '))
+            continue
+          }
+
+          const wordSpan = document.createElement('span')
+          wordSpan.setAttribute('data-word', '1')
+          wordSpan.style.display = 'inline-block'
+          wordSpan.style.whiteSpace = 'nowrap'
+
+          for (const ch of token) {
+            const charSpan = document.createElement('span')
+            charSpan.textContent = ch
+            charSpan.setAttribute('data-char', '1')
+            charSpan.style.display = 'inline-block'
+            charSpan.style.willChange = 'transform, filter, opacity'
+            wordSpan.appendChild(charSpan)
+          }
+
+          frag.appendChild(wordSpan)
         }
+
         h.appendChild(frag)
         ;(h as any).dataset.split = '1'
       }
