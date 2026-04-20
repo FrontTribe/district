@@ -51,6 +51,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    align-self: start;
   }
 
   .concept-bar__image-container {
@@ -197,13 +198,16 @@
     }
 
     .concept-bar__sticky-image {
+      position: relative;
+      top: auto;
       height: 50vh;
-      order: -1;
+      order: 1;
     }
 
     .concept-bar__menu-sections {
       grid-column: 1;
       padding-right: 0;
+      order: 0;
     }
   }
 
