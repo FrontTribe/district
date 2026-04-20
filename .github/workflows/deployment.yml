@@ -53,6 +53,7 @@ jobs:
           NEXT_PUBLIC_PAYLOAD_URL=${{ secrets.NEXT_PUBLIC_SERVER_URL_PROD }}
           NEXT_PUBLIC_DEV_ROOT_DOMAIN=dev.district.hr
           NEXT_PUBLIC_RENTLIO_API_KEY=${{ secrets.NEXT_PUBLIC_RENTLIO_API_KEY }}
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
           EOF
           else
             cat <<'EOF' > .env.local
@@ -61,6 +62,7 @@ jobs:
           NEXT_PUBLIC_PAYLOAD_URL=${{ secrets.NEXT_PUBLIC_SERVER_URL_DEV }}
           NEXT_PUBLIC_DEV_ROOT_DOMAIN=dev.district.hr
           NEXT_PUBLIC_RENTLIO_API_KEY=${{ secrets.NEXT_PUBLIC_RENTLIO_API_KEY }}
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
           EOF
           fi
 
