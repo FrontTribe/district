@@ -1933,14 +1933,27 @@ div {
     }
 
     @media (max-width: 1024px) {
-      justify-self: start;
+      grid-column: 1 / -1;
+      grid-row: auto;
+      justify-self: stretch;
       max-width: 100%;
+      height: auto;
+      aspect-ratio: 4 / 5;
+
+      img {
+        height: 100%;
+      }
     }
   }
 
   .botique-intro__media--bottom-left {
     grid-column: 1 / 2;
     grid-row: 2 / 3;
+
+    @media (max-width: 1024px) {
+      grid-column: 1 / -1;
+      grid-row: auto;
+    }
   }
 
   .botique-intro__media--bottom-right {
@@ -1959,8 +1972,18 @@ div {
     }
 
     @media (max-width: 1024px) {
-      justify-self: start;
-      max-width: 60%;
+      grid-column: 1 / -1;
+      grid-row: auto;
+      justify-self: stretch;
+      max-width: 100%;
+      height: auto;
+      aspect-ratio: 4 / 5;
+      margin-top: 0;
+      margin-left: 0;
+
+      img {
+        height: 100%;
+      }
     }
   }
 }
@@ -1969,6 +1992,14 @@ div {
 .boutique-contact {
   background-color: #051e24;
   padding: 120px 0;
+
+  @media (max-width: 1024px) {
+    padding: 60px 0;
+  }
+
+  @media (max-width: 768px) {
+    padding: 40px 0;
+  }
 
   .boutique-contact__grid {
     max-width: 1440px;
@@ -1984,7 +2015,11 @@ div {
 
     @media (max-width: 1024px) {
       grid-template-columns: 1fr;
-      gap: 40px;
+      grid-template-areas:
+        'header'
+        'left'
+        'right';
+      gap: 32px;
     }
   }
 
@@ -2096,6 +2131,14 @@ div {
   padding: 100px 0 250px;
   background-color: #051e24;
 
+  @media (max-width: 1024px) {
+    padding: 60px 0 80px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 40px 0 40px;
+  }
+
   .rooms-inner {
     max-width: 1440px;
     margin: 0 auto;
@@ -2171,6 +2214,15 @@ div {
     position: relative;
     overflow: hidden;
     height: 800px;
+
+    @media (max-width: 1024px) {
+      height: 560px;
+    }
+
+    @media (max-width: 768px) {
+      height: auto;
+      aspect-ratio: 4 / 5;
+    }
   }
 
   .room-media img {
@@ -2181,6 +2233,10 @@ div {
     will-change: transform;
     object-fit: cover;
     border: none;
+
+    @media (max-width: 1024px) {
+      height: 100%;
+    }
   }
 
   .room-overlay {
