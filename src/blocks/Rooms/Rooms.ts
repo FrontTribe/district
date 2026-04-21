@@ -126,7 +126,6 @@ const Rooms: Block = {
       type: 'array',
       label: 'Rooms',
       minRows: 1,
-      maxRows: 4,
       localized: true,
       fields: [
         rentlioPropertyField,
@@ -154,7 +153,7 @@ const Rooms: Block = {
         },
       ],
       admin: {
-        description: 'Add up to 4 rooms: Premium, Deluxe, Suite, Apartment',
+        description: 'Add rooms (e.g., Premium, Deluxe, Suite, Apartment)',
         condition: roomsFieldCondition,
       },
     },
