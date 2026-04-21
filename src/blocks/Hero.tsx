@@ -78,13 +78,14 @@ export const HeroBlock: React.FC<{
   heading: string
   subheading?: string
   sectionId?: string
+  locale?: string
   backgroundMedia?: {
     type: 'none' | 'image' | 'video'
     image?: string | any
     video?: string | any
     overlay?: 'none' | 'light' | 'medium' | 'dark'
   }
-}> = ({ heading, subheading, sectionId, backgroundMedia }) => {
+}> = ({ heading, subheading, sectionId, backgroundMedia, locale }) => {
   const renderBackgroundMedia = () => {
     if (!backgroundMedia || backgroundMedia.type === 'none') {
       return null
@@ -158,7 +159,7 @@ export const HeroBlock: React.FC<{
     <section id={sectionId} className={sectionClasses.join(' ')}>
       {renderBackgroundMedia()}
       <div className="hero-bottom-gradient" aria-hidden="true" />
-      <HeroAnimated heading={heading} subheading={subheading} />
+      <HeroAnimated heading={heading} subheading={subheading} locale={locale} />
     </section>
   )
 }
