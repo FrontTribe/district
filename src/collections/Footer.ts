@@ -1,4 +1,5 @@
 import { CollectionConfig } from 'payload'
+import { revalidateFooterDeleteHook, revalidateFooterHook } from '@/utils/revalidate'
 
 const Footer: CollectionConfig = {
   slug: 'footer',
@@ -46,6 +47,8 @@ const Footer: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [revalidateFooterHook],
+    afterDelete: [revalidateFooterDeleteHook],
   },
   fields: [
     {

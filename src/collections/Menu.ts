@@ -1,4 +1,5 @@
 import { CollectionConfig } from 'payload'
+import { revalidateMenuDeleteHook, revalidateMenuHook } from '@/utils/revalidate'
 
 const Menu: CollectionConfig = {
   slug: 'menu',
@@ -46,6 +47,8 @@ const Menu: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [revalidateMenuHook],
+    afterDelete: [revalidateMenuDeleteHook],
   },
   fields: [
     {

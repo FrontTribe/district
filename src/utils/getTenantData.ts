@@ -1,93 +1,123 @@
+import { unstable_cache } from 'next/cache'
 import { getPayload } from 'payload'
 import payloadConfig from '@/payload.config'
 import { Menu, Footer, Tenant } from '@/payload-types'
+import { CACHE_REVALIDATE_SECONDS, CACHE_TAGS } from './cache-tags'
+
+type SupportedLocale = 'en' | 'hr' | 'de' | 'all' | undefined
+
+const normalizeLocale = (locale?: string): SupportedLocale =>
+  (locale as SupportedLocale) ?? undefined
 
 /**
- * Gets tenant-specific menu data
- * @param tenantId - The tenant ID to fetch menu for (null for main domain)
- * @param locale - The locale to fetch the menu in
- * @returns Menu data or null if none found
+ * Cached lookup of a tenant by its subdomain.
+ * Tagged so that any change to the underlying tenant invalidates the cache entry.
+ */
+export async function getTenantBySubdomain(subdomain: string): Promise<Tenant | null> {
+  return unstable_cache(
+    async (): Promise<Tenant | null> => {
+      try {
+        const payload = await getPayload({ config: payloadConfig })
+        const res = await payload.find({
+          collection: 'tenants',
+          where: { subdomain: { equals: subdomain } },
+          limit: 1,
+        })
+        return (res.docs[0] as Tenant) || null
+      } catch {
+        return null
+      }
+    },
+    ['tenant-by-subdomain', subdomain],
+    {
+      tags: [CACHE_TAGS.tenants(), CACHE_TAGS.tenantBySubdomain(subdomain)],
+      revalidate: CACHE_REVALIDATE_SECONDS,
+    },
+  )()
+}
+
+/**
+ * Cached menu lookup keyed by tenant + locale. `tenantId === null` returns
+ * the main-domain menu (where `tenant` field is unset).
  */
 export async function getTenantMenu(
   tenantId: string | null,
   locale?: string,
 ): Promise<Menu | null> {
-  try {
-    const payload = await getPayload({ config: payloadConfig })
+  const localeKey = locale ?? 'default'
+  const tenantKey = tenantId ?? 'main'
 
-    const whereClause = tenantId ? { tenant: { equals: tenantId } } : { tenant: { exists: false } }
+  return unstable_cache(
+    async (): Promise<Menu | null> => {
+      try {
+        const payload = await getPayload({ config: payloadConfig })
+        const whereClause = tenantId
+          ? { tenant: { equals: tenantId } }
+          : { tenant: { exists: false } }
 
-    const menuResponse = await payload.find({
-      collection: 'menu',
-      where: whereClause,
-      limit: 1,
-      depth: 2,
-      locale: locale as any,
-    })
+        const menuResponse = await payload.find({
+          collection: 'menu',
+          where: whereClause,
+          limit: 1,
+          depth: 2,
+          locale: normalizeLocale(locale),
+        })
 
-    return menuResponse.docs[0] || null
-  } catch (_error) {
-    return null
-  }
+        return (menuResponse.docs[0] as Menu) || null
+      } catch {
+        return null
+      }
+    },
+    ['tenant-menu', tenantKey, localeKey],
+    {
+      tags: [CACHE_TAGS.menus(), CACHE_TAGS.menuByTenant(tenantId)],
+      revalidate: CACHE_REVALIDATE_SECONDS,
+    },
+  )()
 }
 
 /**
- * Gets tenant-specific footer data
- * @param tenantId - The tenant ID to fetch footer for (null for main domain)
- * @param locale - The locale to fetch the footer in
- * @returns Footer data or null if none found
+ * Cached footer lookup keyed by tenant + locale. Mirrors `getTenantMenu`.
  */
 export async function getTenantFooter(
   tenantId: string | null,
   locale?: string,
 ): Promise<Footer | null> {
-  try {
-    const payload = await getPayload({ config: payloadConfig })
+  const localeKey = locale ?? 'default'
+  const tenantKey = tenantId ?? 'main'
 
-    const whereClause = tenantId ? { tenant: { equals: tenantId } } : { tenant: { exists: false } }
+  return unstable_cache(
+    async (): Promise<Footer | null> => {
+      try {
+        const payload = await getPayload({ config: payloadConfig })
+        const whereClause = tenantId
+          ? { tenant: { equals: tenantId } }
+          : { tenant: { exists: false } }
 
-    const footerResponse = await payload.find({
-      collection: 'footer',
-      where: whereClause,
-      limit: 1,
-      depth: 2,
-      locale: locale as any,
-    })
+        const footerResponse = await payload.find({
+          collection: 'footer',
+          where: whereClause,
+          limit: 1,
+          depth: 2,
+          locale: normalizeLocale(locale),
+        })
 
-    return footerResponse.docs[0] || null
-  } catch (_error) {
-    return null
-  }
+        return (footerResponse.docs[0] as Footer) || null
+      } catch {
+        return null
+      }
+    },
+    ['tenant-footer', tenantKey, localeKey],
+    {
+      tags: [CACHE_TAGS.footers(), CACHE_TAGS.footerByTenant(tenantId)],
+      revalidate: CACHE_REVALIDATE_SECONDS,
+    },
+  )()
 }
 
 /**
- * Gets tenant data by subdomain
- * @param subdomain - The subdomain to look up
- * @returns Tenant data or null if none found
- */
-export async function getTenantBySubdomain(subdomain: string): Promise<Tenant | null> {
-  try {
-    const payload = await getPayload({ config: payloadConfig })
-
-    const tenantResponse = await payload.find({
-      collection: 'tenants',
-      where: {
-        subdomain: { equals: subdomain },
-      },
-      limit: 1,
-    })
-
-    return tenantResponse.docs[0] || null
-  } catch (_error) {
-    return null
-  }
-}
-
-/**
- * Gets both menu and footer data for a tenant
- * @param tenantId - The tenant ID to fetch data for (null for main domain)
- * @param locale - The locale to fetch data in
- * @returns Object containing menu and footer data
+ * Convenience helper that resolves menu + footer in parallel. Each leaf call
+ * is independently cached so they can be invalidated separately.
  */
 export async function getTenantMenuAndFooter(
   tenantId: string | null,

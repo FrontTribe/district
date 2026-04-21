@@ -1,4 +1,5 @@
 import { CollectionConfig } from 'payload'
+import { revalidateMediaDeleteHook, revalidateMediaHook } from '@/utils/revalidate'
 
 const Media: CollectionConfig = {
   slug: 'media',
@@ -62,7 +63,8 @@ const Media: CollectionConfig = {
         return data
       },
     ],
-    afterChange: [],
+    afterChange: [revalidateMediaHook],
+    afterDelete: [revalidateMediaDeleteHook],
   },
   fields: [
     {

@@ -1,4 +1,5 @@
 import { CollectionConfig } from 'payload'
+import { revalidatePageDeleteHook, revalidatePageHook } from '@/utils/revalidate'
 import Hero from '@/blocks/Hero'
 import Features from '@/blocks/Features'
 import Section from '@/blocks/Section'
@@ -83,6 +84,8 @@ const Pages: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [revalidatePageHook],
+    afterDelete: [revalidatePageDeleteHook],
   },
   fields: [
     {
