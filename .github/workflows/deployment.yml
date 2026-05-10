@@ -89,7 +89,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
+          port: ${{ secrets.SERVER_PORT || '22' }}
           source: deploy.tgz
           target: /tmp/
 
@@ -100,7 +100,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
+          port: ${{ secrets.SERVER_PORT || '22' }}
           timeout: 5m
           script_stop: true
           script: |
