@@ -3,6 +3,13 @@ import { withPayload } from '@payloadcms/next/withPayload'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  // proxy.ts clones request bodies; default is 10MB which breaks large admin uploads (e.g. PDFs).
+  experimental: {
+    proxyClientMaxBodySize: '50mb',
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
+  },
   allowedDevOrigins: [
     'district.test',
     'boutique.test',
