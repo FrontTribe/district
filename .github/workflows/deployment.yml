@@ -82,13 +82,13 @@ jobs:
       - name: Package artifact
         run: tar -czf deploy.tgz -C .next/standalone .
 
-      # ── 9. Upload to server ──────────────────────────────────────────────────
+      # ── 9. Upload to server (SSH key — root password auth is often disabled) ─
       - name: Upload artifact
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASS }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: deploy.tgz
           target: /tmp/
@@ -99,7 +99,7 @@ jobs:
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASS }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           timeout: 5m
           script_stop: true
