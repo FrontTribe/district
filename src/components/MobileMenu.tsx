@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { gsap } from '@/lib/gsap'
 import EnhancedLanguageSwitcher from './EnhancedLanguageSwitcher'
+import { HubLogoWordmark } from './HubLogoWordmark'
+import type { HubSocialLink } from '@/utils/hubSocialLinks'
 
 interface MenuItem {
   label: string
@@ -26,8 +28,10 @@ interface MobileMenuProps {
   onLanguageChange: (locale: string) => void
   isLanguageChanging: boolean
   isTenantMenu?: boolean
+  hubLanding?: boolean
   isOpen: boolean
   onClose: () => void
+  hubSocialLinks?: HubSocialLink[]
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({
@@ -38,8 +42,10 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   onLanguageChange,
   isLanguageChanging,
   isTenantMenu = false,
+  hubLanding = false,
   isOpen,
   onClose,
+  hubSocialLinks,
 }) => {
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
@@ -47,9 +53,11 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   const menuItemsRef = useRef<HTMLDivElement>(null)
   const tl = useRef<gsap.core.Timeline | null>(null)
 
-  // Observe sections and mark active menu item when in view (tenant menu only)
+  const sectionSpyEnabled = isTenantMenu || hubLanding
+
+  // Observe sections and mark active menu item when in view (tenant or hub landing)
   useEffect(() => {
-    if (!isTenantMenu) return
+    if (!sectionSpyEnabled) return
 
     const targets = (menuItems || [])
       .map((item) => item.scrollTarget)
@@ -91,7 +99,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
     return () => {
       observer.disconnect()
     }
-  }, [menuItems, isTenantMenu, activeSectionId])
+  }, [menuItems, sectionSpyEnabled, activeSectionId])
 
   // GSAP animations
   useEffect(() => {
@@ -185,7 +193,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   }
 
   const handleLogoClick = (e: React.MouseEvent) => {
-    if (isTenantMenu) {
+    if (isTenantMenu || hubLanding) {
       e.preventDefault()
       const heroElement = document.querySelector('section[id*="hero"], .hero-block, [id*="hero"]')
       if (heroElement) {
@@ -284,27 +292,61 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         onClick={onClose}
       >
         {/* Mobile Menu Panel */}
-        <div ref={menuRef} className="mobile-menu-panel" onClick={(e) => e.stopPropagation()}>
+        <div
+          ref={menuRef}
+          className={`mobile-menu-panel${hubLanding ? ' mobile-menu-panel--hub' : ''}`}
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Mobile Menu Header */}
-          <div className="mobile-menu-header">
-            <div className="mobile-menu-header-left">
-              <Link href="/" onClick={handleLogoClick} className="mobile-menu-logo">
-                {logo ? (
-                  <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
-                ) : logoText ? (
-                  <h1>{logoText}</h1>
-                ) : (
-                  <h1>district.</h1>
-                )}
-              </Link>
-            </div>
-            <div className="mobile-menu-header-right">
-              <EnhancedLanguageSwitcher
-                currentLocale={locale}
-                onLanguageChange={onLanguageChange}
-                theme="transparent"
-                disabled={isLanguageChanging}
-              />
+          <div className={`mobile-menu-header${hubLanding ? ' mobile-menu-header--hub' : ''}`}>
+            <div className="mobile-menu-header__top">
+              <div className="mobile-menu-header-left">
+                <Link
+                  href={hubLanding ? `/${locale}` : '/'}
+                  onClick={handleLogoClick}
+                  className={`mobile-menu-logo${hubLanding ? ' mobile-menu-logo--hub' : ''}`}
+                >
+                  {hubLanding ? (
+                    <HubLogoWordmark logo={logo} logoText={logoText} />
+                  ) : logo ? (
+                    <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
+                  ) : logoText ? (
+                    <h1>{logoText}</h1>
+                  ) : (
+                    <h1>district.</h1>
+                  )}
+                </Link>
+              </div>
+              <div className="mobile-menu-header-right">
+                <EnhancedLanguageSwitcher
+                  currentLocale={locale}
+                  onLanguageChange={onLanguageChange}
+                  theme={hubLanding ? 'hub' : 'transparent'}
+                  disabled={isLanguageChanging}
+                />
+                {hubLanding && hubSocialLinks && hubSocialLinks.length > 0 ? (
+                  <div className="mobile-menu-hub-socials" aria-label="Social media">
+                    {hubSocialLinks.map((s, index) => (
+                      <React.Fragment key={`${s.label}-${s.href}`}>
+                        {index > 0 ? (
+                          <span className="mobile-menu-hub-socials__dot" aria-hidden>
+                            ·
+                          </span>
+                        ) : null}
+                        <a
+                          href={s.href}
+                          className="mobile-menu-hub-socials__link"
+                          {...(s.href.startsWith('http')
+                            ? { target: '_blank' as const, rel: 'noopener noreferrer' }
+                            : {})}
+                        >
+                          {s.label}
+                        </a>
+                      </React.Fragment>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
 
@@ -313,17 +355,19 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             {menuItems.map(renderMenuItem)}
           </div>
 
-          {/* Mobile Menu Footer */}
-          <div className="mobile-menu-footer">
-            <div className="mobile-social-links">
-              <a href="#" className="mobile-social-link">
-                Facebook
-              </a>
-              <a href="#" className="mobile-social-link">
-                Instagram
-              </a>
+          {/* Mobile Menu Footer — hidden on hub (socials sit under language in header; page has HubBottombar) */}
+          {!hubLanding ? (
+            <div className="mobile-menu-footer">
+              <div className="mobile-social-links">
+                <a href="#" className="mobile-social-link">
+                  Facebook
+                </a>
+                <a href="#" className="mobile-social-link">
+                  Instagram
+                </a>
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
       </div>
     </>

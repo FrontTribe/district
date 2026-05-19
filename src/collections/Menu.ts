@@ -192,6 +192,20 @@ const Menu: CollectionConfig = {
       localized: true,
     },
     {
+      name: 'hubTagline',
+      type: 'text',
+      label: { en: 'Hub tagline (landing)', hr: 'Hub tagline (landing)' },
+      localized: true,
+      required: false,
+      admin: {
+        condition: (data) => data?.identifier === 'main-menu',
+        description: {
+          en: 'Center line on the main-domain triptych home (e.g. Osijek · Slavonia · MMXXVI). Shown only when the first page block is three columns.',
+          hr: 'Srednji red na glavnoj triptych početnoj (npr. Osijek · Slavonija · MMXXVI). Prikazuje se kad je prvi blok tri stupca.',
+        },
+      },
+    },
+    {
       name: 'positioning',
       type: 'select',
       label: { en: 'Menu Positioning', hr: 'Pozicioniranje izbornika' },

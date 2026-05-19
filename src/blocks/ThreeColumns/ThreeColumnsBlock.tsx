@@ -1,199 +1,214 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { gsap } from '@/lib/gsap'
 import { ThreeColumnsBlockProps } from './types'
 import { generateTenantUrl } from '@/utils/generateTenantUrl'
 import { getTranslation } from '@/utils/translations'
+
+function buildSocialNavItems(
+  nets?: { facebook?: string | null; instagram?: string | null } | null,
+): { label: string; href: string }[] {
+  const items: { label: string; href: string }[] = []
+  const igRaw = nets?.instagram?.trim()
+  const fbRaw = nets?.facebook?.trim()
+  if (igRaw) {
+    const href =
+      igRaw.startsWith('http://') || igRaw.startsWith('https://')
+        ? igRaw
+        : `https://www.instagram.com/${igRaw.replace(/^@/, '')}/`
+    items.push({ label: 'Instagram', href })
+  }
+  if (fbRaw) {
+    const href =
+      fbRaw.startsWith('http://') || fbRaw.startsWith('https://')
+        ? fbRaw
+        : `https://www.facebook.com/${fbRaw.replace(/^\//, '')}`
+    items.push({ label: 'Facebook', href })
+  }
+  return items
+}
+
+function SocialRow({ items, locale }: { items: { label: string; href: string }[]; locale: string }) {
+  if (items.length === 0) return null
+
+  const linksInner = items.map((item, i) => (
+    <React.Fragment key={`${item.label}-${item.href}`}>
+      {i > 0 ? (
+        <span className="district-hub__socials-dot" aria-hidden>
+          ·
+        </span>
+      ) : null}
+      <a
+        href={item.href}
+        className="district-hub__socials-link"
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {item.label}
+      </a>
+    </React.Fragment>
+  ))
+
+  return (
+    <div
+      className="district-hub__socials"
+      role="navigation"
+      aria-label={getTranslation('hubColumnSocials', locale)}
+    >
+      {linksInner}
+    </div>
+  )
+}
 
 export const ThreeColumnsBlock: React.FC<ThreeColumnsBlockProps> = ({
   columns,
   sectionId,
   locale = 'en',
 }) => {
-  // Refs for animations
   const sectionRef = useRef<HTMLElement>(null)
-  const lineRefs = useRef<(HTMLDivElement | null)[]>([])
-  const [isMobile, setIsMobile] = useState(false)
-  const [activeColumn, setActiveColumn] = useState<number | null>(null)
-
-  // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   useEffect(() => {
-    // Initialize GSAP line animations
-    lineRefs.current.forEach((lineRef, _index) => {
-      if (lineRef) {
-        gsap.set(lineRef, { scaleX: 0, transformOrigin: 'left' })
-      }
-    })
+    const cols = sectionRef.current?.querySelectorAll('.district-hub__col')
+    if (!cols?.length) return
 
-    // Set initial states for animations
-    gsap.set('.hero-column', { opacity: 0, y: 30 })
-    gsap.set('.social-links', { opacity: 0, y: 20 })
-
-    // Animate hero columns in sequence
-    gsap.to('.hero-column', {
+    gsap.set(cols, { opacity: 0, y: 24 })
+    gsap.to(cols, {
       opacity: 1,
       y: 0,
-      duration: 0.8,
-      stagger: 0.2,
+      duration: 0.75,
+      stagger: 0.12,
       ease: 'power2.out',
-      delay: 0.5,
-    })
-
-    // Animate social links
-    gsap.to('.social-links', {
-      opacity: 1,
-      y: 0,
-      duration: 0.6,
-      stagger: 0.15,
-      delay: 0.9,
-      ease: 'power2.out',
+      delay: 0.15,
     })
   }, [columns])
 
-  const handleColumnHover = (index: number) => {
-    if (isMobile) return // Disable hover on mobile
-    const lineRef = lineRefs.current[index]
-    if (lineRef) {
-      gsap.to(lineRef, {
-        scaleX: 1,
-        duration: 0.6,
-        ease: 'power2.out',
-      })
-    }
-  }
-
-  const handleColumnLeave = (index: number) => {
-    if (isMobile) return // Disable hover on mobile
-    const lineRef = lineRefs.current[index]
-    if (lineRef) {
-      gsap.to(lineRef, {
-        scaleX: 0,
-        duration: 0.4,
-        ease: 'power2.in',
-      })
-    }
-  }
-
-  const handleColumnClick = (index: number) => {
-    if (!isMobile) return // Only handle clicks on mobile
-
-    if (activeColumn === index) {
-      // Collapse if already active
-      setActiveColumn(null)
-      const lineRef = lineRefs.current[index]
-      if (lineRef) {
-        gsap.to(lineRef, { scaleX: 0, duration: 0.4, ease: 'power2.in' })
-      }
-    } else {
-      // Collapse previous active
-      if (activeColumn !== null) {
-        const prevLineRef = lineRefs.current[activeColumn]
-        if (prevLineRef) {
-          gsap.to(prevLineRef, { scaleX: 0, duration: 0.4, ease: 'power2.in' })
-        }
-      }
-
-      // Expand new active
-      setActiveColumn(index)
-      const lineRef = lineRefs.current[index]
-      if (lineRef) {
-        gsap.to(lineRef, { scaleX: 1, duration: 0.6, ease: 'power2.out' })
-      }
-    }
-  }
-
   return (
-    <section ref={sectionRef} id={sectionId} className="hero three-columns-section">
-      {/* Hero Section - 3 Column Grid Layout (Full Width) */}
-      <div className="hero-text-overlay">
-        <div className="hero-text-container three-columns-grid">
-          {columns?.map((column, index) => {
-            const isComingSoon = column.comingSoon === true
+    <section
+      ref={sectionRef}
+      id={sectionId || undefined}
+      className="district-hub three-columns-section"
+      aria-label={getTranslation('districtHubSection', locale)}
+    >
+      <div className="district-hub__cols">
+        {columns?.map((column, index) => {
+          const isComingSoon = column.comingSoon === true
+          const href =
+            !isComingSoon && column.link?.tenant?.subdomain
+              ? generateTenantUrl(column.link.tenant.subdomain)
+              : undefined
+          const numberLine =
+            column.numberLabel?.trim() || String(index + 1).padStart(2, '0')
+          const bgUrl = column.backgroundImage?.url
+          const socialItems = buildSocialNavItems(column.socialNetworks)
+          const hasSocial = socialItems.length > 0
+          const useSurfaceLink = Boolean(href)
+          const visitLabel = `${column.title}: ${column.link?.text || getTranslation('visitSite', locale)}`
 
-            return (
-              <div
-                key={index}
-                className={`hero-column three-column ${activeColumn === index ? 'active' : ''} ${isComingSoon ? 'coming-soon' : ''}`}
-                onMouseEnter={() => !isComingSoon && handleColumnHover(index)}
-                onMouseLeave={() => !isComingSoon && handleColumnLeave(index)}
-                onClick={() => !isComingSoon && handleColumnClick(index)}
-                role="button"
-                tabIndex={isComingSoon ? -1 : 0}
-                aria-disabled={isComingSoon}
-                onKeyDown={(e) => {
-                  if (!isComingSoon && (e.key === 'Enter' || e.key === ' ')) {
-                    e.preventDefault()
-                    handleColumnClick(index)
-                  }
-                }}
-              >
-                {/* Background Image */}
-                {column.backgroundImage && (
-                  <div className="hero-video w-full h-64 overflow-hidden rounded">
-                    <img
-                      src={column.backgroundImage.url}
-                      alt={column.backgroundImage.alt || column.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
+          const ctaNode = column.link?.text ? (
+            <span className="district-hub__cta">
+              {column.link.text}
+              <span className="district-hub__cta-arr" aria-hidden>
+                {isComingSoon ? '—' : '→'}
+              </span>
+            </span>
+          ) : null
 
-                {isComingSoon && (
-                  <span className="coming-soon-badge">{getTranslation('comingSoon', locale)}</span>
-                )}
-
-                <h2 className="hero-title mt-4">{column.title}</h2>
-                <p className="hero-subtitle">{column.subtitle}</p>
-
-                <div className="social-links">
-                  {column.socialNetworks?.instagram && (
-                    <span className="social-text">instagram</span>
-                  )}
-                  {column.socialNetworks?.instagram && column.socialNetworks?.facebook && (
-                    <div className="social-divider"></div>
-                  )}
-                  {column.socialNetworks?.facebook && <span className="social-text">facebook</span>}
+          const inner = (
+            <>
+              {bgUrl ? (
+                <div className="district-hub__media" aria-hidden>
+                  <img
+                    src={bgUrl}
+                    alt=""
+                    className="district-hub__img"
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                  />
                 </div>
-
-                {!isComingSoon && column.link && (
-                  <div className="see-more-container mt-2">
-                    {column.link.tenant?.subdomain ? (
-                      <a
-                        href={generateTenantUrl(column.link.tenant.subdomain)}
-                        className="see-more-link"
-                        target={column.link.openInNewTab ? '_blank' : undefined}
-                        rel={column.link.openInNewTab ? 'noopener noreferrer' : undefined}
-                      >
-                        {column.link.text}
-                      </a>
-                    ) : (
-                      <span className="see-more-link">{column.link.text}</span>
-                    )}
+              ) : (
+                <div className="district-hub__media district-hub__media--empty" aria-hidden />
+              )}
+              <div className="district-hub__veil" aria-hidden />
+              {useSurfaceLink ? (
+                <a
+                  href={href}
+                  className="district-hub__col-surface"
+                  aria-label={visitLabel}
+                  tabIndex={0}
+                  target={column.link?.openInNewTab ? '_blank' : undefined}
+                  rel={column.link?.openInNewTab ? 'noopener noreferrer' : undefined}
+                />
+              ) : null}
+              {isComingSoon && (
+                <div className="district-hub__badge">{getTranslation('comingSoon', locale)}</div>
+              )}
+              <div className="district-hub__num">{numberLine}</div>
+              <div className="district-hub__content">
+                {useSurfaceLink ? (
+                  <div className="district-hub__pass-through">
+                    {column.kicker?.trim() ? (
+                      <div className="district-hub__kicker">{column.kicker.trim()}</div>
+                    ) : null}
+                    <h2 className="district-hub__name">
+                      {column.title}
+                      {column.titleItalic?.trim() ? (
+                        <>
+                          {' '}
+                          <em>{column.titleItalic.trim()}</em>
+                        </>
+                      ) : null}
+                    </h2>
+                    {column.subtitle?.trim() ? (
+                      <p className="district-hub__desc">{column.subtitle.trim()}</p>
+                    ) : null}
+                    {ctaNode}
                   </div>
+                ) : (
+                  <>
+                    {column.kicker?.trim() ? (
+                      <div className="district-hub__kicker">{column.kicker.trim()}</div>
+                    ) : null}
+                    <h2 className="district-hub__name">
+                      {column.title}
+                      {column.titleItalic?.trim() ? (
+                        <>
+                          {' '}
+                          <em>{column.titleItalic.trim()}</em>
+                        </>
+                      ) : null}
+                    </h2>
+                    {column.subtitle?.trim() ? (
+                      <p className="district-hub__desc">{column.subtitle.trim()}</p>
+                    ) : null}
+                    {ctaNode}
+                  </>
                 )}
-
-                <div
-                  ref={(el) => {
-                    lineRefs.current[index] = el
-                  }}
-                  className="hover-line"
-                ></div>
+                {hasSocial ? <SocialRow items={socialItems} locale={locale} /> : null}
               </div>
-            )
-          })}
-        </div>
+            </>
+          )
+
+          const className = [
+            'district-hub__col',
+            isComingSoon ? 'district-hub__col--soon' : '',
+            useSurfaceLink ? 'district-hub__col--linked' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')
+
+          return (
+            <div
+              key={index}
+              className={className}
+              role="group"
+              aria-label={column.title}
+              tabIndex={isComingSoon ? 0 : undefined}
+            >
+              {inner}
+            </div>
+          )
+        })}
       </div>
     </section>
   )

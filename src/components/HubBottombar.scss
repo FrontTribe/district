@@ -1,0 +1,61 @@
+/* District Landing `.bottombar` — fixed strip on hub triptych */
+
+.district-hub-bottombar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 25;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px clamp(24px, 4vw, 40px);
+  font-family: var(--font-hub-mono), 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(244, 241, 232, 0.55);
+  background: linear-gradient(180deg, transparent 0%, rgba(10, 10, 8, 0.75) 35%, rgba(10, 10, 8, 0.92) 100%);
+  pointer-events: none;
+
+  & > * {
+    pointer-events: auto;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: rgba(244, 241, 232, 0.9);
+    }
+  }
+
+  &__center {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  &__socials {
+    gap: 22px;
+  }
+
+  &__line {
+    max-width: 34ch;
+  }
+}
+
+@media (max-width: 900px) {
+  .district-hub-bottombar {
+    position: static;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 24px clamp(24px, 4vw, 40px);
+    text-align: left;
+    background: #0a0a08;
+  }
+}

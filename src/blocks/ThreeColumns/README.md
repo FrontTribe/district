@@ -27,19 +27,18 @@ Main export file that provides access to all ThreeColumns functionality:
 
 Contains the Payload CMS block configuration with all the fields:
 
-- Columns array (title, subtitle, background image, full height, gradient, link)
+- Columns array (title, optional italic accent, kicker, index label, description, background image, full height, gradient, link, coming soon)
 - Gradient options (linear/radial, direction/position, colors, opacity)
 - Section ID for navigation
 
 ### `ThreeColumnsBlock.tsx`
 
-React component that renders the three columns with:
+React component that renders the full-viewport **District hub** triptych (see `District Landing/styles-final.css` in the repo):
 
-- GSAP animations for smooth reveal effects
-- Background image blur-to-clear animations
-- Staggered content animations (left to right)
-- Gradient overlay support
-- Responsive design
+- Three equal columns: background image, gradient veil, index line, kicker, large title (Fraunces + gold Instrument Serif accent), description (revealed on hover on desktop), pill CTA
+- GSAP staggered fade-in on load
+- Linked columns wrap the whole card in an `<a>` to the tenant subdomain
+- Responsive: stacked columns under 900px with description always visible
 
 ### `types.ts`
 
