@@ -112,11 +112,9 @@ jobs:
 
             # Dev: apply Payload DB migrations on each deploy so schema matches code (e.g. new block tables).
             # Prod: keep off so migrations stay an explicit ops step if you prefer controlled DB changes.
-            if [ "$APP_NAME" = "district-dev" ]; then
-              RUN_MIGRATIONS_ON_BOOT="true"
-            else
-              RUN_MIGRATIONS_ON_BOOT="false"
-            fi
+            # Use "|| :" so a false [ ] test never trips set -e under appleboy/ssh-action (script_stop).
+            RUN_MIGRATIONS_ON_BOOT="false"
+            [ "$APP_NAME" = "district-dev" ] && RUN_MIGRATIONS_ON_BOOT="true" || :
 
             # Stop old process before touching files to avoid serving half-deleted builds
             pm2 delete "$APP_NAME" > /dev/null 2>&1 || true
