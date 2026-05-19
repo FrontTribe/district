@@ -6,6 +6,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import EnhancedLanguageSwitcher from './EnhancedLanguageSwitcher'
 import { MobileMenu } from './MobileMenu'
 import { HamburgerButton } from './HamburgerButton'
+import { HubLogoWordmark } from './HubLogoWordmark'
+import type { HubSocialLink } from '@/utils/hubSocialLinks'
 
 interface MenuItem {
   label: string
@@ -28,6 +30,12 @@ interface MenuWrapperProps {
   locale: string
   menuId?: string
   hideHamburger?: boolean
+  /** Main-domain three-column hub home — matches `.district-hub` / District Landing topbar */
+  hubLanding?: boolean
+  /** Center line on hub landing (CMS); falls back to District-style default when empty */
+  hubTagline?: string | null
+  /** Instagram / Facebook under language control (hub mobile menu) */
+  hubSocialLinks?: HubSocialLink[]
 }
 
 export const MenuWrapper: React.FC<MenuWrapperProps> = ({
@@ -38,18 +46,36 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
   locale,
   menuId = 'default',
   hideHamburger = false,
+  hubLanding = false,
+  hubTagline,
+  hubSocialLinks,
 }) => {
+  const hubTaglineResolved =
+    typeof hubTagline === 'string' && hubTagline.trim().length > 0
+      ? hubTagline.trim()
+      : 'Osijek · Slavonia · MMXXVI'
+
   const _router = useRouter()
   const pathname = usePathname()
   const [isLanguageChanging, setIsLanguageChanging] = useState(false)
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [hubHeaderScrolled, setHubHeaderScrolled] = useState(false)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const isTenantMenu = menuId === 'tenant-menu'
+  const sectionSpyEnabled = isTenantMenu || hubLanding
 
-  // Observe sections and mark active menu item when in view (tenant menu only)
   useEffect(() => {
-    if (!isTenantMenu) return
+    if (!hubLanding) return
+    const onScroll = () => setHubHeaderScrolled(window.scrollY > 32)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [hubLanding])
+
+  // Observe sections and mark active menu item when in view (tenant or hub landing)
+  useEffect(() => {
+    if (!sectionSpyEnabled) return
 
     const targets = (menuItems || [])
       .map((item) => item.scrollTarget)
@@ -101,7 +127,7 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
       observer.disconnect()
       observerRef.current = null
     }
-  }, [menuItems, menuId, activeSectionId])
+  }, [menuItems, sectionSpyEnabled, activeSectionId])
 
   const handleLanguageChange = async (newLocale: string) => {
     if (newLocale === locale) return // Don't switch if it's the same language
@@ -139,7 +165,7 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
   }
 
   const handleLogoClick = (e: React.MouseEvent) => {
-    if (isTenantMenu) {
+    if (isTenantMenu || hubLanding) {
       e.preventDefault()
       // Try to find a hero section first
       const heroElement = document.querySelector('section[id*="hero"], .hero-block, [id*="hero"]')
@@ -164,8 +190,33 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
-  const headerClass = isTenantMenu ? 'header header--tenant' : 'header'
-  const contentClass = isTenantMenu ? 'header-content header-content--tenant' : 'header-content'
+  const headerClass = [
+    isTenantMenu ? 'header header--tenant' : 'header',
+    hubLanding ? 'header--hub-landing' : '',
+    hubLanding && hubHeaderScrolled ? 'header--hub-landing--scrolled' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+  const contentClass = isTenantMenu
+    ? 'header-content header-content--tenant'
+    : hubLanding
+      ? 'header-content header-content--hub-landing'
+      : 'header-content'
+
+  const langTheme = hubLanding ? 'hub' : 'transparent'
+
+  const renderLogoInner = () => {
+    if (hubLanding) {
+      return <HubLogoWordmark logo={logo} logoText={logoText} />
+    }
+    if (logo) {
+      return <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
+    }
+    if (logoText) {
+      return <h1>{logoText}</h1>
+    }
+    return <h1>district.</h1>
+  }
 
   return (
     <header className={headerClass}>
@@ -221,8 +272,64 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
                 <EnhancedLanguageSwitcher
                   currentLocale={locale}
                   onLanguageChange={handleLanguageChange}
-                  theme="transparent"
+                  theme={langTheme}
                   disabled={isLanguageChanging}
+                />
+              </div>
+            </div>
+          </>
+        ) : hubLanding ? (
+          <>
+            <div className="hub-topbar__left">
+              <div className="mobile-header-left">
+                {!hideHamburger && (
+                  <HamburgerButton isOpen={isMobileMenuOpen} onToggle={toggleMobileMenu} />
+                )}
+                <div className="logo">
+                  <Link
+                    href={`/${locale}`}
+                    onClick={handleLogoClick}
+                    className="hub-topbar__logo"
+                  >
+                    {renderLogoInner()}
+                  </Link>
+                </div>
+              </div>
+            </div>
+            <div className="hub-topbar__center">
+              <p className="hub-topbar__place">{hubTaglineResolved}</p>
+              {menuItems.length > 0 && (
+                <nav className="hub-topbar__nav" aria-label="Primary">
+                  <ul className="hub-topbar__nav-list">
+                    {menuItems.map((item, index) => (
+                      <li key={index} className="hub-topbar__nav-item">
+                        <Link
+                          href={item.link}
+                          target={item.external ? '_blank' : undefined}
+                          rel={item.external ? 'noopener noreferrer' : undefined}
+                          onClick={(e) => handleMenuClick(item, e)}
+                          className={`hub-topbar__link${
+                            item.scrollTarget && activeSectionId === item.scrollTarget
+                              ? ' is-active'
+                              : ''
+                          }`}
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              )}
+            </div>
+            <div className="hub-topbar__right">
+              <div className="language-switcher-wrapper">
+                <EnhancedLanguageSwitcher
+                  currentLocale={locale}
+                  onLanguageChange={handleLanguageChange}
+                  theme={langTheme}
+                  disabled={isLanguageChanging}
+                  variant="hub-inline"
                 />
               </div>
             </div>
@@ -267,8 +374,10 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
         onLanguageChange={handleLanguageChange}
         isLanguageChanging={isLanguageChanging}
         isTenantMenu={isTenantMenu}
+        hubLanding={hubLanding}
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
+        hubSocialLinks={hubLanding ? hubSocialLinks : undefined}
       />
     </header>
   )

@@ -24,6 +24,7 @@ import RealEstateCurrentProjects from '@/blocks/RealEstateCurrentProjects'
 import RealEstateLiveCamera from '@/blocks/RealEstateLiveCamera'
 import RealEstateLookingForJob from '@/blocks/RealEstateLookingForJob'
 import RealEstateContact from '@/blocks/RealEstateContact'
+import { Anchor } from '@/blocks/Anchor'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
@@ -153,6 +154,7 @@ const Pages: CollectionConfig = {
         RealEstateLiveCamera,
         RealEstateLookingForJob,
         RealEstateContact,
+        Anchor,
       ],
       localized: true,
       admin: {

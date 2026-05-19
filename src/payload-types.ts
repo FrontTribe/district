@@ -368,7 +368,22 @@ export interface Page {
             columns?:
               | {
                   title: string;
+                  /**
+                   * Short paragraph shown on the column (revealed on hover on desktop).
+                   */
                   subtitle?: string | null;
+                  /**
+                   * Small uppercase line above the title (e.g. Rooms · Rooftop · Pool).
+                   */
+                  kicker?: string | null;
+                  /**
+                   * Optional label with gold line (e.g. 01 / Hotel). Leave empty to auto-fill as 01, 02, 03.
+                   */
+                  numberLabel?: string | null;
+                  /**
+                   * Optional second part of the title in gold italic (e.g. "." or "Estate."). Main title field stays the first word(s).
+                   */
+                  titleItalic?: string | null;
                   /**
                    * Optional background image for this column
                    */
@@ -503,7 +518,7 @@ export interface Page {
               href?: string | null;
             };
             /**
-             * Add up to 4 rooms: Premium, Deluxe, Suite, Apartment
+             * Add rooms (e.g., Premium, Deluxe, Suite, Apartment)
              */
             rooms?:
               | {
@@ -514,9 +529,9 @@ export interface Page {
                   /**
                    * Sales channels are loading… If this remains a plain input, enter the ID manually or fix the API credentials.
                    */
-                  rentlioSalesChannelId: string;
+                  rentlioSalesChannelId?: string | null;
                   /**
-                   * Select a property first to load unit types. If options do not appear, enter the ID manually.
+                   * Optional. Select a unit type to enable Rentlio bookings for this room. Leave empty if the room is informational only.
                    */
                   rentlioUnitTypeId?: string | null;
                   title: string;
@@ -885,6 +900,15 @@ export interface Page {
             blockName?: string | null;
             blockType: 'real-estate-contact';
           }
+        | {
+            /**
+             * ID used as the scroll target (e.g. "contact" → links to #contact). Use lowercase letters, numbers, and dashes.
+             */
+            anchorId: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'anchor';
+          }
       )[]
     | null;
   meta?: {
@@ -1179,6 +1203,10 @@ export interface Menu {
     | null;
   logo?: (number | null) | Media;
   logoText?: string | null;
+  /**
+   * Center line on the main-domain triptych home (e.g. Osijek · Slavonia · MMXXVI). Shown only when the first page block is three columns.
+   */
+  hubTagline?: string | null;
   /**
    * Choose how the menu should be positioned on the page
    */
@@ -1594,6 +1622,9 @@ export interface PagesSelect<T extends boolean = true> {
                 | {
                     title?: T;
                     subtitle?: T;
+                    kicker?: T;
+                    numberLabel?: T;
+                    titleItalic?: T;
                     backgroundImage?: T;
                     fullHeight?: T;
                     gradient?:
@@ -1971,6 +2002,13 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        anchor?:
+          | T
+          | {
+              anchorId?: T;
+              id?: T;
+              blockName?: T;
+            };
       };
   meta?:
     | T
@@ -2010,6 +2048,7 @@ export interface MenuSelect<T extends boolean = true> {
       };
   logo?: T;
   logoText?: T;
+  hubTagline?: T;
   positioning?: T;
   updatedAt?: T;
   createdAt?: T;

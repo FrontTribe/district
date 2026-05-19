@@ -1,270 +1,342 @@
-.three-columns-section {
+/* District hub — cinematic triptych (landing, three columns) */
+
+.district-hub {
+  --district-gold: #c8a76b;
+  --district-bg: #0a0a08;
+  --district-cream: #f4f1e8;
+  --district-hub-pad: 40px;
+
+  position: relative;
   width: 100%;
+  min-height: 100dvh;
+  min-height: 100vh;
   overflow: hidden;
+  background: var(--district-bg);
+  color: var(--district-cream);
+  font-family: var(--font-hub-sans), 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
-  .three-columns-grid {
-    display: flex;
-    gap: 1rem;
-    padding: 1rem;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; // Firefox
-
-    &::-webkit-scrollbar {
-      display: none; // Chrome, Safari, Edge
-    }
-
-    @media (min-width: 768px) {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2rem;
-      padding: 2rem;
-      overflow-x: visible;
-      scroll-snap-type: none;
-    }
+  &__cols {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
   }
 
-  .three-column {
+  &__col {
     position: relative;
-    background: transparent;
-    transition: all 0.3s ease;
-    cursor: default;
-    flex-shrink: 0;
+    display: block;
+    overflow: hidden;
+    cursor: pointer;
+    border-right: 1px solid rgba(244, 241, 232, 0.1);
+    color: inherit;
+    text-decoration: none;
 
-    // Mobile: horizontal scroll layout
-    @media (max-width: 767px) {
-      width: 85vw; // Each column takes ~85% of viewport width
-      max-width: 400px;
-      scroll-snap-align: center;
-      cursor: pointer;
-      -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
-
-      &:active {
-        transform: scale(0.98);
-      }
-
-      &.active {
-        background: rgba(255, 255, 255, 0.05);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      }
+    &:last-child {
+      border-right: none;
     }
 
-    @media (min-width: 768px) {
-      cursor: pointer;
-      width: auto;
+    &:focus-visible {
+      outline: 2px solid var(--district-gold);
+      outline-offset: -4px;
+      z-index: 2;
     }
+  }
 
-    // Desktop: Hover effects
-    @media (min-width: 768px) {
-      &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-      }
+  &__media {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+
+    &--empty {
+      background: #14120f;
     }
+  }
 
-    .hero-video {
-      width: 100%;
-      height: 200px;
-      overflow: hidden;
-      margin-bottom: 1rem;
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transform: scale(1);
+    filter: brightness(0.7) contrast(1.05) saturate(1.05);
+    transition:
+      filter 0.6s ease,
+      transform 5s ease;
+    will-change: transform;
+  }
 
-      @media (min-width: 768px) {
-        height: 250px;
-      }
+  &__col:hover &__img,
+  &__col:focus-visible &__img {
+    filter: brightness(0.85) contrast(1.05);
+    transform: scale(1.05);
+  }
 
-      @media (min-width: 1024px) {
-        height: 300px;
-      }
+  &__veil {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(10, 10, 8, 0.35) 0%,
+      rgba(10, 10, 8, 0.05) 30%,
+      rgba(10, 10, 8, 0.45) 65%,
+      rgba(10, 10, 8, 0.92) 100%
+    );
+    z-index: 1;
+  }
 
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.6s ease;
-      }
+  &__badge {
+    position: absolute;
+    top: clamp(88px, 11vh, 120px);
+    right: var(--district-hub-pad);
+    z-index: 5;
+    font-family: var(--font-hub-mono), 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border: 1px solid var(--district-gold);
+    color: var(--district-gold);
+    border-radius: 999px;
+  }
+
+  &__num {
+    position: absolute;
+    top: clamp(88px, 11vh, 120px);
+    left: var(--district-hub-pad);
+    z-index: 5;
+    font-family: var(--font-hub-mono), 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--district-gold);
+
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 28px;
+      height: 1px;
+      background: var(--district-gold);
+      vertical-align: middle;
+      margin-right: 12px;
     }
+  }
 
-    &:hover .hero-video img,
-    &.active .hero-video img {
-      transform: scale(1.05);
-    }
+  &__content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    /* District Landing `styles-final.css` → `.col .content` */
+    padding: 0 var(--district-hub-pad) 64px;
+    z-index: 5;
+  }
 
-    .hero-title {
-      font-size: 1.5rem;
-      margin-top: 1rem;
-      margin-bottom: 0.5rem;
-      line-height: 1.3;
+  &__pass-through {
+    display: block;
+  }
 
-      @media (min-width: 1024px) {
-        font-size: 2rem;
-      }
-    }
-
-    .hero-subtitle {
-      font-size: 0.95rem;
-      line-height: 1.6;
-      margin-bottom: 1rem;
-      opacity: 0.85;
-
-      @media (min-width: 768px) {
-        font-size: 1rem;
-      }
-    }
-
-    .social-links {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin: 1rem 0;
-      flex-wrap: wrap;
-
-      .social-text {
-        font-size: 0.875rem;
-        text-transform: lowercase;
-        opacity: 0.8;
-        transition: opacity 0.3s ease;
-
-        &:hover {
-          opacity: 1;
-        }
-      }
-
-      .social-divider {
-        width: 1px;
-        height: 14px;
-        background: currentColor;
-        opacity: 0.4;
-      }
-    }
-
-    .see-more-container {
-      margin-top: 1.5rem;
-
-      .see-more-link {
-        display: inline-block;
-        font-size: 0.95rem;
-        font-weight: 500;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        padding: 0.5rem 0;
-
-        @media (min-width: 768px) {
-          font-size: 1rem;
-        }
-
-        &:hover {
-          transform: translateX(4px);
-        }
-      }
-    }
-
-    .hover-line {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: currentColor;
-      transform-origin: left;
-      transform: scaleX(0);
-
-      @media (max-width: 767px) {
-        bottom: -2px;
-      }
-    }
-
-    // Coming Soon state
-    &.coming-soon {
-      opacity: 0.4;
-      cursor: not-allowed !important;
+  &__col--linked {
+    .district-hub__num,
+    .district-hub__badge,
+    .district-hub__pass-through {
       pointer-events: none;
-      position: relative;
+    }
+  }
 
-      &::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.3);
-        pointer-events: none;
-        border-radius: 8px;
-        z-index: 1;
-      }
+  &__col-surface {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    text-decoration: none;
+    cursor: pointer;
 
-      .hero-video img,
-      &:hover .hero-video img,
-      &.active .hero-video img {
-        transform: none !important;
-      }
+    &:focus-visible {
+      outline: 2px solid var(--district-gold);
+      outline-offset: -4px;
+    }
+  }
 
-      .coming-soon-badge {
-        display: inline-block;
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-        padding: 0.25rem 0.75rem;
-        background: rgba(255, 255, 255, 0.15);
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: rgba(255, 255, 255, 0.9);
-        position: relative;
-        z-index: 2;
-      }
+  &__socials {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 6px;
+    margin-top: 26px;
+    position: relative;
+    z-index: 6;
+    font-family: var(--font-hub-mono), 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(244, 241, 232, 0.55);
+  }
 
-      &:hover,
-      &.active {
-        transform: none !important;
-        box-shadow: none !important;
-        background: transparent !important;
-      }
+  &__socials-dot {
+    color: rgba(244, 241, 232, 0.35);
+    user-select: none;
+  }
+
+  &__socials-link {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: rgba(244, 241, 232, 0.92);
+    }
+  }
+
+  &__kicker {
+    font-family: var(--font-hub-mono), 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(244, 241, 232, 0.75);
+    margin-bottom: 16px;
+  }
+
+  &__name {
+    font-family: var(--font-hub-display), 'Fraunces', Georgia, serif;
+    font-weight: 300;
+    font-size: clamp(40px, 5.5vw, 88px);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    margin: 0 0 18px;
+    font-variation-settings: 'opsz' 144;
+
+    em {
+      font-family: var(--font-hub-accent), 'Instrument Serif', Georgia, serif;
+      font-style: italic;
+      color: var(--district-gold);
+      font-weight: 400;
+    }
+  }
+
+  &__desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(244, 241, 232, 0.78);
+    max-width: 34ch;
+    margin: 0 0 26px;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition:
+      max-height 0.6s ease,
+      opacity 0.4s 0.1s,
+      margin 0.4s ease;
+  }
+
+  &__col:hover &__desc,
+  &__col:focus-visible &__desc {
+    max-height: 160px;
+    opacity: 1;
+  }
+
+  &__cta {
+    font-family: var(--font-hub-mono), 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    border: 1px solid rgba(244, 241, 232, 0.35);
+    border-radius: 999px;
+    color: var(--district-cream);
+    transition:
+      background 0.3s ease,
+      color 0.3s ease,
+      border-color 0.3s ease;
+  }
+
+  &__cta-arr {
+    display: inline-block;
+    transition: transform 0.4s ease;
+  }
+
+  &__col:hover &__cta,
+  &__col:focus-visible &__cta {
+    background: var(--district-gold);
+    color: var(--district-bg);
+    border-color: var(--district-gold);
+  }
+
+  &__col:hover &__cta-arr,
+  &__col:focus-visible &__cta-arr {
+    transform: translateX(4px);
+  }
+
+  &__col--soon {
+    cursor: default;
+
+    .district-hub__cta {
+      border-style: dashed;
+      opacity: 0.85;
+    }
+
+    &:hover .district-hub__cta,
+    &:focus-visible .district-hub__cta {
+      background: transparent;
+      color: var(--district-gold);
+      border-color: var(--district-gold);
+    }
+
+    &:hover .district-hub__img,
+    &:focus-visible .district-hub__img {
+      transform: scale(1);
+      filter: brightness(0.7) contrast(1.05) saturate(1.05);
+    }
+
+    &:hover .district-hub__cta-arr,
+    &:focus-visible .district-hub__cta-arr {
+      transform: none;
     }
   }
 }
 
-// Mobile-specific improvements
-@media (max-width: 767px) {
-  .three-columns-section {
-    .hero-text-overlay {
-      padding: 0;
+@media (max-width: 900px) {
+  .district-hub {
+    --district-hub-pad: 24px;
+
+    min-height: auto;
+    overflow: visible;
+
+    &__cols {
+      position: static;
+      grid-template-columns: 1fr;
     }
 
-    .three-columns-grid {
-      gap: 1rem;
-      padding: 1rem;
-      // Add padding to create nice edges for scroll
-      padding-left: max(1rem, calc((100vw - 85vw) / 2));
-      padding-right: max(1rem, calc((100vw - 85vw) / 2));
+    &__col {
+      min-height: 75vh;
+      border-right: none;
+      border-bottom: 1px solid rgba(244, 241, 232, 0.1);
     }
 
-    .three-column {
-      padding: 0 !important;
-
-      // Better touch targets on mobile
-      min-height: 60px;
-
-      // Smooth transitions for mobile interactions
-      transition: all 0.2s ease-out;
-
-      .hero-title {
-        font-size: 36px !important;
-      }
+    &__num {
+      top: 90px;
+      left: var(--district-hub-pad);
     }
-  }
-}
 
-// Tablet adjustments
-@media (min-width: 768px) and (max-width: 1023px) {
-  .three-columns-section {
-    .three-column {
-      .hero-video {
-        height: 220px;
-      }
+    &__badge {
+      top: 90px;
+      right: var(--district-hub-pad);
+    }
+
+    &__content {
+      /* District Landing → `.col .content` @media (max-width: 900px) */
+      padding: 0 var(--district-hub-pad) 80px;
+    }
+
+    &__desc {
+      max-height: 200px;
+      opacity: 1;
+      margin-bottom: 24px;
     }
   }
 }

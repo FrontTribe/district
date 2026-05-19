@@ -12,6 +12,21 @@ const translations: Translations = {
     en: 'Coming Soon',
     de: 'Demnächst',
   },
+  districtHubSection: {
+    hr: 'Brendovi grupe District',
+    en: 'District brands',
+    de: 'District Marken',
+  },
+  visitSite: {
+    hr: 'Posjeti',
+    en: 'Visit',
+    de: 'Besuchen',
+  },
+  hubColumnSocials: {
+    hr: 'Društvene mreže za ovaj stupac',
+    en: 'Social links for this column',
+    de: 'Social-Media-Links für diese Spalte',
+  },
   reservationSuccess: {
     hr: 'Rezervacija uspješna!',
     en: 'Reservation Successful!',

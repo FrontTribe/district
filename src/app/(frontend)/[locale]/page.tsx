@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 
 import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
+import { HubBottombar } from '@/components/HubBottombar'
 import { MainPageLoader } from '@/components/MainPageLoader'
 import { Page, Tenant } from '@/payload-types'
 import '../styles.scss'
@@ -14,6 +15,7 @@ import PageClient from '@/components/PageClient'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
 import { getCachedPagesByTenant } from '@/utils/getCachedPages'
 import { generateMetadataFromPages } from '@/utils/generateMetadata'
+import { buildHubSocialLinks } from '@/utils/hubSocialLinks'
 
 /**
  * Generate static params for all supported locales.
@@ -98,6 +100,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const tenantId = currentTenant?.id ? String(currentTenant.id) : null
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
 
+  const firstBlockType = pages[0]?.layout?.[0]?.blockType
+  const isHubTriptychHome = !currentTenant && firstBlockType === 'three-columns'
+  const hubMenuCount = menuGlobal?.menuItems?.length ?? 0
+  const mainContentClassName = isHubTriptychHome
+    ? 'content w-full'
+    : 'content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
+
+  const hubSocialLinks = isHubTriptychHome ? buildHubSocialLinks(footerGlobal) : undefined
+
   return (
     <MainPageLoader isMainDomain={!currentTenant}>
       <RefreshRouteOnSave />
@@ -136,9 +147,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         positioning={menuGlobal?.positioning || 'fixed'}
         locale={locale}
         menuId={menuGlobal?.identifier || 'main-menu'}
-        hideHamburger={!currentTenant}
+        hubLanding={isHubTriptychHome}
+        hideHamburger={!currentTenant && (!isHubTriptychHome || hubMenuCount === 0)}
+        hubTagline={menuGlobal?.hubTagline}
+        hubSocialLinks={hubSocialLinks}
       />
-      <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className={mainContentClassName}>
         {/* Render blocks from pages */}
         {pages.length > 0 ? (
           pages.map((page) => (
@@ -159,14 +173,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         )}
       </div>
 
-      {/* Footer */}
-      {footerGlobal && (
+      {/* Footer — full CMS footer except on hub triptych (uses HubBottombar like District Landing) */}
+      {footerGlobal && !isHubTriptychHome && (
         <Footer
           leftContent={footerGlobal.leftContent}
           rightContent={footerGlobal.rightContent}
           bottomContent={footerGlobal.bottomContent}
         />
       )}
+      {footerGlobal && isHubTriptychHome && <HubBottombar footer={footerGlobal} />}
     </MainPageLoader>
   )
 }
