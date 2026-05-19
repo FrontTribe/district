@@ -110,6 +110,14 @@ jobs:
             APP_NAME="${{ steps.target.outputs.app }}"
             APP_PORT="${{ steps.target.outputs.port }}"
 
+            # Dev: apply Payload DB migrations on each deploy so schema matches code (e.g. new block tables).
+            # Prod: keep off so migrations stay an explicit ops step if you prefer controlled DB changes.
+            if [ "$APP_NAME" = "district-dev" ]; then
+              RUN_MIGRATIONS_ON_BOOT="true"
+            else
+              RUN_MIGRATIONS_ON_BOOT="false"
+            fi
+
             # Stop old process before touching files to avoid serving half-deleted builds
             pm2 delete "$APP_NAME" > /dev/null 2>&1 || true
 
@@ -145,7 +153,7 @@ jobs:
 
             # Standalone builds must be started with Node against the generated entrypoint
             test -f "$DEPLOY_PATH/server.js"
-            PORT="$APP_PORT" NODE_ENV=production PAYLOAD_DB_PUSH=false PAYLOAD_RUN_MIGRATIONS_ON_BOOT=false pm2 start \
+            PORT="$APP_PORT" NODE_ENV=production PAYLOAD_DB_PUSH=false PAYLOAD_RUN_MIGRATIONS_ON_BOOT="$RUN_MIGRATIONS_ON_BOOT" pm2 start \
               "$DEPLOY_PATH/server.js" \
               --name "$APP_NAME" \
               --cwd  "$DEPLOY_PATH" \
