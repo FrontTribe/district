@@ -23,6 +23,7 @@ import { RealEstateCurrentProjectsBlock } from '@/blocks/RealEstateCurrentProjec
 import { RealEstateLiveCameraBlock } from '@/blocks/RealEstateLiveCamera'
 import { RealEstateLookingForJobBlock } from '@/blocks/RealEstateLookingForJob'
 import { RealEstateContactBlock } from '@/blocks/RealEstateContact'
+import { AnchorBlock } from '@/blocks/Anchor'
 
 const blockComponents = {
   section: SectionBlock,
@@ -48,6 +49,7 @@ const blockComponents = {
   'real-estate-live-camera': RealEstateLiveCameraBlock,
   'real-estate-looking-for-job': RealEstateLookingForJobBlock,
   'real-estate-contact': RealEstateContactBlock,
+  anchor: AnchorBlock,
 }
 
 type _Block = NonNullable<Page['layout']>[number]
