@@ -110,7 +110,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const hubSocialLinks = isHubTriptychHome ? buildHubSocialLinks(footerGlobal) : undefined
 
   return (
-    <MainPageLoader isMainDomain={!currentTenant}>
+    <MainPageLoader isMainDomain={!currentTenant} hubTriptychIntro={isHubTriptychHome}>
       <RefreshRouteOnSave />
 
       {/* Menu Wrapper */}
