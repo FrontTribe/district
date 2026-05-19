@@ -13,6 +13,7 @@ import { localeLang } from '@/utils/locale'
 import { notFound } from 'next/navigation'
 import PageClient from '@/components/PageClient'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
+import { getTenantVisualTheme } from '@/utils/tenantVisualTheme'
 import { getCachedPagesByTenant } from '@/utils/getCachedPages'
 import { generateMetadataFromPages } from '@/utils/generateMetadata'
 import { buildHubSocialLinks } from '@/utils/hubSocialLinks'
@@ -99,22 +100,32 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   // Fetch menu and footer for the current tenant
   const tenantId = currentTenant?.id ? String(currentTenant.id) : null
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
+  const tenantVisualTheme = getTenantVisualTheme(subdomain)
 
   const firstBlockType = pages[0]?.layout?.[0]?.blockType
   const isHubTriptychHome = !currentTenant && firstBlockType === 'three-columns'
   const hubMenuCount = menuGlobal?.menuItems?.length ?? 0
+  const isBoutiqueTenantHome = Boolean(currentTenant && tenantVisualTheme === 'boutique')
   const mainContentClassName = isHubTriptychHome
     ? 'content w-full'
-    : 'content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
+    : isBoutiqueTenantHome
+      ? 'content w-full'
+      : 'content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
 
   const hubSocialLinks = isHubTriptychHome ? buildHubSocialLinks(footerGlobal) : undefined
 
-  return (
-    <MainPageLoader isMainDomain={!currentTenant} hubTriptychIntro={isHubTriptychHome}>
+  const homeInner = (
+    <>
       <RefreshRouteOnSave />
 
       {/* Menu Wrapper */}
       <MenuWrapper
+        tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
+        brandSubtitle={
+          currentTenant && tenantVisualTheme === 'boutique'
+            ? 'Boutique · Osijek'
+            : undefined
+        }
         menuItems={
           menuGlobal?.menuItems?.map((item) => ({
             label: item.label,
@@ -146,7 +157,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         logoText={menuGlobal?.logoText || undefined}
         positioning={menuGlobal?.positioning || 'fixed'}
         locale={locale}
-        menuId={menuGlobal?.identifier || 'main-menu'}
+        menuId={menuGlobal?.identifier || (currentTenant ? 'tenant-menu' : 'main-menu')}
         hubLanding={isHubTriptychHome}
         hideHamburger={!currentTenant && (!isHubTriptychHome || hubMenuCount === 0)}
         hubTagline={menuGlobal?.hubTagline}
@@ -157,7 +168,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         {pages.length > 0 ? (
           pages.map((page) => (
             <div key={page.id}>
-              <PageClient page={page} locale={locale} />
+              <PageClient
+                page={page}
+                locale={locale}
+                tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
+              />
             </div>
           ))
         ) : currentTenant ? (
@@ -176,12 +191,23 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       {/* Footer — full CMS footer except on hub triptych (uses HubBottombar like District Landing) */}
       {footerGlobal && !isHubTriptychHome && (
         <Footer
+          variant={tenantVisualTheme === 'boutique' ? 'boutique' : 'default'}
           leftContent={footerGlobal.leftContent}
           rightContent={footerGlobal.rightContent}
           bottomContent={footerGlobal.bottomContent}
         />
       )}
       {footerGlobal && isHubTriptychHome && <HubBottombar footer={footerGlobal} />}
+    </>
+  )
+
+  return (
+    <MainPageLoader isMainDomain={!currentTenant} hubTriptychIntro={isHubTriptychHome}>
+      {isBoutiqueTenantHome ? (
+        <div className="boutique-tenant-root">{homeInner}</div>
+      ) : (
+        homeInner
+      )}
     </MainPageLoader>
   )
 }

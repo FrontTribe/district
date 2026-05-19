@@ -27,6 +27,7 @@ import { ImageGrid } from '@/blocks/ImageGrid'
 import { ImageGridBlock } from '@/blocks/ImageGrid'
 import { FloorPlan, FloorPlanBlock } from '@/blocks/FloorPlan'
 import { Anchor, AnchorBlock } from '@/blocks/Anchor'
+import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
 
 const Section: Block = {
   slug: 'section',
@@ -217,6 +218,8 @@ export const SectionBlock: React.FC<{
   }
   blocks?: Page['layout']
   sectionId?: string
+  locale?: string
+  tenantVisualTheme?: TenantVisualTheme
 }> = ({
   isFullHeight = false,
   container = 'container',
@@ -225,6 +228,8 @@ export const SectionBlock: React.FC<{
   padding = { top: 40, right: 20, bottom: 40, left: 20 },
   blocks,
   sectionId,
+  locale,
+  tenantVisualTheme = 'default',
 }) => {
   const sectionStyle: React.CSSProperties = {
     paddingTop: `${padding.top}px`,
@@ -323,16 +328,24 @@ export const SectionBlock: React.FC<{
     <section id={sectionId} className={sectionClasses.join(' ')} style={sectionStyle}>
       {renderBackgroundMedia()}
       <div className={contentClassName} style={{ position: 'relative', zIndex: 10 }}>
-        {blocks && blocks.length > 0 && <SectionBlockRenderer blocks={blocks} />}
+        {blocks && blocks.length > 0 && (
+          <SectionBlockRenderer
+            blocks={blocks}
+            locale={locale}
+            tenantVisualTheme={tenantVisualTheme}
+          />
+        )}
       </div>
     </section>
   )
 }
 
 // Local block renderer to avoid circular dependency
-const SectionBlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null }> = ({
-  blocks,
-}) => {
+const SectionBlockRenderer: React.FC<{
+  blocks: Page['layout'] | undefined | null
+  locale?: string
+  tenantVisualTheme?: TenantVisualTheme
+}> = ({ blocks, locale, tenantVisualTheme = 'default' }) => {
   if (!blocks || blocks.length === 0) {
     return null
   }
@@ -361,9 +374,16 @@ const SectionBlockRenderer: React.FC<{ blocks: Page['layout'] | undefined | null
 
         if (blockType && blockType in blockComponents) {
           const BlockComponent = blockComponents[blockType as keyof typeof blockComponents]
+          const AnyBlock = BlockComponent as React.ComponentType<Record<string, unknown>>
           const key = block.id ? `${block.id}-${index}` : index
-          // @ts-expect-error - Block component props are dynamically typed based on block type
-          return <BlockComponent key={key} {...block} />
+          return (
+            <AnyBlock
+              key={key}
+              {...(block as Record<string, unknown>)}
+              locale={locale}
+              tenantVisualTheme={tenantVisualTheme}
+            />
+          )
         }
 
         return (

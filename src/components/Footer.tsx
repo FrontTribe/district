@@ -41,6 +41,7 @@ interface FooterBottomContent {
 }
 
 interface FooterProps {
+  variant?: 'default' | 'boutique'
   // New structure
   leftContent?: FooterLeftContent
   rightContent?: FooterRightContent
@@ -64,6 +65,7 @@ interface SocialLink {
 }
 
 export const Footer: React.FC<FooterProps> = ({
+  variant = 'default',
   leftContent,
   rightContent,
   bottomContent,
@@ -75,7 +77,7 @@ export const Footer: React.FC<FooterProps> = ({
 
   if (hasNewStructure) {
     return (
-      <footer className="footer">
+      <footer className={variant === 'boutique' ? 'footer footer--boutique' : 'footer'}>
         <div className="footer__container">
           {/* Main Content */}
           <div className="footer__main">

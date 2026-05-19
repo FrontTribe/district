@@ -9,7 +9,7 @@ interface EnhancedLanguageSwitcherProps {
   theme?: 'transparent' | 'dark' | 'light' | 'hub'
   disabled?: boolean
   /** `hub-inline` matches District landing topbar (HR · EN · DE). */
-  variant?: 'dropdown' | 'hub-inline'
+  variant?: 'dropdown' | 'hub-inline' | 'boutique-inline'
 }
 
 export default function EnhancedLanguageSwitcher({
@@ -25,7 +25,7 @@ export default function EnhancedLanguageSwitcher({
   const currentLanguage = localeLang.find((lang) => lang.code === currentLocale)
 
   useEffect(() => {
-    if (variant === 'hub-inline') return
+    if (variant === 'hub-inline' || variant === 'boutique-inline') return
 
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -52,7 +52,7 @@ export default function EnhancedLanguageSwitcher({
 
   return (
     <div
-      className={`enhanced-language-switcher theme-${theme} ${disabled ? 'disabled' : ''} ${variant === 'hub-inline' ? 'enhanced-language-switcher--hub-inline' : ''}`}
+      className={`enhanced-language-switcher theme-${theme} ${disabled ? 'disabled' : ''} ${variant === 'hub-inline' ? 'enhanced-language-switcher--hub-inline' : ''} ${variant === 'boutique-inline' ? 'enhanced-language-switcher--boutique-inline' : ''}`}
       ref={dropdownRef}
     >
       {variant === 'hub-inline' ? (
@@ -67,6 +67,27 @@ export default function EnhancedLanguageSwitcher({
               <button
                 type="button"
                 className={`hub-lang__btn${lang.code === currentLocale ? ' hub-lang__btn--active' : ''}`}
+                aria-pressed={lang.code === currentLocale}
+                onClick={() => handleLanguageSelect(lang.code)}
+                disabled={disabled}
+              >
+                {lang.label}
+              </button>
+            </React.Fragment>
+          ))}
+        </div>
+      ) : variant === 'boutique-inline' ? (
+        <div className="boutique-lang" role="group" aria-label="Language">
+          {localeLang.map((lang, index) => (
+            <React.Fragment key={lang.code}>
+              {index > 0 ? (
+                <span className="boutique-lang__dot" aria-hidden>
+                  ·
+                </span>
+              ) : null}
+              <button
+                type="button"
+                className={`boutique-lang__btn${lang.code === currentLocale ? ' boutique-lang__btn--active' : ''}`}
                 aria-pressed={lang.code === currentLocale}
                 onClick={() => handleLanguageSelect(lang.code)}
                 disabled={disabled}

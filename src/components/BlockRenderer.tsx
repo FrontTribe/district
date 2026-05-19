@@ -24,6 +24,7 @@ import { RealEstateLiveCameraBlock } from '@/blocks/RealEstateLiveCamera'
 import { RealEstateLookingForJobBlock } from '@/blocks/RealEstateLookingForJob'
 import { RealEstateContactBlock } from '@/blocks/RealEstateContact'
 import { AnchorBlock } from '@/blocks/Anchor'
+import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
 
 const blockComponents = {
   section: SectionBlock,
@@ -54,7 +55,12 @@ const blockComponents = {
 
 type _Block = NonNullable<Page['layout']>[number]
 
-function renderSingleBlock(block: _Block, index: number, locale: string) {
+function renderSingleBlock(
+  block: _Block,
+  index: number,
+  locale: string,
+  tenantVisualTheme: TenantVisualTheme,
+) {
   const { blockType } = block
 
   if (blockType && blockType in blockComponents) {
@@ -62,7 +68,7 @@ function renderSingleBlock(block: _Block, index: number, locale: string) {
     const key = block.id ? `${block.id}-${index}` : index
     return (
       // @ts-expect-error - Block component props are dynamically typed based on block type
-      <BlockComponent key={key} {...block} locale={locale} />
+      <BlockComponent key={key} {...block} locale={locale} tenantVisualTheme={tenantVisualTheme} />
     )
   }
 
@@ -78,22 +84,32 @@ const proseBlockWrapperClass = 'prose mx-auto max-w-4xl px-4 py-6 lg:px-8 lg:py-
 export const BlockRenderer: React.FC<{
   blocks: Page['layout'] | undefined | null
   locale?: string
-}> = ({ blocks, locale = 'en' }) => {
+  tenantVisualTheme?: TenantVisualTheme
+}> = ({ blocks, locale = 'en', tenantVisualTheme = 'default' }) => {
   if (!blocks || blocks.length === 0) {
     return null
   }
+
+  const outerClassName =
+    tenantVisualTheme === 'boutique' ? 'boutique-page-blocks' : proseBlockWrapperClass
 
   const [first, ...rest] = blocks
   if (first?.blockType === 'three-columns') {
     return (
       <>
-        {renderSingleBlock(first, 0, locale)}
+        {renderSingleBlock(first, 0, locale, tenantVisualTheme)}
         {rest.length > 0 ? (
-          <div className={proseBlockWrapperClass}>{rest.map((b, i) => renderSingleBlock(b, i + 1, locale))}</div>
+          <div className={outerClassName}>
+            {rest.map((b, i) => renderSingleBlock(b, i + 1, locale, tenantVisualTheme))}
+          </div>
         ) : null}
       </>
     )
   }
 
-  return <div className={proseBlockWrapperClass}>{blocks.map((block, index) => renderSingleBlock(block, index, locale))}</div>
+  return (
+    <div className={outerClassName}>
+      {blocks.map((block, index) => renderSingleBlock(block, index, locale, tenantVisualTheme))}
+    </div>
+  )
 }

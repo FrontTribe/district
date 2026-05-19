@@ -72,6 +72,31 @@ const translations: Translations = {
     en: 'Scroll to explore',
     de: 'Scrollen um zu erkunden',
   },
+  boutiqueReserve: {
+    hr: 'Rezerviraj',
+    en: 'Reserve',
+    de: 'Reservieren',
+  },
+  boutiqueDiscoverRooms: {
+    hr: 'Otkrijte sobe',
+    en: 'Discover rooms',
+    de: 'Zimmer entdecken',
+  },
+  boutiqueHeroMeta1: {
+    hr: '45.5550° N · 18.6955° E',
+    en: '45.5550° N · 18.6955° E',
+    de: '45.5550° N · 18.6955° E',
+  },
+  boutiqueHeroMeta2: {
+    hr: 'Osijek · Slavonija · HR',
+    en: 'Osijek · Slavonia · HR',
+    de: 'Osijek · Slawonien · HR',
+  },
+  boutiqueHeroMeta3: {
+    hr: 'Nekoliko minuta od Opus Arene',
+    en: 'Minutes from Opus Arena',
+    de: 'Wenige Minuten von der Opus Arena',
+  },
   address: {
     hr: 'Adresa',
     en: 'Address',

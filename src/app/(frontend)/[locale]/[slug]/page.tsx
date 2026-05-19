@@ -6,6 +6,7 @@ import type { Tenant } from '@/payload-types'
 import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
+import { getTenantVisualTheme } from '@/utils/tenantVisualTheme'
 import { getCachedPageBySlug } from '@/utils/getCachedPages'
 import { localeLang } from '@/utils/locale'
 import { generateMetadataFromPage } from '@/utils/generateMetadata'
@@ -67,17 +68,23 @@ export default async function Page({ params }: PageProps) {
   // Fetch menu and footer for the current tenant
   const tenantId = currentTenant?.id ? String(currentTenant.id) : null
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
+  const tenantVisualTheme = getTenantVisualTheme(subdomain)
+  const isBoutiqueTenantPage = Boolean(currentTenant && tenantVisualTheme === 'boutique')
 
   const layout = page.layout ?? []
   const isRealEstatePage =
     layout.length > 0 &&
     layout.every((b: { blockType?: string }) => b.blockType?.startsWith('real-estate-'))
 
-  return (
+  const pageBody = (
     <>
       {/* Menu Wrapper - only show for tenant pages */}
       {currentTenant && (
         <MenuWrapper
+          tenantVisualTheme={tenantVisualTheme}
+          brandSubtitle={
+            tenantVisualTheme === 'boutique' ? 'Boutique · Osijek' : undefined
+          }
           menuItems={
             menuGlobal?.menuItems?.map((item) => ({
               label: item.label,
@@ -115,22 +122,43 @@ export default async function Page({ params }: PageProps) {
 
       {isRealEstatePage ? (
         <main className="real-estate-preview">
-          <PageClient page={page} locale={locale} />
+          <PageClient
+            page={page}
+            locale={locale}
+            tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
+          />
         </main>
       ) : (
-        <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <PageClient page={page} locale={locale} />
+        <div
+          className={
+            isBoutiqueTenantPage
+              ? 'content w-full'
+              : 'content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
+          }
+        >
+          <PageClient
+            page={page}
+            locale={locale}
+            tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
+          />
         </div>
       )}
 
       {/* Footer - only show for tenant pages */}
       {currentTenant && footerGlobal && (
         <Footer
+          variant={tenantVisualTheme === 'boutique' ? 'boutique' : 'default'}
           leftContent={footerGlobal.leftContent}
           rightContent={footerGlobal.rightContent}
           bottomContent={footerGlobal.bottomContent}
         />
       )}
     </>
+  )
+
+  return isBoutiqueTenantPage ? (
+    <div className="boutique-tenant-root">{pageBody}</div>
+  ) : (
+    pageBody
   )
 }
