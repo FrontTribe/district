@@ -37,6 +37,16 @@ export const RentlioSalesChannelField: React.FC<RentlioSalesChannelFieldProps> =
     !Object.keys(salesChannelsByProperty).length && !salesChannelsCache.data,
   )
 
+  // Persist the default Sales Channel to form state when missing, so existing
+  // rooms (saved before this field existed) get a valid value on first render.
+  useEffect(() => {
+    if (value === undefined || value === null || value === '') {
+      setValue('45')
+    }
+    // Only run on mount; subsequent edits should preserve user input.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const loadSalesChannels = async (): Promise<Record<string, Option[]>> => {
     if (salesChannelsCache.promise) return salesChannelsCache.promise
     salesChannelsCache.promise = (async () => {

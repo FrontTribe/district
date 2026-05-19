@@ -1,4 +1,5 @@
 import { CollectionConfig } from 'payload'
+import { revalidateTenantDeleteHook, revalidateTenantHook } from '@/utils/revalidate'
 
 const Tenants: CollectionConfig = {
   slug: 'tenants',
@@ -36,6 +37,10 @@ const Tenants: CollectionConfig = {
     create: ({ req: { user } }) => user?.role === 'superadmin',
     update: ({ req: { user } }) => user?.role === 'superadmin',
     delete: ({ req: { user } }) => user?.role === 'superadmin',
+  },
+  hooks: {
+    afterChange: [revalidateTenantHook],
+    afterDelete: [revalidateTenantDeleteHook],
   },
   fields: [
     {

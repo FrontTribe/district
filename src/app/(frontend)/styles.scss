@@ -296,6 +296,227 @@ div {
   }
 }
 
+// Hub landing header — District Landing `.topbar` (triptych overlay)
+.header--hub-landing {
+  --hub-gold: #c8a76b;
+  --hub-cream: #f4f1e8;
+
+  background: transparent;
+  border-bottom: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  transition:
+    background 0.35s ease,
+    backdrop-filter 0.35s ease;
+
+  &.header--hub-landing--scrolled {
+    background: rgba(10, 10, 8, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: none;
+  }
+
+  .header-content--hub-landing {
+    margin: 0;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: clamp(1rem, 3vw, 2rem);
+    padding: 28px clamp(24px, 4vw, 40px);
+    pointer-events: none;
+  }
+
+  .hub-topbar__left,
+  .hub-topbar__center,
+  .hub-topbar__right {
+    pointer-events: auto;
+  }
+
+  .hub-topbar__left {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  .hub-topbar__center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(1rem, 3vw, 2.25rem);
+    min-width: 0;
+    flex-wrap: wrap;
+    text-align: center;
+  }
+
+  .hub-topbar__place {
+    margin: 0;
+    font-family: var(--font-hub-mono), 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: rgba(244, 241, 232, 0.85);
+  }
+
+  .hub-topbar__nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(0.65rem, 2vw, 1.25rem);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .hub-topbar__link {
+    font-family: var(--font-hub-mono), 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(244, 241, 232, 0.62);
+    text-decoration: none;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid transparent;
+    transition:
+      color 0.25s ease,
+      border-color 0.25s ease;
+
+    &:hover {
+      color: var(--hub-cream);
+    }
+
+    &.is-active {
+      color: var(--hub-gold);
+      border-bottom-color: rgba(200, 167, 107, 0.55);
+    }
+  }
+
+  .hub-topbar__right {
+    flex: 0 0 auto;
+  }
+
+  .hub-topbar__logo {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .logo {
+    line-height: 1;
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    img {
+      display: block;
+      max-height: 40px;
+      width: auto;
+    }
+  }
+
+  .hub-logo-wordmark {
+    font-family: var(--font-hub-display), 'Fraunces', Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.5rem, 2.5vw, 1.875rem);
+    letter-spacing: -0.04em;
+    font-variation-settings: 'opsz' 144;
+    color: var(--hub-cream);
+    margin: 0;
+    text-transform: lowercase;
+
+    &__accent {
+      font-family: var(--font-hub-accent), 'Instrument Serif', Georgia, serif;
+      font-style: italic;
+      color: var(--hub-gold);
+      font-weight: 400;
+    }
+  }
+
+  .enhanced-language-switcher--hub-inline {
+    .language-trigger,
+    .language-dropdown {
+      display: none !important;
+    }
+  }
+
+  .hub-lang {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 4px;
+    font-family: var(--font-hub-mono), 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+  }
+
+  .hub-lang__dot {
+    color: rgba(244, 241, 232, 0.4);
+    user-select: none;
+  }
+
+  .hub-lang__btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: rgba(244, 241, 232, 0.4);
+    font: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+
+    &:hover:not(:disabled) {
+      color: rgba(244, 241, 232, 0.85);
+    }
+
+    &--active {
+      color: var(--hub-gold);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+  }
+
+  .mobile-hamburger {
+    background: rgba(10, 10, 8, 0.45);
+    border: 1px solid rgba(200, 167, 107, 0.35);
+
+    &:hover {
+      background: rgba(10, 10, 8, 0.65);
+      border-color: rgba(200, 167, 107, 0.55);
+    }
+
+    .hamburger-line {
+      background: var(--hub-cream);
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .header--hub-landing {
+    .hub-topbar__place {
+      display: none;
+    }
+
+    .hub-topbar__nav {
+      display: none;
+    }
+
+    .header-content--hub-landing {
+      padding: 20px 24px;
+    }
+  }
+}
+
 // Mobile Menu Styles
 .mobile-hamburger {
   display: none;
@@ -383,14 +604,24 @@ div {
   @media (min-width: 769px) {
     display: none !important;
   }
+
+  &--hub {
+    background: rgba(10, 10, 8, 0.97);
+    border-left: 1px solid rgba(200, 167, 107, 0.25);
+    box-shadow: -24px 0 64px rgba(0, 0, 0, 0.45);
+  }
 }
 
 .mobile-menu-header {
   padding: 3rem 1.5rem 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+
+  &__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
 
   .mobile-menu-header-left {
     .mobile-menu-logo {
@@ -411,6 +642,32 @@ div {
         height: 32px;
         width: auto;
       }
+
+      &.mobile-menu-logo--hub {
+        .hub-logo-wordmark {
+          font-family: var(--font-hub-display), 'Fraunces', Georgia, serif;
+          font-weight: 400;
+          font-size: clamp(1.5rem, 5vw, 1.875rem);
+          letter-spacing: -0.04em;
+          color: #f4f1e8;
+          font-variation-settings: 'opsz' 144;
+          margin: 0;
+          text-transform: lowercase;
+
+          .hub-logo-wordmark__accent {
+            font-family: var(--font-hub-accent), 'Instrument Serif', Georgia, serif;
+            font-style: italic;
+            color: #c8a76b;
+            font-weight: 400;
+          }
+        }
+
+        img {
+          max-height: 36px;
+          height: auto;
+          width: auto;
+        }
+      }
     }
   }
 
@@ -420,6 +677,44 @@ div {
         padding: 0.5rem 0.75rem;
         font-size: 0.8rem;
       }
+    }
+  }
+
+  &--hub {
+    .mobile-menu-header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.85rem;
+    }
+  }
+}
+
+.mobile-menu-hub-socials {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  column-gap: 10px;
+  row-gap: 4px;
+  font-family: var(--font-hub-mono), 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(244, 241, 232, 0.55);
+
+  &__dot {
+    color: rgba(244, 241, 232, 0.35);
+    user-select: none;
+  }
+
+  &__link {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: rgba(244, 241, 232, 0.9);
     }
   }
 }
@@ -715,6 +1010,47 @@ div {
         &.active {
           background: rgba(0, 0, 0, 0.1);
           border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+      }
+    }
+  }
+
+  // District hub landing (matches `.district-hub`)
+  &.theme-hub {
+    .language-trigger {
+      background: rgba(10, 10, 8, 0.55);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(200, 167, 107, 0.35);
+      color: #f4f1e8;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+      font-family: var(--font-hub-mono), 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+
+      &:hover:not(:disabled) {
+        background: rgba(10, 10, 8, 0.75);
+        border-color: rgba(200, 167, 107, 0.5);
+      }
+    }
+
+    .language-dropdown {
+      background: rgba(10, 10, 8, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(200, 167, 107, 0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+
+      .language-option {
+        color: rgba(244, 241, 232, 0.88);
+
+        &:hover {
+          background: rgba(200, 167, 107, 0.12);
+        }
+
+        &.active {
+          background: rgba(200, 167, 107, 0.18);
+          border: 1px solid rgba(200, 167, 107, 0.45);
         }
       }
     }
@@ -1933,14 +2269,27 @@ div {
     }
 
     @media (max-width: 1024px) {
-      justify-self: start;
+      grid-column: 1 / -1;
+      grid-row: auto;
+      justify-self: stretch;
       max-width: 100%;
+      height: auto;
+      aspect-ratio: 4 / 5;
+
+      img {
+        height: 100%;
+      }
     }
   }
 
   .botique-intro__media--bottom-left {
     grid-column: 1 / 2;
     grid-row: 2 / 3;
+
+    @media (max-width: 1024px) {
+      grid-column: 1 / -1;
+      grid-row: auto;
+    }
   }
 
   .botique-intro__media--bottom-right {
@@ -1959,8 +2308,18 @@ div {
     }
 
     @media (max-width: 1024px) {
-      justify-self: start;
-      max-width: 60%;
+      grid-column: 1 / -1;
+      grid-row: auto;
+      justify-self: stretch;
+      max-width: 100%;
+      height: auto;
+      aspect-ratio: 4 / 5;
+      margin-top: 0;
+      margin-left: 0;
+
+      img {
+        height: 100%;
+      }
     }
   }
 }
@@ -1969,6 +2328,14 @@ div {
 .boutique-contact {
   background-color: #051e24;
   padding: 120px 0;
+
+  @media (max-width: 1024px) {
+    padding: 60px 0;
+  }
+
+  @media (max-width: 768px) {
+    padding: 40px 0;
+  }
 
   .boutique-contact__grid {
     max-width: 1440px;
@@ -1984,7 +2351,11 @@ div {
 
     @media (max-width: 1024px) {
       grid-template-columns: 1fr;
-      gap: 40px;
+      grid-template-areas:
+        'header'
+        'left'
+        'right';
+      gap: 32px;
     }
   }
 
@@ -2096,6 +2467,14 @@ div {
   padding: 100px 0 250px;
   background-color: #051e24;
 
+  @media (max-width: 1024px) {
+    padding: 60px 0 80px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 40px 0 40px;
+  }
+
   .rooms-inner {
     max-width: 1440px;
     margin: 0 auto;
@@ -2171,6 +2550,15 @@ div {
     position: relative;
     overflow: hidden;
     height: 800px;
+
+    @media (max-width: 1024px) {
+      height: 560px;
+    }
+
+    @media (max-width: 768px) {
+      height: auto;
+      aspect-ratio: 4 / 5;
+    }
   }
 
   .room-media img {
@@ -2181,6 +2569,10 @@ div {
     will-change: transform;
     object-fit: cover;
     border: none;
+
+    @media (max-width: 1024px) {
+      height: 100%;
+    }
   }
 
   .room-overlay {

@@ -1,17 +1,14 @@
 import PageClient from '@/components/PageClient'
-import { getPayloadClient } from '@/utils/getPayloadClient'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
-import type { Page as PageType, Tenant } from '@/payload-types'
+import type { Tenant } from '@/payload-types'
 import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
+import { getCachedPageBySlug } from '@/utils/getCachedPages'
 import { localeLang } from '@/utils/locale'
 import { generateMetadataFromPage } from '@/utils/generateMetadata'
-
-// Make this route dynamic to handle different tenants
-export const dynamic = 'force-dynamic'
 
 type PageProps = {
   params: Promise<{
@@ -22,26 +19,7 @@ type PageProps = {
 
 type AllowedLocale = 'en' | 'hr' | 'de' | undefined
 
-async function fetchPage(slug: string, locale: AllowedLocale): Promise<PageType | null> {
-  try {
-    const payload = await getPayloadClient()
-
-    const pageQuery = await payload.find({
-      collection: 'pages',
-      where: {
-        slug: {
-          equals: slug,
-        },
-      },
-      depth: 4, // blocks -> projects[].building -> floorPlanImage, unitDetailsPdf
-      locale,
-    })
-
-    return pageQuery.docs[0] || null
-  } catch (_error) {
-    return null
-  }
-}
+const fetchPage = (slug: string, locale: AllowedLocale) => getCachedPageBySlug(slug, locale, 4)
 
 /**
  * Generate metadata for the page

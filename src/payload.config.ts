@@ -40,6 +40,9 @@ if (isProductionRuntime && requestedSchemaPush) {
 
 const allowSchemaPush = requestedSchemaPush && !isProductionRuntime
 
+/** Max upload size (bytes) for multipart/file fields — PDFs (e.g. building unit details) can be large. */
+const maxUploadFileBytes = 50 * 1024 * 1024
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -115,6 +118,13 @@ export default buildConfig({
     fallbackLanguage: 'hr',
   },
   sharp,
+  upload: {
+    limits: {
+      fileSize: maxUploadFileBytes,
+    },
+    // Avoid buffering entire large files in RAM while parsing multipart uploads.
+    useTempFiles: true,
+  },
   plugins: [
     payloadCloudPlugin(),
     seoPlugin({

@@ -1,4 +1,5 @@
 import { CollectionConfig } from 'payload'
+import { revalidateMediaDeleteHook, revalidateMediaHook } from '@/utils/revalidate'
 
 const Media: CollectionConfig = {
   slug: 'media',
@@ -62,7 +63,8 @@ const Media: CollectionConfig = {
         return data
       },
     ],
-    afterChange: [],
+    afterChange: [revalidateMediaHook],
+    afterDelete: [revalidateMediaDeleteHook],
   },
   fields: [
     {
@@ -89,10 +91,16 @@ const Media: CollectionConfig = {
   ],
   upload: {
     disableLocalStorage: true,
-    mimeTypes: ['image/*'],
-    // Use the generated "xs" rendition served via Payload's own URL handler
-    // (which proxies to whichever storage adapter is configured).
-    adminThumbnail: 'xs',
+    mimeTypes: ['image/*', 'application/pdf'],
+    // Images: use "xs" rendition. PDFs have no generated sizes — use the original file URL.
+    adminThumbnail: ({ doc }) => {
+      if (doc.mimeType === 'application/pdf') {
+        const url = typeof doc.url === 'string' ? doc.url : null
+        return url || null
+      }
+      const sizes = doc.sizes as { xs?: { url?: string | null } } | undefined
+      return sizes?.xs?.url ?? (typeof doc.url === 'string' ? doc.url : null)
+    },
     focalPoint: true,
     resizeOptions: {
       withoutEnlargement: true,

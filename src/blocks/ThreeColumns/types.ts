@@ -1,6 +1,9 @@
 export interface ThreeColumnsColumn {
   title: string
   subtitle?: string
+  kicker?: string
+  numberLabel?: string
+  titleItalic?: string
   backgroundImage?: {
     id: string
     url: string

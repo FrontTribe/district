@@ -1,11 +1,10 @@
 import { headers } from 'next/headers'
-import { getPayload } from 'payload'
 import React from 'react'
 import type { Metadata } from 'next'
 
-import config from '@/payload.config'
 import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
+import { HubBottombar } from '@/components/HubBottombar'
 import { MainPageLoader } from '@/components/MainPageLoader'
 import { Page, Tenant } from '@/payload-types'
 import '../styles.scss'
@@ -14,13 +13,15 @@ import { localeLang } from '@/utils/locale'
 import { notFound } from 'next/navigation'
 import PageClient from '@/components/PageClient'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
+import { getCachedPagesByTenant } from '@/utils/getCachedPages'
 import { generateMetadataFromPages } from '@/utils/generateMetadata'
-
-// Make this route dynamic to handle different tenants
-export const dynamic = 'force-dynamic'
+import { buildHubSocialLinks } from '@/utils/hubSocialLinks'
 
 /**
- * Generate static params for all supported locales
+ * Generate static params for all supported locales.
+ * Combined with cached data fetches, this lets Next.js statically prepare the
+ * locale routes; the per-tenant content layer remains request-scoped because of
+ * `headers()` usage below, but underlying queries hit the in-memory cache.
  */
 export async function generateStaticParams() {
   return localeLang.map((lang) => ({
@@ -29,72 +30,22 @@ export async function generateStaticParams() {
 }
 
 /**
- * Fetch pages for metadata generation
+ * Fetch pages for metadata generation. Falls back to main-domain pages when a
+ * tenant has no localized content.
  */
 async function fetchPagesForMetadata(locale: string, subdomain?: string | null): Promise<Page[]> {
-  const payloadConfig = await config
-  const payload = await getPayload({ config: payloadConfig })
-
   let currentTenant: Tenant | null = null
   if (subdomain) {
     currentTenant = await getTenantBySubdomain(subdomain)
   }
 
-  let pages: Page[] = []
   if (currentTenant) {
-    try {
-      const pagesResponse = await payload.find({
-        collection: 'pages',
-        depth: 2,
-        locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
-        where: {
-          tenant: {
-            equals: currentTenant.id,
-          },
-        },
-      })
-      pages = pagesResponse.docs as Page[]
-    } catch (_error) {
-      // Error fetching pages
-    }
-
-    // Fallback to main-domain pages if tenant exists but has no localized pages.
-    if (pages.length === 0) {
-      try {
-        const mainPagesResponse = await payload.find({
-          collection: 'pages',
-          depth: 2,
-          locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
-          where: {
-            tenant: {
-              exists: false,
-            },
-          },
-        })
-        pages = mainPagesResponse.docs as Page[]
-      } catch (_error) {
-        // Error fetching main domain pages
-      }
-    }
-  } else {
-    try {
-      const mainPagesResponse = await payload.find({
-        collection: 'pages',
-        depth: 2,
-        locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
-        where: {
-          tenant: {
-            exists: false,
-          },
-        },
-      })
-      pages = mainPagesResponse.docs as Page[]
-    } catch (_error) {
-      // Error fetching main domain pages
-    }
+    const tenantPages = await getCachedPagesByTenant(String(currentTenant.id), locale)
+    if (tenantPages.length > 0) return tenantPages
+    return getCachedPagesByTenant(null, locale)
   }
 
-  return pages
+  return getCachedPagesByTenant(null, locale)
 }
 
 /**
@@ -122,80 +73,41 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   }
 
   const requestHeaders: Headers = await headers()
-  const payloadConfig = await config
-  const payload = await getPayload({ config: payloadConfig })
+  const subdomain = requestHeaders.get('x-tenant-subdomain')
 
-  const headersList = requestHeaders
-  const subdomain = headersList.get('x-tenant-subdomain')
-
-  // Get current tenant based on subdomain
   let currentTenant: Tenant | null = null
   if (subdomain) {
     currentTenant = await getTenantBySubdomain(subdomain)
   }
 
-  // Fetch pages with blocks for the current tenant
   let pages: Page[] = []
   if (currentTenant) {
-    try {
-      const pagesResponse = await payload.find({
-        collection: 'pages',
-        depth: 2, // Include nested relationships
-        locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
-        where: {
-          tenant: {
-            equals: currentTenant.id,
-          },
-        },
-      })
-      pages = pagesResponse.docs as Page[]
-    } catch (_error) {
-      // Error fetching pages
-    }
+    pages = await getCachedPagesByTenant(String(currentTenant.id), locale)
 
     // Fallback to main-domain pages if tenant exists but has no localized pages.
+    // When falling back, also surface the main-domain menu/footer (clear tenant).
     if (pages.length === 0) {
-      try {
-        const mainPagesResponse = await payload.find({
-          collection: 'pages',
-          depth: 2,
-          locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
-          where: {
-            tenant: {
-              exists: false,
-            },
-          },
-        })
-        pages = mainPagesResponse.docs as Page[]
-        // If we fell back to main pages, use main-domain menu/footer as well.
-        if (pages.length > 0) {
-          currentTenant = null
-        }
-      } catch (_error) {
-        // Error fetching main domain pages
+      pages = await getCachedPagesByTenant(null, locale)
+      if (pages.length > 0) {
+        currentTenant = null
       }
     }
   } else {
-    try {
-      const mainPagesResponse = await payload.find({
-        collection: 'pages',
-        depth: 2,
-        locale: locale as 'en' | 'hr' | 'de' | 'all' | undefined,
-        where: {
-          tenant: {
-            exists: false,
-          },
-        },
-      })
-      pages = mainPagesResponse.docs as Page[]
-    } catch (_error) {
-      // Error fetching main domain pages
-    }
+    pages = await getCachedPagesByTenant(null, locale)
   }
 
   // Fetch menu and footer for the current tenant
   const tenantId = currentTenant?.id ? String(currentTenant.id) : null
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
+
+  const firstBlockType = pages[0]?.layout?.[0]?.blockType
+  const isHubTriptychHome = !currentTenant && firstBlockType === 'three-columns'
+  const hubMenuCount = menuGlobal?.menuItems?.length ?? 0
+  const mainContentClassName = isHubTriptychHome
+    ? 'content w-full'
+    : 'content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
+
+  const hubSocialLinks = isHubTriptychHome ? buildHubSocialLinks(footerGlobal) : undefined
 
   return (
     <MainPageLoader isMainDomain={!currentTenant}>
@@ -235,9 +147,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         positioning={menuGlobal?.positioning || 'fixed'}
         locale={locale}
         menuId={menuGlobal?.identifier || 'main-menu'}
-        hideHamburger={!currentTenant}
+        hubLanding={isHubTriptychHome}
+        hideHamburger={!currentTenant && (!isHubTriptychHome || hubMenuCount === 0)}
+        hubTagline={menuGlobal?.hubTagline}
+        hubSocialLinks={hubSocialLinks}
       />
-      <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className={mainContentClassName}>
         {/* Render blocks from pages */}
         {pages.length > 0 ? (
           pages.map((page) => (
@@ -258,14 +173,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         )}
       </div>
 
-      {/* Footer */}
-      {footerGlobal && (
+      {/* Footer — full CMS footer except on hub triptych (uses HubBottombar like District Landing) */}
+      {footerGlobal && !isHubTriptychHome && (
         <Footer
           leftContent={footerGlobal.leftContent}
           rightContent={footerGlobal.rightContent}
           bottomContent={footerGlobal.bottomContent}
         />
       )}
+      {footerGlobal && isHubTriptychHome && <HubBottombar footer={footerGlobal} />}
     </MainPageLoader>
   )
 }

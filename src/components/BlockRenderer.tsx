@@ -54,6 +54,27 @@ const blockComponents = {
 
 type _Block = NonNullable<Page['layout']>[number]
 
+function renderSingleBlock(block: _Block, index: number, locale: string) {
+  const { blockType } = block
+
+  if (blockType && blockType in blockComponents) {
+    const BlockComponent = blockComponents[blockType as keyof typeof blockComponents]
+    const key = block.id ? `${block.id}-${index}` : index
+    return (
+      // @ts-expect-error - Block component props are dynamically typed based on block type
+      <BlockComponent key={key} {...block} locale={locale} />
+    )
+  }
+
+  return (
+    <div key={index}>
+      The component for block type &quot;{blockType}&quot; does not exist.
+    </div>
+  )
+}
+
+const proseBlockWrapperClass = 'prose mx-auto max-w-4xl px-4 py-6 lg:px-8 lg:py-10'
+
 export const BlockRenderer: React.FC<{
   blocks: Page['layout'] | undefined | null
   locale?: string
@@ -62,24 +83,17 @@ export const BlockRenderer: React.FC<{
     return null
   }
 
-  return (
-    <div>
-      {blocks.map((block, index) => {
-        const { blockType } = block
+  const [first, ...rest] = blocks
+  if (first?.blockType === 'three-columns') {
+    return (
+      <>
+        {renderSingleBlock(first, 0, locale)}
+        {rest.length > 0 ? (
+          <div className={proseBlockWrapperClass}>{rest.map((b, i) => renderSingleBlock(b, i + 1, locale))}</div>
+        ) : null}
+      </>
+    )
+  }
 
-        if (blockType && blockType in blockComponents) {
-          const BlockComponent = blockComponents[blockType as keyof typeof blockComponents]
-          const key = block.id ? `${block.id}-${index}` : index
-          // @ts-expect-error - Block component props are dynamically typed based on block type
-          return <BlockComponent key={key} {...block} locale={locale} />
-        }
-
-        return (
-          <div key={index}>
-            The component for block type &quot;{blockType}&quot; does not exist.
-          </div>
-        )
-      })}
-    </div>
-  )
+  return <div className={proseBlockWrapperClass}>{blocks.map((block, index) => renderSingleBlock(block, index, locale))}</div>
 }

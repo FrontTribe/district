@@ -7,6 +7,7 @@ const ThreeColumns: Block = {
       name: 'columns',
       type: 'array',
       label: 'Columns',
+      localized: true,
       minRows: 3,
       maxRows: 3,
       fields: [
@@ -15,11 +16,44 @@ const ThreeColumns: Block = {
           type: 'text',
           label: 'Title',
           required: true,
+          localized: true,
         },
         {
           name: 'subtitle',
           type: 'textarea',
-          label: 'Subtitle',
+          label: 'Description',
+          localized: true,
+          admin: {
+            description: 'Short paragraph shown on the column (revealed on hover on desktop).',
+          },
+        },
+        {
+          name: 'kicker',
+          type: 'text',
+          label: 'Kicker',
+          localized: true,
+          admin: {
+            description: 'Small uppercase line above the title (e.g. Rooms · Rooftop · Pool).',
+          },
+        },
+        {
+          name: 'numberLabel',
+          type: 'text',
+          label: 'Index label',
+          localized: true,
+          admin: {
+            description: 'Optional label with gold line (e.g. 01 / Hotel). Leave empty to auto-fill as 01, 02, 03.',
+          },
+        },
+        {
+          name: 'titleItalic',
+          type: 'text',
+          label: 'Title — italic accent',
+          localized: true,
+          admin: {
+            description:
+              'Optional second part of the title in gold italic (e.g. "." or "Estate."). Main title field stays the first word(s).',
+          },
         },
         {
           name: 'backgroundImage',
@@ -171,6 +205,7 @@ const ThreeColumns: Block = {
               type: 'text',
               label: 'Link Text',
               required: true,
+              localized: true,
             },
             {
               name: 'openInNewTab',
@@ -192,6 +227,7 @@ const ThreeColumns: Block = {
               name: 'facebook',
               type: 'text',
               label: 'Facebook URL',
+              localized: true,
               admin: {
                 description: 'Full Facebook profile or page URL',
               },
@@ -200,6 +236,7 @@ const ThreeColumns: Block = {
               name: 'instagram',
               type: 'text',
               label: 'Instagram URL',
+              localized: true,
               admin: {
                 description: 'Full Instagram profile URL',
               },

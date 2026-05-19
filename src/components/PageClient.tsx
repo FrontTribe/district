@@ -36,9 +36,5 @@ export default function PageClient({
     )
   }
 
-  return (
-    <div className="prose mx-auto max-w-4xl p-4 lg:p-8">
-      <BlockRenderer blocks={initialPage.layout} locale={locale} />
-    </div>
-  )
+  return <BlockRenderer blocks={initialPage.layout} locale={locale} />
 }
