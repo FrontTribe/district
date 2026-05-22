@@ -11,7 +11,7 @@ export type FloorPlanUnitShape =
 export type CurrentProjectBuilding = {
   title?: string
   floorPlanImageUrl?: string
-  /** Payload documents id — use /api/pdf-file/:id for PDF.js (same-origin) */
+  /** Payload documents id — same-origin `/api/pdf-file/:id?page=N` (jedna stranica). */
   unitDetailsPdfId?: string
   unitDetailsPdfUrl?: string
   units: Array<{

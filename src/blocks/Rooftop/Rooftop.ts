@@ -1,7 +1,9 @@
 import { Block } from 'payload'
+import { districtAdminGroups } from '@/blocks/district-admin-groups'
 
 const Rooftop: Block = {
   slug: 'rooftop',
+  admin: { group: districtAdminGroups.boutique },
   fields: [
     {
       name: 'heading',

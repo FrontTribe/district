@@ -3,6 +3,7 @@ import React from 'react'
 import HeroAnimated from '@/blocks/HeroAnimated'
 import { BoutiqueHeroContent } from '@/blocks/BoutiqueHeroContent'
 import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { districtAdminGroups } from '@/blocks/district-admin-groups'
 
 function boutiqueFilmGradient(overlay?: string | null): string {
   switch (overlay) {
@@ -19,6 +20,7 @@ function boutiqueFilmGradient(overlay?: string | null): string {
 
 const Hero: Block = {
   slug: 'hero',
+  admin: { group: districtAdminGroups.hub },
   fields: [
     {
       name: 'heading',

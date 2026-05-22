@@ -1,7 +1,9 @@
 import { Block } from 'payload'
+import { districtAdminGroups } from '@/blocks/district-admin-groups'
 
 const BotiqueIntro: Block = {
   slug: 'botique-intro',
+  admin: { group: districtAdminGroups.boutique },
   fields: [
     {
       name: 'eyebrow',

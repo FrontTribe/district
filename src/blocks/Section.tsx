@@ -28,9 +28,11 @@ import { ImageGridBlock } from '@/blocks/ImageGrid'
 import { FloorPlan, FloorPlanBlock } from '@/blocks/FloorPlan'
 import { Anchor, AnchorBlock } from '@/blocks/Anchor'
 import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { districtAdminGroups } from '@/blocks/district-admin-groups'
 
 const Section: Block = {
   slug: 'section',
+  admin: { group: districtAdminGroups.hub },
   fields: [
     {
       type: 'tabs',

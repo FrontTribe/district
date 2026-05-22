@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * One-time script to drop Postgres tables that exceed the 63-char identifier limit.
- * Run after adding dbName to RealEstateProjectsWeDid block so Payload can create short-named tables.
+ * One-time script to drop Postgres tables for blocks that used long auto-generated names
+ * (63-char / duplicate constraint issues). Covers RealEstateProjectsWeDid and RE landing past-projects.
  *
  * Usage: node scripts/drop-long-block-tables.mjs
  * Requires: DATABASE_URI in env (e.g. from .env.local). Runs the SQL file via psql.

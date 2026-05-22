@@ -47,27 +47,31 @@ export async function getTenantMenu(
   const localeKey = locale ?? 'default'
   const tenantKey = tenantId ?? 'main'
 
+  async function fetchMenu(): Promise<Menu | null> {
+    try {
+      const payload = await getPayload({ config: payloadConfig })
+      const whereClause = tenantId ? { tenant: { equals: tenantId } } : { tenant: { exists: false } }
+
+      const menuResponse = await payload.find({
+        collection: 'menu',
+        where: whereClause,
+        limit: 1,
+        depth: 2,
+        locale: normalizeLocale(locale),
+      })
+
+      return (menuResponse.docs[0] as Menu) || null
+    } catch {
+      return null
+    }
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    return fetchMenu()
+  }
+
   return unstable_cache(
-    async (): Promise<Menu | null> => {
-      try {
-        const payload = await getPayload({ config: payloadConfig })
-        const whereClause = tenantId
-          ? { tenant: { equals: tenantId } }
-          : { tenant: { exists: false } }
-
-        const menuResponse = await payload.find({
-          collection: 'menu',
-          where: whereClause,
-          limit: 1,
-          depth: 2,
-          locale: normalizeLocale(locale),
-        })
-
-        return (menuResponse.docs[0] as Menu) || null
-      } catch {
-        return null
-      }
-    },
+    async (): Promise<Menu | null> => fetchMenu(),
     ['tenant-menu', tenantKey, localeKey],
     {
       tags: [CACHE_TAGS.menus(), CACHE_TAGS.menuByTenant(tenantId)],
@@ -86,27 +90,31 @@ export async function getTenantFooter(
   const localeKey = locale ?? 'default'
   const tenantKey = tenantId ?? 'main'
 
+  async function fetchFooter(): Promise<Footer | null> {
+    try {
+      const payload = await getPayload({ config: payloadConfig })
+      const whereClause = tenantId ? { tenant: { equals: tenantId } } : { tenant: { exists: false } }
+
+      const footerResponse = await payload.find({
+        collection: 'footer',
+        where: whereClause,
+        limit: 1,
+        depth: 2,
+        locale: normalizeLocale(locale),
+      })
+
+      return (footerResponse.docs[0] as Footer) || null
+    } catch {
+      return null
+    }
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    return fetchFooter()
+  }
+
   return unstable_cache(
-    async (): Promise<Footer | null> => {
-      try {
-        const payload = await getPayload({ config: payloadConfig })
-        const whereClause = tenantId
-          ? { tenant: { equals: tenantId } }
-          : { tenant: { exists: false } }
-
-        const footerResponse = await payload.find({
-          collection: 'footer',
-          where: whereClause,
-          limit: 1,
-          depth: 2,
-          locale: normalizeLocale(locale),
-        })
-
-        return (footerResponse.docs[0] as Footer) || null
-      } catch {
-        return null
-      }
-    },
+    async (): Promise<Footer | null> => fetchFooter(),
     ['tenant-footer', tenantKey, localeKey],
     {
       tags: [CACHE_TAGS.footers(), CACHE_TAGS.footerByTenant(tenantId)],

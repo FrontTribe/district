@@ -1,7 +1,9 @@
 import { Block } from 'payload'
+import { districtAdminGroups } from '@/blocks/district-admin-groups'
 
 const ImageGrid: Block = {
   slug: 'image-grid',
+  admin: { group: districtAdminGroups.hub },
   fields: [
     {
       name: 'title',

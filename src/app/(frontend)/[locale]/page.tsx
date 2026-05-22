@@ -12,11 +12,30 @@ import { RefreshRouteOnSave } from '@/components/RefreshRouteOnSave'
 import { localeLang } from '@/utils/locale'
 import { notFound } from 'next/navigation'
 import PageClient from '@/components/PageClient'
+import { RealEstateLandingShell } from '@/components/real-estate-landing'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
 import { getTenantVisualTheme } from '@/utils/tenantVisualTheme'
 import { getCachedPagesByTenant } from '@/utils/getCachedPages'
 import { generateMetadataFromPages } from '@/utils/generateMetadata'
 import { buildHubSocialLinks } from '@/utils/hubSocialLinks'
+import { mergePageLayoutForPublicPage } from '@/utils/mergeReLandingLayoutForPublic'
+
+/** Payload `depth` za početnu — učitava `building` u unit browser bloku (manje praznog SSR-a). */
+const HOME_PAGES_DEPTH = 3
+
+function getRealEstateLandingFlags(page: Page | undefined) {
+  const layout = page?.layout
+  if (!layout?.length) {
+    return {
+      isRealEstateLandingPage: false,
+      hasLandingNav: false,
+    }
+  }
+  const blockType = (b: { blockType?: string | null }) => String(b.blockType ?? '')
+  const isRealEstateLandingPage = layout.every((b) => blockType(b).startsWith('real-estate-landing-'))
+  const hasLandingNav = layout.some((b) => b.blockType === 'real-estate-landing-nav')
+  return { isRealEstateLandingPage, hasLandingNav }
+}
 
 /**
  * Generate static params for all supported locales.
@@ -41,12 +60,12 @@ async function fetchPagesForMetadata(locale: string, subdomain?: string | null):
   }
 
   if (currentTenant) {
-    const tenantPages = await getCachedPagesByTenant(String(currentTenant.id), locale)
+    const tenantPages = await getCachedPagesByTenant(String(currentTenant.id), locale, HOME_PAGES_DEPTH)
     if (tenantPages.length > 0) return tenantPages
-    return getCachedPagesByTenant(null, locale)
+    return getCachedPagesByTenant(null, locale, HOME_PAGES_DEPTH)
   }
 
-  return getCachedPagesByTenant(null, locale)
+  return getCachedPagesByTenant(null, locale, HOME_PAGES_DEPTH)
 }
 
 /**
@@ -83,18 +102,18 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   let pages: Page[] = []
   if (currentTenant) {
-    pages = await getCachedPagesByTenant(String(currentTenant.id), locale)
+    pages = await getCachedPagesByTenant(String(currentTenant.id), locale, HOME_PAGES_DEPTH)
 
     // Fallback to main-domain pages if tenant exists but has no localized pages.
     // When falling back, also surface the main-domain menu/footer (clear tenant).
     if (pages.length === 0) {
-      pages = await getCachedPagesByTenant(null, locale)
+      pages = await getCachedPagesByTenant(null, locale, HOME_PAGES_DEPTH)
       if (pages.length > 0) {
         currentTenant = null
       }
     }
   } else {
-    pages = await getCachedPagesByTenant(null, locale)
+    pages = await getCachedPagesByTenant(null, locale, HOME_PAGES_DEPTH)
   }
 
   // Fetch menu and footer for the current tenant
@@ -102,79 +121,107 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
   const tenantVisualTheme = getTenantVisualTheme(subdomain)
 
-  const firstBlockType = pages[0]?.layout?.[0]?.blockType
+  const pagesForClient = pages.map((page) => mergePageLayoutForPublicPage(page, menuGlobal))
+
+  const firstBlockType = pagesForClient[0]?.layout?.[0]?.blockType
   const isHubTriptychHome = !currentTenant && firstBlockType === 'three-columns'
   const hubMenuCount = menuGlobal?.menuItems?.length ?? 0
   const isBoutiqueTenantHome = Boolean(currentTenant && tenantVisualTheme === 'boutique')
-  const mainContentClassName = isHubTriptychHome
-    ? 'content w-full'
-    : isBoutiqueTenantHome
+  const homeLanding = getRealEstateLandingFlags(pagesForClient[0])
+  const mainContentClassName =
+    isHubTriptychHome || homeLanding.isRealEstateLandingPage || isBoutiqueTenantHome
       ? 'content w-full'
       : 'content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
 
+  /** Tenant RE landing brings its own nav — hide CMS header to match /[locale]/[slug] */
+  const hideGlobalMenuForTenantLandingNav =
+    Boolean(currentTenant) &&
+    homeLanding.isRealEstateLandingPage &&
+    homeLanding.hasLandingNav
   const hubSocialLinks = isHubTriptychHome ? buildHubSocialLinks(footerGlobal) : undefined
 
   const homeInner = (
     <>
       <RefreshRouteOnSave />
 
-      {/* Menu Wrapper */}
-      <MenuWrapper
-        tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
-        brandSubtitle={
-          currentTenant && tenantVisualTheme === 'boutique'
-            ? 'Boutique · Osijek'
-            : undefined
-        }
-        menuItems={
-          menuGlobal?.menuItems?.map((item) => ({
-            label: item.label,
-            link: item.link,
-            scrollTarget: item.scrollTarget || undefined,
-            external: item.external || false,
-            children:
-              item.children?.map((child) => ({
-                label: child.label,
-                link: child.link,
-                scrollTarget: child.scrollTarget || undefined,
-                external: child.external || false,
-              })) || [],
-          })) || []
-        }
-        logo={
-          menuGlobal?.logo &&
-          typeof menuGlobal.logo === 'object' &&
-          'url' in menuGlobal.logo &&
-          menuGlobal.logo.url
-            ? {
-                url: menuGlobal.logo.url,
-                alt: menuGlobal.logo.alt || 'Logo',
-                width: menuGlobal.logo.width || 100,
-                height: menuGlobal.logo.height || 100,
-              }
-            : undefined
-        }
-        logoText={menuGlobal?.logoText || undefined}
-        positioning={menuGlobal?.positioning || 'fixed'}
-        locale={locale}
-        menuId={menuGlobal?.identifier || (currentTenant ? 'tenant-menu' : 'main-menu')}
-        hubLanding={isHubTriptychHome}
-        hideHamburger={!currentTenant && (!isHubTriptychHome || hubMenuCount === 0)}
-        hubTagline={menuGlobal?.hubTagline}
-        hubSocialLinks={hubSocialLinks}
-      />
+      {/* Menu Wrapper — hidden when tenant home is a full RE landing (in-page nav) */}
+      {!hideGlobalMenuForTenantLandingNav && (
+        <MenuWrapper
+          tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
+          brandSubtitle={
+            currentTenant && tenantVisualTheme === 'boutique'
+              ? 'Boutique · Osijek'
+              : undefined
+          }
+          menuItems={
+            menuGlobal?.menuItems?.map((item) => ({
+              label: item.label,
+              link: item.link,
+              scrollTarget: item.scrollTarget || undefined,
+              external: item.external || false,
+              children:
+                item.children?.map((child) => ({
+                  label: child.label,
+                  link: child.link,
+                  scrollTarget: child.scrollTarget || undefined,
+                  external: child.external || false,
+                })) || [],
+            })) || []
+          }
+          logo={
+            menuGlobal?.logo &&
+            typeof menuGlobal.logo === 'object' &&
+            'url' in menuGlobal.logo &&
+            menuGlobal.logo.url
+              ? {
+                  url: menuGlobal.logo.url,
+                  alt: menuGlobal.logo.alt || 'Logo',
+                  width: menuGlobal.logo.width || 100,
+                  height: menuGlobal.logo.height || 100,
+                }
+              : undefined
+          }
+          logoText={menuGlobal?.logoText || undefined}
+          positioning={menuGlobal?.positioning || 'fixed'}
+          locale={locale}
+          menuId={menuGlobal?.identifier || (currentTenant ? 'tenant-menu' : 'main-menu')}
+          hubLanding={isHubTriptychHome}
+          hideHamburger={!currentTenant && (!isHubTriptychHome || hubMenuCount === 0)}
+          hubTagline={menuGlobal?.hubTagline}
+          hubSocialLinks={hubSocialLinks}
+        />
+      )}
       <div className={mainContentClassName}>
         {/* Render blocks from pages */}
-        {pages.length > 0 ? (
-          pages.map((page) => (
-            <div key={page.id}>
+        {pagesForClient.length > 0 ? (
+          pagesForClient.map((page) => {
+            const { isRealEstateLandingPage } = getRealEstateLandingFlags(page)
+            const inner = (
               <PageClient
                 page={page}
                 locale={locale}
                 tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
               />
-            </div>
-          ))
+            )
+            const reLandingFooterNode =
+              footerGlobal && isRealEstateLandingPage ? (
+                <Footer
+                  variant="reLanding"
+                  leftContent={footerGlobal.leftContent}
+                  rightContent={footerGlobal.rightContent}
+                  bottomContent={footerGlobal.bottomContent}
+                />
+              ) : undefined
+            return (
+              <div key={page.id}>
+                {isRealEstateLandingPage ? (
+                  <RealEstateLandingShell footer={reLandingFooterNode}>{inner}</RealEstateLandingShell>
+                ) : (
+                  inner
+                )}
+              </div>
+            )
+          })
         ) : currentTenant ? (
           <div className="no-pages">
             <h2>No Pages Found</h2>
@@ -188,8 +235,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         )}
       </div>
 
-      {/* Footer — full CMS footer except on hub triptych (uses HubBottombar like District Landing) */}
-      {footerGlobal && !isHubTriptychHome && (
+      {/* Footer — kolekcija Podnožja (marketing RE landing strip je unutar RealEstateLandingShell) */}
+      {footerGlobal && !isHubTriptychHome && !homeLanding.isRealEstateLandingPage && (
         <Footer
           variant={tenantVisualTheme === 'boutique' ? 'boutique' : 'default'}
           leftContent={footerGlobal.leftContent}

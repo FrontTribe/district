@@ -304,7 +304,7 @@ export interface Document {
   focalY?: number | null;
 }
 /**
- * Manage pages for tenants and main domain
+ * Pages for tenants and main domain. Layout blocks are grouped in the editor: District · Real estate (RE landing + legacy RE), District · Boutique, District · Momento (reserved), District · Hub & pages. RE landing form and contact row: edit “RE Landing — Inquiry” in the page layout. The RE landing strip footer is edited in the Footers collection (not in the page layout).
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
@@ -768,6 +768,17 @@ export interface Page {
             blockName?: string | null;
             blockType: 'floor-plan';
           }
+        | RealEstateLandingNavBlock
+        | RealEstateLandingHeroBlock
+        | RealEstateLandingMarqueeBlock
+        | RealEstateLandingManifestoBlock
+        | RealEstateLandingTypologyBlock
+        | RealEstateLandingGalleryBlock
+        | RealEstateLandingCurrentProjectBlock
+        | RealEstateLandingPartnerBlock
+        | RealEstateLandingInquiryBlock
+        | RealEstateLandingUnitBrowserBlock
+        | RealEstateLandingPastProjectsBlock
         | {
             heading: string;
             subheading?: string | null;
@@ -923,6 +934,8 @@ export interface Page {
   createdAt: string;
 }
 /**
+ * Reusable form definitions (e.g. blocks that reference a form ID). The Real Estate landing contact section is the “RE Landing — Inquiry” block in Pages → layout — configure labels and POST URL there, not here.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "forms".
  */
@@ -1117,7 +1130,7 @@ export interface Building {
    */
   unitDetailsPdf: number | Document;
   /**
-   * Each row = one unit (e.g. A.1.1, A.1.2). Draw regions on the plan above; set label and PDF page number here.
+   * Each row = one unit (e.g. A.1.1). Draw regions on the plan above. Counts per floor on the site come from this list. Status (Available / Reserved / Sold) is edited here — PDF re-seed keeps Reserved/Sold when the unit label matches.
    */
   units?:
     | {
@@ -1129,6 +1142,32 @@ export interface Building {
          * Page number in Unit details PDF (1 = first page)
          */
         detailPageNumber: number;
+        /**
+         * Letter or code (e.g. A, B) for grouping in the unit browser.
+         */
+        dilatacija?: string | null;
+        /**
+         * Floor number for filtering (e.g. 0 = ground, 1 = first).
+         */
+        floor?: number | null;
+        unitType?:
+          | (
+              | 'garsonijera'
+              | 'jednosobni'
+              | 'jednoipolsobni'
+              | 'dvosobni'
+              | 'dvoipolsobni'
+              | 'trosobni'
+              | 'penthouse'
+              | 'other'
+            )
+          | null;
+        netArea?: number | null;
+        grossArea?: number | null;
+        /**
+         * Shown on the landing unit cards (green / amber / red). Default Available for new units.
+         */
+        status?: ('available' | 'reserved' | 'sold') | null;
         /**
          * Polygon: draw by clicking points on the plan, then "Complete unit".
          */
@@ -1153,6 +1192,556 @@ export interface Building {
     | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingNavBlock".
+ */
+export interface RealEstateLandingNavBlock {
+  /**
+   * Small HTML snippet for the logo area.
+   */
+  brandHtml?: string | null;
+  /**
+   * Accessibility label for the brand link (e.g. “District home”).
+   */
+  brandAriaLabel?: string | null;
+  langLine?: string | null;
+  showLangLine?: boolean | null;
+  /**
+   * In-page anchors (#section) or full URLs.
+   */
+  links?:
+    | {
+        label: string;
+        href: string;
+        openInNewTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional call-to-action in the nav bar.
+   */
+  ctaLabel?: string | null;
+  ctaHref?: string | null;
+  ctaOpenInNewTab?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-nav';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingHeroBlock".
+ */
+export interface RealEstateLandingHeroBlock {
+  /**
+   * HTML id for “back to top” / first screen (default: top).
+   */
+  heroSectionId?: string | null;
+  layout?: ('default' | 'split' | 'centered') | null;
+  /**
+   * Small meta lines (e.g. city, coordinates).
+   */
+  topLeftLines?:
+    | {
+        line: string;
+        id?: string | null;
+      }[]
+    | null;
+  topRightLines?:
+    | {
+        line: string;
+        id?: string | null;
+      }[]
+    | null;
+  eyebrow: string;
+  titleLine1: string;
+  /**
+   * Optional second line (e.g. italic name).
+   */
+  titleLine2Html?: string | null;
+  heroImage: number | Media;
+  /**
+   * Accessibility: short description of the image for screen readers.
+   */
+  imageAlt?: string | null;
+  mediaCaption?: string | null;
+  lead: string;
+  showScrollCue?: boolean | null;
+  scrollCueLabel?: string | null;
+  /**
+   * Short label + value pairs under the hero.
+   */
+  metaRows?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingMarqueeBlock".
+ */
+export interface RealEstateLandingMarqueeBlock {
+  /**
+   * Lower = faster scroll.
+   */
+  durationSeconds?: number | null;
+  /**
+   * Single character or short symbol between phrases.
+   */
+  separator?: string | null;
+  /**
+   * Describe the ticker for screen readers.
+   */
+  ariaLabel?: string | null;
+  items?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-marquee';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingManifestoBlock".
+ */
+export interface RealEstateLandingManifestoBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  labelLeft: string;
+  labelNum: string;
+  /**
+   * Optional short paragraph before the big type.
+   */
+  topIntroHtml?: string | null;
+  /**
+   * Each row = sequence of segments (plain / muted / accent).
+   */
+  rows?:
+    | {
+        segments?:
+          | {
+              text: string;
+              style?: ('plain' | 'mute' | 'accent') | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional small print under the statement.
+   */
+  footnoteHtml?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-manifesto';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingTypologyBlock".
+ */
+export interface RealEstateLandingTypologyBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  eyebrow: string;
+  /**
+   * Build the main heading from ordered fragments (plain or italic).
+   */
+  headingParts?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        lineBreak?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  intro: string;
+  /**
+   * Shown after the count in each row (e.g. “units”, “stanova”). Leave empty for default “stanova”.
+   */
+  countSuffixWord?: string | null;
+  /**
+   * Shown below the table when set.
+   */
+  outroHtml?: string | null;
+  items?:
+    | {
+        unitCode: string;
+        name: string;
+        size: string;
+        description: string;
+        count: number;
+        /**
+         * Optional emphasis in the list UI.
+         */
+        highlight?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-typology';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingGalleryBlock".
+ */
+export interface RealEstateLandingGalleryBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  eyebrow: string;
+  /**
+   * Build the main heading from ordered fragments (plain or italic).
+   */
+  headingParts?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        lineBreak?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Fallback text beside the heading. Ignored when “Intro (HTML)” is filled.
+   */
+  intro: string;
+  /**
+   * When set, replaces the plain intro next to the heading.
+   */
+  introHtml?: string | null;
+  slides?:
+    | {
+        image: number | Media;
+        /**
+         * Overrides default alt (slide title) for accessibility.
+         */
+        slideImageAlt?: string | null;
+        name: string;
+        location: string;
+        credit?: string | null;
+        /**
+         * Wraps the slide in a link when set.
+         */
+        linkUrl?: string | null;
+        linkOpenInNewTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-gallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingCurrentProjectBlock".
+ */
+export interface RealEstateLandingCurrentProjectBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  eyebrow: string;
+  /**
+   * Build the main heading from ordered fragments (plain or italic).
+   */
+  headingParts?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        lineBreak?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  bigNumber: string;
+  projectMeta: string;
+  projectNameHtml: string;
+  description: string;
+  image: number | Media;
+  /**
+   * Accessibility: short description of the image for screen readers.
+   */
+  imageAlt?: string | null;
+  ctaLabel: string;
+  ctaHref: string;
+  ctaOpenInNewTab?: boolean | null;
+  /**
+   * Three-ish columns under the image.
+   */
+  stats?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-current-project';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingPartnerBlock".
+ */
+export interface RealEstateLandingPartnerBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  image: number | Media;
+  /**
+   * Accessibility: short description of the image for screen readers.
+   */
+  imageAlt?: string | null;
+  eyebrow: string;
+  /**
+   * Build the main heading from ordered fragments (plain or italic).
+   */
+  headingParts?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        lineBreak?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  paragraphs?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  ctaLabel: string;
+  ctaHref: string;
+  ctaOpenInNewTab?: boolean | null;
+  secondaryCtaLabel?: string | null;
+  secondaryCtaHref?: string | null;
+  secondaryCtaOpenInNewTab?: boolean | null;
+  signatureBold: string;
+  signatureSub: string;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-partner';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingInquiryBlock".
+ */
+export interface RealEstateLandingInquiryBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  eyebrow: string;
+  /**
+   * Build the main heading from ordered fragments (plain or italic).
+   */
+  headingParts?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        lineBreak?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional. One short paragraph between the headline and the form fields.
+   */
+  introHtml?: string | null;
+  /**
+   * POST endpoint where the browser submits the form (Formspark, Basin, Getform, …). If empty here, the public site uses the default URL from Menu → “RE landing — form & footer defaults” for this tenant. This block is not the Forms collection — edit under Pages → layout.
+   */
+  formActionUrl?: string | null;
+  formMethod?: ('POST' | 'GET') | null;
+  submitButtonLabel?: string | null;
+  disabledSubmitHelp?: string | null;
+  nameFieldLabel?: string | null;
+  emailFieldLabel?: string | null;
+  phoneFieldLabel?: string | null;
+  interestFieldLabel?: string | null;
+  messageFieldLabel?: string | null;
+  interestPlaceholder?: string | null;
+  messagePlaceholder?: string | null;
+  /**
+   * Shown below the form fields, above the four contact cells (matches landing layout).
+   */
+  privacyHtml?: string | null;
+  interestOptions?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  contacts?:
+    | {
+        label: string;
+        valueHtml: string;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-inquiry';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingUnitBrowserBlock".
+ */
+export interface RealEstateLandingUnitBrowserBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  eyebrow: string;
+  /**
+   * Build the main heading from ordered fragments (plain or italic).
+   */
+  headingParts?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        lineBreak?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  introHtml: string;
+  /**
+   * Optional copy next to the intro (e.g. colour dots for sold/reserved).
+   */
+  legendHtml?: string | null;
+  /**
+   * Replaces the default “click unit for PDF” hint when set.
+   */
+  detailPanelNoteHtml?: string | null;
+  /**
+   * Must include unitDetailsPdf and units with floor/dilatacija for filters.
+   */
+  building: number | Building;
+  /**
+   * Optional line above unit title in PDF modal, e.g. project name.
+   */
+  pdfMetaLine?: string | null;
+  /**
+   * Leave empty to use Croatian defaults. Fill for EN/DE or custom wording — all managed in CMS.
+   */
+  browserCopy?: {
+    dilatationLabel?: string | null;
+    floorLabel?: string | null;
+    floorButtonWord?: string | null;
+    stageFloorWord?: string | null;
+    unitsTotalSuffix?: string | null;
+    /**
+     * Before letter, e.g. "· Dilatacija " (space at end).
+     */
+    dilatationStagePrefix?: string | null;
+    statusAvailable?: string | null;
+    statusReserved?: string | null;
+    statusSold?: string | null;
+    loadingInProgress?: string | null;
+    /**
+     * HTTP status inserted at {status}.
+     */
+    loadingErrorTemplate?: string | null;
+    pdfCardBadge?: string | null;
+    adminHint?: string | null;
+    defaultDetailLead?: string | null;
+    /**
+     * Example: Pages {from}–{to}.
+     */
+    pagesRangeTemplate?: string | null;
+    unexpectedResponse?: string | null;
+    networkFailure?: string | null;
+  };
+  pdfModalCopy?: {
+    /**
+     * Use placeholders {dil} and {floor}. Shown when “PDF modal meta line” is empty.
+     */
+    metaTemplate?: string | null;
+    closeLabel?: string | null;
+    modalUnitWord?: string | null;
+    netLabel?: string | null;
+    grossLabel?: string | null;
+    pdfPagePrefix?: string | null;
+    emptyDocumentMessage?: string | null;
+    openInNewTab?: string | null;
+    sendInquiryCta?: string | null;
+    embedTitleTemplate?: string | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-unit-browser';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingPastProjectsBlock".
+ */
+export interface RealEstateLandingPastProjectsBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  layout?: ('rows' | 'grid') | null;
+  eyebrow: string;
+  /**
+   * Build the main heading from ordered fragments (plain or italic).
+   */
+  headingParts?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        lineBreak?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  introHtml: string;
+  projects?:
+    | {
+        name: string;
+        subtitle?: string | null;
+        location: string;
+        year: string;
+        statusLabel: string;
+        statusActive?: boolean | null;
+        /**
+         * Shown in grid cards under the title (optional).
+         */
+        summaryHtml?: string | null;
+        externalUrl?: string | null;
+        externalOpenInNewTab?: boolean | null;
+        previewImage?: (number | null) | Media;
+        previewImageAlt?: string | null;
+        gallery?:
+          | {
+              image: number | Media;
+              caption?: string | null;
+              alt?: string | null;
+              credit?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-past-projects';
 }
 /**
  * Manage navigation menus for tenants and main domain
@@ -1208,6 +1797,16 @@ export interface Menu {
    */
   hubTagline?: string | null;
   /**
+   * Used on the public site when “RE Landing — Inquiry” has an empty Form action URL (one endpoint per menu). Footer stays on the page layout block only.
+   */
+  reLandingDefaults?: {
+    /**
+     * Formspark, Basin, Getform, or your endpoint. Applied when the Inquiry block’s “Form action URL” is empty.
+     */
+    formActionUrl?: string | null;
+    formMethod?: ('POST' | 'GET') | null;
+  };
+  /**
    * Choose how the menu should be positioned on the page
    */
   positioning?: ('fixed' | 'absolute' | 'relative') | null;
@@ -1215,7 +1814,7 @@ export interface Menu {
   createdAt: string;
 }
 /**
- * Manage footer content for tenants and main domain
+ * Per-tenant marketing footer (multi-column). Used on the public site for tenant pages, including RE landing. Suggested first line in Main heading: your brand, then a line with tenant name · subdomain · Real Estate.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "footer".
@@ -1226,9 +1825,18 @@ export interface Footer {
    * Internal title for this footer (e.g., "Hotel ABC Footer", "Restaurant XYZ Footer")
    */
   title: string;
+  /**
+   * Which organization this footer belongs to. Content (headings, address, links) should match that tenant.
+   */
   tenant?: (number | null) | Tenant;
   leftContent: {
+    /**
+     * RE landing: usually one line with <b>district.</b> (HTML allowed). Boutique/other: brand headline.
+     */
     heading: string;
+    /**
+     * RE landing: second line under the brand, e.g. Tenant name · subdomain · Real Estate (plain text).
+     */
     subheading?: string | null;
   };
   rightContent: {
@@ -1249,6 +1857,9 @@ export interface Footer {
       country: string;
     };
   };
+  /**
+   * RE landing: copyright (left), optional links (next to ©), optional right tail. Matches District footer bar.
+   */
   bottomContent: {
     copyright: string;
     links?:
@@ -1259,7 +1870,10 @@ export interface Footer {
           id?: string | null;
         }[]
       | null;
-    madeBy: string;
+    /**
+     * RE landing: small caps line on the bottom-right (e.g. credits). Leave empty to hide.
+     */
+    madeBy?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -1890,6 +2504,17 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        'real-estate-landing-nav'?: T | RealEstateLandingNavBlockSelect<T>;
+        'real-estate-landing-hero'?: T | RealEstateLandingHeroBlockSelect<T>;
+        'real-estate-landing-marquee'?: T | RealEstateLandingMarqueeBlockSelect<T>;
+        'real-estate-landing-manifesto'?: T | RealEstateLandingManifestoBlockSelect<T>;
+        'real-estate-landing-typology'?: T | RealEstateLandingTypologyBlockSelect<T>;
+        'real-estate-landing-gallery'?: T | RealEstateLandingGalleryBlockSelect<T>;
+        'real-estate-landing-current-project'?: T | RealEstateLandingCurrentProjectBlockSelect<T>;
+        'real-estate-landing-partner'?: T | RealEstateLandingPartnerBlockSelect<T>;
+        'real-estate-landing-inquiry'?: T | RealEstateLandingInquiryBlockSelect<T>;
+        'real-estate-landing-unit-browser'?: T | RealEstateLandingUnitBrowserBlockSelect<T>;
+        'real-estate-landing-past-projects'?: T | RealEstateLandingPastProjectsBlockSelect<T>;
         'real-estate-hero'?:
           | T
           | {
@@ -2022,6 +2647,390 @@ export interface PagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingNavBlock_select".
+ */
+export interface RealEstateLandingNavBlockSelect<T extends boolean = true> {
+  brandHtml?: T;
+  brandAriaLabel?: T;
+  langLine?: T;
+  showLangLine?: T;
+  links?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        openInNewTab?: T;
+        id?: T;
+      };
+  ctaLabel?: T;
+  ctaHref?: T;
+  ctaOpenInNewTab?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingHeroBlock_select".
+ */
+export interface RealEstateLandingHeroBlockSelect<T extends boolean = true> {
+  heroSectionId?: T;
+  layout?: T;
+  topLeftLines?:
+    | T
+    | {
+        line?: T;
+        id?: T;
+      };
+  topRightLines?:
+    | T
+    | {
+        line?: T;
+        id?: T;
+      };
+  eyebrow?: T;
+  titleLine1?: T;
+  titleLine2Html?: T;
+  heroImage?: T;
+  imageAlt?: T;
+  mediaCaption?: T;
+  lead?: T;
+  showScrollCue?: T;
+  scrollCueLabel?: T;
+  metaRows?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingMarqueeBlock_select".
+ */
+export interface RealEstateLandingMarqueeBlockSelect<T extends boolean = true> {
+  durationSeconds?: T;
+  separator?: T;
+  ariaLabel?: T;
+  items?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingManifestoBlock_select".
+ */
+export interface RealEstateLandingManifestoBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  labelLeft?: T;
+  labelNum?: T;
+  topIntroHtml?: T;
+  rows?:
+    | T
+    | {
+        segments?:
+          | T
+          | {
+              text?: T;
+              style?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  footnoteHtml?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingTypologyBlock_select".
+ */
+export interface RealEstateLandingTypologyBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  eyebrow?: T;
+  headingParts?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        lineBreak?: T;
+        id?: T;
+      };
+  intro?: T;
+  countSuffixWord?: T;
+  outroHtml?: T;
+  items?:
+    | T
+    | {
+        unitCode?: T;
+        name?: T;
+        size?: T;
+        description?: T;
+        count?: T;
+        highlight?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingGalleryBlock_select".
+ */
+export interface RealEstateLandingGalleryBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  eyebrow?: T;
+  headingParts?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        lineBreak?: T;
+        id?: T;
+      };
+  intro?: T;
+  introHtml?: T;
+  slides?:
+    | T
+    | {
+        image?: T;
+        slideImageAlt?: T;
+        name?: T;
+        location?: T;
+        credit?: T;
+        linkUrl?: T;
+        linkOpenInNewTab?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingCurrentProjectBlock_select".
+ */
+export interface RealEstateLandingCurrentProjectBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  eyebrow?: T;
+  headingParts?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        lineBreak?: T;
+        id?: T;
+      };
+  bigNumber?: T;
+  projectMeta?: T;
+  projectNameHtml?: T;
+  description?: T;
+  image?: T;
+  imageAlt?: T;
+  ctaLabel?: T;
+  ctaHref?: T;
+  ctaOpenInNewTab?: T;
+  stats?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingPartnerBlock_select".
+ */
+export interface RealEstateLandingPartnerBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  image?: T;
+  imageAlt?: T;
+  eyebrow?: T;
+  headingParts?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        lineBreak?: T;
+        id?: T;
+      };
+  paragraphs?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  ctaLabel?: T;
+  ctaHref?: T;
+  ctaOpenInNewTab?: T;
+  secondaryCtaLabel?: T;
+  secondaryCtaHref?: T;
+  secondaryCtaOpenInNewTab?: T;
+  signatureBold?: T;
+  signatureSub?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingInquiryBlock_select".
+ */
+export interface RealEstateLandingInquiryBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  eyebrow?: T;
+  headingParts?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        lineBreak?: T;
+        id?: T;
+      };
+  introHtml?: T;
+  formActionUrl?: T;
+  formMethod?: T;
+  submitButtonLabel?: T;
+  disabledSubmitHelp?: T;
+  nameFieldLabel?: T;
+  emailFieldLabel?: T;
+  phoneFieldLabel?: T;
+  interestFieldLabel?: T;
+  messageFieldLabel?: T;
+  interestPlaceholder?: T;
+  messagePlaceholder?: T;
+  privacyHtml?: T;
+  interestOptions?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  contacts?:
+    | T
+    | {
+        label?: T;
+        valueHtml?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingUnitBrowserBlock_select".
+ */
+export interface RealEstateLandingUnitBrowserBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  eyebrow?: T;
+  headingParts?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        lineBreak?: T;
+        id?: T;
+      };
+  introHtml?: T;
+  legendHtml?: T;
+  detailPanelNoteHtml?: T;
+  building?: T;
+  pdfMetaLine?: T;
+  browserCopy?:
+    | T
+    | {
+        dilatationLabel?: T;
+        floorLabel?: T;
+        floorButtonWord?: T;
+        stageFloorWord?: T;
+        unitsTotalSuffix?: T;
+        dilatationStagePrefix?: T;
+        statusAvailable?: T;
+        statusReserved?: T;
+        statusSold?: T;
+        loadingInProgress?: T;
+        loadingErrorTemplate?: T;
+        pdfCardBadge?: T;
+        adminHint?: T;
+        defaultDetailLead?: T;
+        pagesRangeTemplate?: T;
+        unexpectedResponse?: T;
+        networkFailure?: T;
+      };
+  pdfModalCopy?:
+    | T
+    | {
+        metaTemplate?: T;
+        closeLabel?: T;
+        modalUnitWord?: T;
+        netLabel?: T;
+        grossLabel?: T;
+        pdfPagePrefix?: T;
+        emptyDocumentMessage?: T;
+        openInNewTab?: T;
+        sendInquiryCta?: T;
+        embedTitleTemplate?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingPastProjectsBlock_select".
+ */
+export interface RealEstateLandingPastProjectsBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  layout?: T;
+  eyebrow?: T;
+  headingParts?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        lineBreak?: T;
+        id?: T;
+      };
+  introHtml?: T;
+  projects?:
+    | T
+    | {
+        name?: T;
+        subtitle?: T;
+        location?: T;
+        year?: T;
+        statusLabel?: T;
+        statusActive?: T;
+        summaryHtml?: T;
+        externalUrl?: T;
+        externalOpenInNewTab?: T;
+        previewImage?: T;
+        previewImageAlt?: T;
+        gallery?:
+          | T
+          | {
+              image?: T;
+              caption?: T;
+              alt?: T;
+              credit?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "menu_select".
  */
 export interface MenuSelect<T extends boolean = true> {
@@ -2049,6 +3058,12 @@ export interface MenuSelect<T extends boolean = true> {
   logo?: T;
   logoText?: T;
   hubTagline?: T;
+  reLandingDefaults?:
+    | T
+    | {
+        formActionUrl?: T;
+        formMethod?: T;
+      };
   positioning?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2117,6 +3132,12 @@ export interface BuildingsSelect<T extends boolean = true> {
     | {
         label?: T;
         detailPageNumber?: T;
+        dilatacija?: T;
+        floor?: T;
+        unitType?: T;
+        netArea?: T;
+        grossArea?: T;
+        status?: T;
         shape?:
           | T
           | {

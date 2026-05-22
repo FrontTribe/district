@@ -1,4 +1,5 @@
 import { Block } from 'payload'
+import { reDeprecatedBlockAdmin } from '@/blocks/real-estate-landing-shared'
 
 const RealEstateHero: Block = {
   slug: 'real-estate-hero',
@@ -6,6 +7,7 @@ const RealEstateHero: Block = {
     singular: { en: 'Real Estate Hero', hr: 'Hero (nekretnine)' },
     plural: { en: 'Real Estate Heroes', hr: 'Hero sekcije (nekretnine)' },
   },
+  admin: reDeprecatedBlockAdmin,
   fields: [
     {
       name: 'heading',

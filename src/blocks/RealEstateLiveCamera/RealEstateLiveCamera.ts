@@ -1,4 +1,5 @@
 import { Block } from 'payload'
+import { reDeprecatedBlockAdmin } from '@/blocks/real-estate-landing-shared'
 
 const RealEstateLiveCamera: Block = {
   slug: 'real-estate-live-camera',
@@ -6,6 +7,7 @@ const RealEstateLiveCamera: Block = {
     singular: { en: 'Real Estate Live Camera', hr: 'Live kamera' },
     plural: { en: 'Real Estate Live Camera', hr: 'Live kamera' },
   },
+  admin: reDeprecatedBlockAdmin,
   fields: [
     {
       name: 'heading',

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import type { Tenant } from '@/payload-types'
+import { RealEstateLandingShell } from '@/components/real-estate-landing'
 import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
@@ -10,6 +11,7 @@ import { getTenantVisualTheme } from '@/utils/tenantVisualTheme'
 import { getCachedPageBySlug } from '@/utils/getCachedPages'
 import { localeLang } from '@/utils/locale'
 import { generateMetadataFromPage } from '@/utils/generateMetadata'
+import { mergePageLayoutForPublicPage } from '@/utils/mergeReLandingLayoutForPublic'
 
 type PageProps = {
   params: Promise<{
@@ -20,7 +22,8 @@ type PageProps = {
 
 type AllowedLocale = 'en' | 'hr' | 'de' | undefined
 
-const fetchPage = (slug: string, locale: AllowedLocale) => getCachedPageBySlug(slug, locale, 4)
+/** Dubina za ugniježđene blokove (npr. `building` → `unitDetailsPdf` u unit browseru). */
+const fetchPage = (slug: string, locale: AllowedLocale) => getCachedPageBySlug(slug, locale, 6)
 
 /**
  * Generate metadata for the page
@@ -71,15 +74,39 @@ export default async function Page({ params }: PageProps) {
   const tenantVisualTheme = getTenantVisualTheme(subdomain)
   const isBoutiqueTenantPage = Boolean(currentTenant && tenantVisualTheme === 'boutique')
 
-  const layout = page.layout ?? []
-  const isRealEstatePage =
+  const mergedPage = mergePageLayoutForPublicPage(page, menuGlobal)
+
+  const layout = mergedPage.layout ?? []
+  const blockType = (b: { blockType?: string | null }) => String(b.blockType ?? '')
+
+  const isRealEstateLandingPage =
+    layout.length > 0 && layout.every((b) => blockType(b).startsWith('real-estate-landing-'))
+
+  const isLegacyRealEstatePage =
     layout.length > 0 &&
-    layout.every((b: { blockType?: string }) => b.blockType?.startsWith('real-estate-'))
+    layout.every((b) => {
+      const t = blockType(b)
+      return t.startsWith('real-estate-') && !t.startsWith('real-estate-landing-')
+    })
+
+  const hasLandingNav = layout.some((b) => b.blockType === 'real-estate-landing-nav')
+
+  const showTenantMenu = Boolean(currentTenant && !(isRealEstateLandingPage && hasLandingNav))
+  const showTenantFooter = Boolean(currentTenant && footerGlobal)
+  const reLandingFooterNode =
+    footerGlobal && currentTenant && isRealEstateLandingPage ? (
+      <Footer
+        variant="reLanding"
+        leftContent={footerGlobal.leftContent}
+        rightContent={footerGlobal.rightContent}
+        bottomContent={footerGlobal.bottomContent}
+      />
+    ) : undefined
 
   const pageBody = (
     <>
       {/* Menu Wrapper - only show for tenant pages */}
-      {currentTenant && (
+      {showTenantMenu && (
         <MenuWrapper
           tenantVisualTheme={tenantVisualTheme}
           brandSubtitle={
@@ -120,10 +147,18 @@ export default async function Page({ params }: PageProps) {
         />
       )}
 
-      {isRealEstatePage ? (
+      {isRealEstateLandingPage ? (
+        <RealEstateLandingShell footer={reLandingFooterNode}>
+          <PageClient
+            page={mergedPage}
+            locale={locale}
+            tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
+          />
+        </RealEstateLandingShell>
+      ) : isLegacyRealEstatePage ? (
         <main className="real-estate-preview">
           <PageClient
-            page={page}
+            page={mergedPage}
             locale={locale}
             tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
           />
@@ -137,22 +172,21 @@ export default async function Page({ params }: PageProps) {
           }
         >
           <PageClient
-            page={page}
+            page={mergedPage}
             locale={locale}
             tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
           />
         </div>
       )}
 
-      {/* Footer - only show for tenant pages */}
-      {currentTenant && footerGlobal && (
+      {showTenantFooter && footerGlobal && !isRealEstateLandingPage ? (
         <Footer
           variant={tenantVisualTheme === 'boutique' ? 'boutique' : 'default'}
           leftContent={footerGlobal.leftContent}
           rightContent={footerGlobal.rightContent}
           bottomContent={footerGlobal.bottomContent}
         />
-      )}
+      ) : null}
     </>
   )
 

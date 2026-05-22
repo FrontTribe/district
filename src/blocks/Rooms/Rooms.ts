@@ -1,5 +1,6 @@
 import { Block, type Condition } from 'payload'
 import { loadRentlioOptions } from '@/utils/rentlio'
+import { districtAdminGroups } from '@/blocks/district-admin-groups'
 
 const DEFAULT_SALES_CHANNEL_ID = '45'
 
@@ -91,6 +92,7 @@ if (typeof window === 'undefined') {
 
 const Rooms: Block = {
   slug: 'rooms',
+  admin: { group: districtAdminGroups.boutique },
   fields: [
     {
       name: 'eyebrow',

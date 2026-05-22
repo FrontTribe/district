@@ -128,12 +128,15 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       // Animate menu items if they exist
       if (menuItemsRef.current) {
         const menuItems = menuItemsRef.current
-        tl.current.fromTo(
-          menuItems.querySelectorAll('.mobile-menu-item'),
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
-          '-=0.2',
-        )
+        const itemNodes = menuItems.querySelectorAll('.mobile-menu-item')
+        if (itemNodes.length) {
+          tl.current.fromTo(
+            itemNodes,
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
+            '-=0.2',
+          )
+        }
       }
     } else {
       // Close animation - create a new timeline for closing
@@ -142,12 +145,15 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       // Animate menu items out first
       if (menuItemsRef.current) {
         const menuItems = menuItemsRef.current
-        closeTl.to(menuItems.querySelectorAll('.mobile-menu-item'), {
-          opacity: 0,
-          y: -20,
-          duration: 0.2,
-          ease: 'power2.in',
-        })
+        const itemNodes = menuItems.querySelectorAll('.mobile-menu-item')
+        if (itemNodes.length) {
+          closeTl.to(itemNodes, {
+            opacity: 0,
+            y: -20,
+            duration: 0.2,
+            ease: 'power2.in',
+          })
+        }
       }
 
       // Then slide menu out and fade overlay

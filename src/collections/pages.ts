@@ -17,6 +17,17 @@ import Image from '@/blocks/Image'
 import { Intro } from '@/blocks/Intro'
 import { ImageGrid } from '@/blocks/ImageGrid'
 import { FloorPlan } from '@/blocks/FloorPlan'
+import RealEstateLandingNav from '@/blocks/RealEstateLandingNav'
+import RealEstateLandingHero from '@/blocks/RealEstateLandingHero'
+import RealEstateLandingMarquee from '@/blocks/RealEstateLandingMarquee'
+import RealEstateLandingManifesto from '@/blocks/RealEstateLandingManifesto'
+import RealEstateLandingTypology from '@/blocks/RealEstateLandingTypology'
+import RealEstateLandingGallery from '@/blocks/RealEstateLandingGallery'
+import RealEstateLandingCurrentProject from '@/blocks/RealEstateLandingCurrentProject'
+import RealEstateLandingPartner from '@/blocks/RealEstateLandingPartner'
+import RealEstateLandingInquiry from '@/blocks/RealEstateLandingInquiry'
+import RealEstateLandingUnitBrowser from '@/blocks/RealEstateLandingUnitBrowser'
+import RealEstateLandingPastProjects from '@/blocks/RealEstateLandingPastProjects'
 import RealEstateHero from '@/blocks/RealEstateHero'
 import RealEstateAboutUs from '@/blocks/RealEstateAboutUs'
 import RealEstateProjectsWeDid from '@/blocks/RealEstateProjectsWeDid'
@@ -36,8 +47,10 @@ const Pages: CollectionConfig = {
     useAsTitle: 'title',
     group: { en: 'Site Content', hr: 'Sadržaj stranice' },
     description: {
-      en: 'Manage pages for tenants and main domain',
-      hr: 'Upravljanje stranicama za stanare i glavnu domenu',
+      en:
+        'Pages for tenants and main domain. Layout blocks are grouped in the editor: District · Real estate (RE landing + legacy RE), District · Boutique, District · Momento (reserved), District · Hub & pages. RE landing form and contact row: edit “RE Landing — Inquiry” in the page layout. The RE landing strip footer is edited in the Footers collection (not in the page layout).',
+      hr:
+        'Stranice za stanare i glavnu domenu. Blokovi u layoutu su u Adminu grupirani: District · Nekretnine (RE landing + stari RE), District · Boutique, District · Momento (rezervirano), District · Hub i stranice. RE landing obrazac i red kontakta: „RE landing — upit” u layoutu. Jednoredno tamno podnožje na RE landing stranici uređuje se u kolekciji Podnožja, ne u layoutu stranice.',
     },
   },
   access: {
@@ -147,6 +160,17 @@ const Pages: CollectionConfig = {
         Intro,
         ImageGrid,
         FloorPlan,
+        RealEstateLandingNav,
+        RealEstateLandingHero,
+        RealEstateLandingMarquee,
+        RealEstateLandingManifesto,
+        RealEstateLandingTypology,
+        RealEstateLandingGallery,
+        RealEstateLandingCurrentProject,
+        RealEstateLandingPartner,
+        RealEstateLandingInquiry,
+        RealEstateLandingUnitBrowser,
+        RealEstateLandingPastProjects,
         RealEstateHero,
         RealEstateAboutUs,
         RealEstateProjectsWeDid,

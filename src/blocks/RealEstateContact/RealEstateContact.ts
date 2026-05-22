@@ -1,4 +1,5 @@
 import { Block } from 'payload'
+import { reDeprecatedBlockAdmin } from '@/blocks/real-estate-landing-shared'
 
 const RealEstateContact: Block = {
   slug: 'real-estate-contact',
@@ -6,6 +7,7 @@ const RealEstateContact: Block = {
     singular: { en: 'Real Estate Contact', hr: 'Kontakt (nekretnine)' },
     plural: { en: 'Real Estate Contact', hr: 'Kontakt sekcije' },
   },
+  admin: reDeprecatedBlockAdmin,
   fields: [
     { name: 'eyebrow', type: 'text', label: { en: 'Eyebrow', hr: 'Mali naslov' } },
     { name: 'heading', type: 'text', label: { en: 'Heading', hr: 'Naslov' }, required: true },

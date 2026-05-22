@@ -1,8 +1,10 @@
 import { Block } from 'payload'
 import React from 'react'
+import { districtAdminGroups } from '@/blocks/district-admin-groups'
 
 const Features: Block = {
   slug: 'features',
+  admin: { group: districtAdminGroups.hub },
   fields: [
     {
       name: 'heading',
