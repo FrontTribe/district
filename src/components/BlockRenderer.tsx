@@ -83,6 +83,10 @@ function isLandingBlockType(blockType?: string | null) {
   return !!blockType?.startsWith(LANDING_PREFIX)
 }
 
+function isMomentoTheme(theme: TenantVisualTheme) {
+  return theme === 'momento'
+}
+
 function renderSingleBlock(
   block: _Block,
   index: number,
@@ -151,7 +155,7 @@ export const BlockRenderer: React.FC<{
       continue
     }
 
-    if (isLandingBlockType(t)) {
+    if (isMomentoTheme(tenantVisualTheme) || isLandingBlockType(t)) {
       flushProse(`prose-before-${i}`)
       nodes.push(renderSingleBlock(block, i, locale, tenantVisualTheme))
       i++

@@ -3,8 +3,26 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { gsap, ScrollTrigger } from '@/lib/gsap'
 import { ConceptBarMenuBlockProps } from './types'
+import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { MomentoMenuSection } from '@/components/momento-landing'
 
-export const ConceptBarMenuBlock: React.FC<ConceptBarMenuBlockProps> = ({
+export const ConceptBarMenuBlock: React.FC<
+  ConceptBarMenuBlockProps & { tenantVisualTheme?: TenantVisualTheme; locale?: string }
+> = (props) =>
+  props.tenantVisualTheme === 'momento' ? (
+    <MomentoMenuSection
+      title={props.title}
+      subtitle={props.subtitle}
+      menuCategories={props.menuCategories}
+      sectionId={props.sectionId}
+    />
+  ) : (
+    <ConceptBarMenuBlockDefault {...props} />
+  )
+
+const ConceptBarMenuBlockDefault: React.FC<
+  ConceptBarMenuBlockProps & { tenantVisualTheme?: TenantVisualTheme; locale?: string }
+> = ({
   title,
   subtitle,
   popularBadgeText,

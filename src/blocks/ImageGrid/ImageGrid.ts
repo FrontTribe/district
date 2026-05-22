@@ -45,7 +45,11 @@ const ImageGrid: Block = {
       type: 'array',
       label: 'Images',
       minRows: 4,
-      maxRows: 4,
+      maxRows: 6,
+      admin: {
+        description:
+          'Momento landing: 6 slika za galeriju „Prostor” (1–4 interijer/terasa, 5–6 atmosfera/karijera). Ostali tenanti: 4 dovoljno.',
+      },
       fields: [
         {
           name: 'image',

@@ -296,6 +296,13 @@ div {
   }
 }
 
+// Momento tenant — full-width landing shell (scoped styles in momento-landing.scss)
+.momento-tenant-root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 // Boutique tenant — full-page shell (warm sand + brick accent; distinct from District teal)
 .boutique-tenant-root {
   --boutique-page-bg: #e4d9cb;

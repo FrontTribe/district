@@ -2,21 +2,22 @@
 
 import React, { useEffect, useRef } from 'react'
 import { gsap, ScrollTrigger } from '@/lib/gsap'
+import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { MomentoIntro } from '@/components/momento-landing'
 
 type Props = {
   content: string
   sectionId?: string
+  tenantVisualTheme?: TenantVisualTheme
 }
 
-export const IntroBlock: React.FC<Props> = ({ content, sectionId }) => {
+export const IntroBlock: React.FC<Props> = ({ content, sectionId, tenantVisualTheme = 'default' }) => {
   const sectionRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
+    if (tenantVisualTheme === 'momento' || typeof window === 'undefined') return
     const ctx = gsap.context(() => {
       const q = gsap.utils.selector(sectionRef)
-
-      // Text fade-in animation
       const textTarget = q('.intro__content')
       gsap.set(textTarget, { opacity: 0, y: 30 })
       gsap.to(textTarget, {
@@ -31,9 +32,12 @@ export const IntroBlock: React.FC<Props> = ({ content, sectionId }) => {
         },
       })
     }, sectionRef)
-
     return () => ctx.revert()
-  }, [])
+  }, [tenantVisualTheme])
+
+  if (tenantVisualTheme === 'momento') {
+    return <MomentoIntro content={content} sectionId={sectionId} />
+  }
 
   return (
     <section ref={sectionRef} id={sectionId} className="intro">
@@ -49,3 +53,4 @@ export const IntroBlock: React.FC<Props> = ({ content, sectionId }) => {
     </section>
   )
 }
+

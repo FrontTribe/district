@@ -2,12 +2,14 @@
 
 import React, { useEffect, useRef } from 'react'
 import { gsap, ScrollTrigger } from '@/lib/gsap'
+import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { MomentoStorySection } from '@/components/momento-landing'
 
 type ImageItem = {
   image: {
     url: string
     alt?: string
-  }
+  } | unknown
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 }
 
@@ -18,9 +20,22 @@ type Props = {
   buttonUrl?: string
   images: ImageItem[]
   sectionId?: string
+  tenantVisualTheme?: TenantVisualTheme
 }
 
-export const ImageGridBlock: React.FC<Props> = ({
+export const ImageGridBlock: React.FC<Props> = (props) =>
+  props.tenantVisualTheme === 'momento' ? (
+    <MomentoStorySection
+      title={props.title}
+      subtitle={props.subtitle}
+      images={props.images}
+      sectionId={props.sectionId}
+    />
+  ) : (
+    <ImageGridBlockDefault {...props} />
+  )
+
+const ImageGridBlockDefault: React.FC<Props> = ({
   title,
   subtitle,
   buttonText,

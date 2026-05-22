@@ -4,6 +4,7 @@ import HeroAnimated from '@/blocks/HeroAnimated'
 import { BoutiqueHeroContent } from '@/blocks/BoutiqueHeroContent'
 import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
 import { districtAdminGroups } from '@/blocks/district-admin-groups'
+import { MomentoHero } from '@/components/momento-landing'
 
 function boutiqueFilmGradient(overlay?: string | null): string {
   switch (overlay) {
@@ -118,6 +119,18 @@ export const HeroBlock: React.FC<{
   tenantVisualTheme = 'default',
 }) => {
   const isBoutique = tenantVisualTheme === 'boutique'
+  const isMomento = tenantVisualTheme === 'momento'
+
+  if (isMomento) {
+    return (
+      <MomentoHero
+        heading={heading}
+        subheading={subheading}
+        sectionId={sectionId}
+        backgroundMedia={backgroundMedia}
+      />
+    )
+  }
 
   const renderBoutiqueBackground = () => {
     const filmStyle: React.CSSProperties = {

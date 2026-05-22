@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import type { Tenant } from '@/payload-types'
 import { RealEstateLandingShell } from '@/components/real-estate-landing'
+import { MomentoFooter, MomentoLandingShell } from '@/components/momento-landing'
 import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
@@ -73,6 +74,7 @@ export default async function Page({ params }: PageProps) {
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
   const tenantVisualTheme = getTenantVisualTheme(subdomain)
   const isBoutiqueTenantPage = Boolean(currentTenant && tenantVisualTheme === 'boutique')
+  const isMomentoTenantPage = Boolean(currentTenant && tenantVisualTheme === 'momento')
 
   const mergedPage = mergePageLayoutForPublicPage(page, menuGlobal)
 
@@ -91,8 +93,10 @@ export default async function Page({ params }: PageProps) {
 
   const hasLandingNav = layout.some((b) => b.blockType === 'real-estate-landing-nav')
 
-  const showTenantMenu = Boolean(currentTenant && !(isRealEstateLandingPage && hasLandingNav))
-  const showTenantFooter = Boolean(currentTenant && footerGlobal)
+  const showTenantMenu = Boolean(
+    currentTenant && !(isRealEstateLandingPage && hasLandingNav) && !isMomentoTenantPage,
+  )
+  const showTenantFooter = Boolean(currentTenant && footerGlobal && !isMomentoTenantPage)
   const reLandingFooterNode =
     footerGlobal && currentTenant && isRealEstateLandingPage ? (
       <Footer
@@ -102,6 +106,52 @@ export default async function Page({ params }: PageProps) {
         bottomContent={footerGlobal.bottomContent}
       />
     ) : undefined
+
+  const momentoFooterNode =
+    footerGlobal && isMomentoTenantPage ? (
+      <MomentoFooter
+        logoText={menuGlobal?.logoText ?? 'Momento.'}
+        tagline={footerGlobal.leftContent?.subheading ?? undefined}
+        navLinks={
+          menuGlobal?.menuItems?.map((item) => ({
+            label: item.label,
+            href: item.link,
+          })) ?? undefined
+        }
+        email={footerGlobal.rightContent?.contact?.email ?? undefined}
+        phone={footerGlobal.rightContent?.contact?.phone ?? undefined}
+        instagram={
+          footerGlobal.rightContent?.contact?.instagram
+            ? `https://instagram.com/${footerGlobal.rightContent.contact.instagram.replace(/^@/, '')}`
+            : undefined
+        }
+        copyright={footerGlobal.bottomContent?.copyright ?? undefined}
+        madeBy={footerGlobal.bottomContent?.madeBy ?? undefined}
+      />
+    ) : undefined
+
+  const momentoMenu =
+    menuGlobal && isMomentoTenantPage
+      ? {
+          logoText: menuGlobal.logoText ?? 'Momento.',
+          locale,
+          menuItems:
+            menuGlobal.menuItems?.map((item) => ({
+              label: item.label,
+              link: item.link,
+              scrollTarget: item.scrollTarget || undefined,
+              external: item.external || false,
+            })) ?? [],
+        }
+      : undefined
+
+  const pageClient = (
+    <PageClient
+      page={mergedPage}
+      locale={locale}
+      tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
+    />
+  )
 
   const pageBody = (
     <>
@@ -148,21 +198,13 @@ export default async function Page({ params }: PageProps) {
       )}
 
       {isRealEstateLandingPage ? (
-        <RealEstateLandingShell footer={reLandingFooterNode}>
-          <PageClient
-            page={mergedPage}
-            locale={locale}
-            tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
-          />
-        </RealEstateLandingShell>
+        <RealEstateLandingShell footer={reLandingFooterNode}>{pageClient}</RealEstateLandingShell>
+      ) : isMomentoTenantPage ? (
+        <MomentoLandingShell menu={momentoMenu} footer={momentoFooterNode}>
+          {pageClient}
+        </MomentoLandingShell>
       ) : isLegacyRealEstatePage ? (
-        <main className="real-estate-preview">
-          <PageClient
-            page={mergedPage}
-            locale={locale}
-            tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
-          />
-        </main>
+        <main className="real-estate-preview">{pageClient}</main>
       ) : (
         <div
           className={
@@ -171,11 +213,7 @@ export default async function Page({ params }: PageProps) {
               : 'content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
           }
         >
-          <PageClient
-            page={mergedPage}
-            locale={locale}
-            tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
-          />
+          {pageClient}
         </div>
       )}
 
@@ -192,6 +230,8 @@ export default async function Page({ params }: PageProps) {
 
   return isBoutiqueTenantPage ? (
     <div className="boutique-tenant-root">{pageBody}</div>
+  ) : isMomentoTenantPage ? (
+    <div className="momento-tenant-root">{pageBody}</div>
   ) : (
     pageBody
   )

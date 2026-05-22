@@ -13,6 +13,7 @@ import { localeLang } from '@/utils/locale'
 import { notFound } from 'next/navigation'
 import PageClient from '@/components/PageClient'
 import { RealEstateLandingShell } from '@/components/real-estate-landing'
+import { MomentoFooter, MomentoLandingShell } from '@/components/momento-landing'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
 import { getTenantVisualTheme } from '@/utils/tenantVisualTheme'
 import { getCachedPagesByTenant } from '@/utils/getCachedPages'
@@ -127,9 +128,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const isHubTriptychHome = !currentTenant && firstBlockType === 'three-columns'
   const hubMenuCount = menuGlobal?.menuItems?.length ?? 0
   const isBoutiqueTenantHome = Boolean(currentTenant && tenantVisualTheme === 'boutique')
+  const isMomentoTenantHome = Boolean(currentTenant && tenantVisualTheme === 'momento')
   const homeLanding = getRealEstateLandingFlags(pagesForClient[0])
   const mainContentClassName =
-    isHubTriptychHome || homeLanding.isRealEstateLandingPage || isBoutiqueTenantHome
+    isHubTriptychHome || homeLanding.isRealEstateLandingPage || isBoutiqueTenantHome || isMomentoTenantHome
       ? 'content w-full'
       : 'content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
 
@@ -138,6 +140,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     Boolean(currentTenant) &&
     homeLanding.isRealEstateLandingPage &&
     homeLanding.hasLandingNav
+  const hideGlobalMenuForMomento = Boolean(currentTenant) && isMomentoTenantHome
   const hubSocialLinks = isHubTriptychHome ? buildHubSocialLinks(footerGlobal) : undefined
 
   const homeInner = (
@@ -145,7 +148,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <RefreshRouteOnSave />
 
       {/* Menu Wrapper — hidden when tenant home is a full RE landing (in-page nav) */}
-      {!hideGlobalMenuForTenantLandingNav && (
+      {!hideGlobalMenuForTenantLandingNav && !hideGlobalMenuForMomento && (
         <MenuWrapper
           tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
           brandSubtitle={
@@ -196,6 +199,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         {pagesForClient.length > 0 ? (
           pagesForClient.map((page) => {
             const { isRealEstateLandingPage } = getRealEstateLandingFlags(page)
+            const isMomentoPage = isMomentoTenantHome
             const inner = (
               <PageClient
                 page={page}
@@ -212,10 +216,50 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   bottomContent={footerGlobal.bottomContent}
                 />
               ) : undefined
+            const momentoFooterNode =
+              footerGlobal && isMomentoPage ? (
+                <MomentoFooter
+                  logoText={menuGlobal?.logoText ?? 'Momento.'}
+                  tagline={footerGlobal.leftContent?.subheading ?? undefined}
+                  navLinks={
+                    menuGlobal?.menuItems?.map((item) => ({
+                      label: item.label,
+                      href: item.link,
+                    })) ?? undefined
+                  }
+                  email={footerGlobal.rightContent?.contact?.email ?? undefined}
+                  phone={footerGlobal.rightContent?.contact?.phone ?? undefined}
+                  instagram={
+                    footerGlobal.rightContent?.contact?.instagram
+                      ? `https://instagram.com/${footerGlobal.rightContent.contact.instagram.replace(/^@/, '')}`
+                      : undefined
+                  }
+                  copyright={footerGlobal.bottomContent?.copyright ?? undefined}
+                  madeBy={footerGlobal.bottomContent?.madeBy ?? undefined}
+                />
+              ) : undefined
+            const momentoMenu =
+              menuGlobal && isMomentoPage
+                ? {
+                    logoText: menuGlobal.logoText ?? 'Momento.',
+                    locale,
+                    menuItems:
+                      menuGlobal.menuItems?.map((item) => ({
+                        label: item.label,
+                        link: item.link,
+                        scrollTarget: item.scrollTarget || undefined,
+                        external: item.external || false,
+                      })) ?? [],
+                  }
+                : undefined
             return (
               <div key={page.id}>
                 {isRealEstateLandingPage ? (
                   <RealEstateLandingShell footer={reLandingFooterNode}>{inner}</RealEstateLandingShell>
+                ) : isMomentoPage ? (
+                  <MomentoLandingShell menu={momentoMenu} footer={momentoFooterNode}>
+                    {inner}
+                  </MomentoLandingShell>
                 ) : (
                   inner
                 )}
@@ -236,7 +280,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </div>
 
       {/* Footer — kolekcija Podnožja (marketing RE landing strip je unutar RealEstateLandingShell) */}
-      {footerGlobal && !isHubTriptychHome && !homeLanding.isRealEstateLandingPage && (
+      {footerGlobal && !isHubTriptychHome && !homeLanding.isRealEstateLandingPage && !isMomentoTenantHome && (
         <Footer
           variant={tenantVisualTheme === 'boutique' ? 'boutique' : 'default'}
           leftContent={footerGlobal.leftContent}
@@ -252,6 +296,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     <MainPageLoader isMainDomain={!currentTenant} hubTriptychIntro={isHubTriptychHome}>
       {isBoutiqueTenantHome ? (
         <div className="boutique-tenant-root">{homeInner}</div>
+      ) : isMomentoTenantHome ? (
+        <div className="momento-tenant-root">{homeInner}</div>
       ) : (
         homeInner
       )}

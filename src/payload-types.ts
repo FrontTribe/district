@@ -318,6 +318,9 @@ export interface Page {
     | (
         | {
             heading: string;
+            /**
+             * Boutique hero: optional eyebrow, then a line with only ---, then body text. Heading: word *Boutique* is auto-accented; use *like this* for other italics.
+             */
             subheading?: string | null;
             backgroundMedia?: {
               type?: ('none' | 'image' | 'video') | null;
@@ -733,6 +736,9 @@ export interface Page {
              * URL for the button (if button text is provided)
              */
             buttonUrl?: string | null;
+            /**
+             * Momento landing: 6 slika za galeriju „Prostor” (1–4 interijer/terasa, 5–6 atmosfera/karijera). Ostali tenanti: 4 dovoljno.
+             */
             images?:
               | {
                   image: number | Media;
