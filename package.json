@@ -12,6 +12,7 @@
     "payload": "cross-env NODE_OPTIONS=\"--no-deprecation --loader ./scripts/ignore-scss-loader.mjs\" payload",
     "generate:importmap": "pnpm run payload -- generate:importmap",
     "generate:types": "pnpm run payload -- generate:types",
+    "check:migrations": "node scripts/check-pending-migrations.mjs",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "test": "pnpm run test:int && pnpm run test:e2e",
