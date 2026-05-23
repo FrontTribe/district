@@ -5,6 +5,7 @@ import * as migration_20260519_120000_menu_hub_tagline from './20260519_120000_m
 import * as migration_20260519_140000_buildings_unit_extra_fields from './20260519_140000_buildings_unit_extra_fields';
 import * as migration_20260523_133026 from './20260523_133026';
 import * as migration_20260523_192127_boutique_landing_redesign from './20260523_192127_boutique_landing_redesign';
+import * as migration_20260523_213417 from './20260523_213417';
 
 export const migrations = [
   {
@@ -40,6 +41,11 @@ export const migrations = [
   {
     up: migration_20260523_192127_boutique_landing_redesign.up,
     down: migration_20260523_192127_boutique_landing_redesign.down,
-    name: '20260523_192127_boutique_landing_redesign'
+    name: '20260523_192127_boutique_landing_redesign',
+  },
+  {
+    up: migration_20260523_213417.up,
+    down: migration_20260523_213417.down,
+    name: '20260523_213417'
   },
 ];
