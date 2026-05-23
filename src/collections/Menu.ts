@@ -218,42 +218,6 @@ const Menu: CollectionConfig = {
       },
     },
     {
-      name: 'reLandingDefaults',
-      type: 'group',
-      label: { en: 'RE landing — default form URL', hr: 'RE landing — zadani URL obrasca' },
-      admin: {
-        description: {
-          en:
-            'Used on the public site when “RE Landing — Inquiry” has an empty Form action URL (one endpoint per menu). Footer stays on the page layout block only.',
-          hr:
-            'Koristi se na sajtu kad blok „RE landing — upit” nema „URL obrasca”. Podnožje je isključivo u layoutu stranice (blok „RE landing — podnožje”).',
-        },
-      },
-      fields: [
-        {
-          name: 'formActionUrl',
-          type: 'text',
-          label: { en: 'Default form POST / GET URL', hr: 'Zadani URL obrasca (POST/GET)' },
-          admin: {
-            description: {
-              en: 'Formspark, Basin, Getform, or your endpoint. Applied when the Inquiry block’s “Form action URL” is empty.',
-              hr: 'Formspark, Basin, Getform ili vlastiti endpoint. Koristi se kad je u bloku „RE landing — upit” prazan „URL obrasca”.',
-            },
-          },
-        },
-        {
-          name: 'formMethod',
-          type: 'select',
-          label: { en: 'Default form method', hr: 'Zadana HTTP metoda' },
-          defaultValue: 'POST',
-          options: [
-            { label: 'POST', value: 'POST' },
-            { label: 'GET', value: 'GET' },
-          ],
-        },
-      ],
-    },
-    {
       name: 'positioning',
       type: 'select',
       label: { en: 'Menu Positioning', hr: 'Pozicioniranje izbornika' },

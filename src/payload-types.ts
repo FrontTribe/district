@@ -1838,16 +1838,6 @@ export interface Menu {
    */
   hubTagline?: string | null;
   /**
-   * Used on the public site when “RE Landing — Inquiry” has an empty Form action URL (one endpoint per menu). Footer stays on the page layout block only.
-   */
-  reLandingDefaults?: {
-    /**
-     * Formspark, Basin, Getform, or your endpoint. Applied when the Inquiry block’s “Form action URL” is empty.
-     */
-    formActionUrl?: string | null;
-    formMethod?: ('POST' | 'GET') | null;
-  };
-  /**
    * Choose how the menu should be positioned on the page
    */
   positioning?: ('fixed' | 'absolute' | 'relative') | null;
@@ -3161,12 +3151,6 @@ export interface MenuSelect<T extends boolean = true> {
   logo?: T;
   logoText?: T;
   hubTagline?: T;
-  reLandingDefaults?:
-    | T
-    | {
-        formActionUrl?: T;
-        formMethod?: T;
-      };
   positioning?: T;
   updatedAt?: T;
   createdAt?: T;
