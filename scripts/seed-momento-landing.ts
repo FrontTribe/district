@@ -30,7 +30,10 @@ import { fileURLToPath } from 'node:url'
 import dotenv from 'dotenv'
 import type { Payload, Where } from 'payload'
 
+import { createSeedLog, seedColor, seedPayloadContext, type SeedStep } from './seed-ui'
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const log = createSeedLog('seed:momento')
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
@@ -60,25 +63,16 @@ const LEGACY_MOMENTO_SEED_MENU_TITLES = ['Momento — navigacija (seed)']
 
 type MediaKey = keyof typeof SEED_MEDIA_ALTS
 
-function banner(title: string) {
-  const line = '━'.repeat(56)
-  console.info(`\n${line}\n  seed:momento  │  ${title}\n${line}`)
-}
-
-function step(n: number, total: number, label: string) {
-  console.info(`\n  [${String(n).padStart(2)}/${total}] ${label}`)
-}
-
 async function shutdownDbPool(payload: Payload): Promise<void> {
   try {
     const pool = (payload as unknown as { db?: { pool?: { end: (cb?: (err?: Error) => void) => Promise<void> } } })
       .db?.pool
     if (pool && typeof pool.end === 'function') {
       await pool.end()
-      console.info('\n  (DB pool zatvoren)')
+      console.info(`    ${seedColor.dim('·')} DB pool zatvoren`)
     }
   } catch (e) {
-    console.warn('\n  Upozorenje: zatvaranje DB poola nije uspjelo (nije kritično).', e)
+    console.info(`    ${seedColor.warn('!')} Zatvaranje DB poola preskočeno`)
   }
 }
 
@@ -112,6 +106,7 @@ async function getOrCreateSeedMedia(
       limit: 1,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     const existing = found.docs[0]
     if (existing?.id) {
@@ -120,6 +115,7 @@ async function getOrCreateSeedMedia(
           collection: 'media',
           id: existing.id,
           overrideAccess: true,
+          context: seedPayloadContext,
           data: { alt },
         })
       }
@@ -133,6 +129,7 @@ async function getOrCreateSeedMedia(
   const created = await payload.create({
     collection: 'media',
     overrideAccess: true,
+    context: seedPayloadContext,
     data: {
       alt,
       tenant: tenantId,
@@ -168,6 +165,7 @@ async function resolveTenantForSeed(payload: Payload): Promise<ResolvedTenantFor
     limit: 1,
     depth: 0,
     overrideAccess: true,
+    context: seedPayloadContext,
   })
 
   const t = tenants.docs[0]
@@ -177,6 +175,7 @@ async function resolveTenantForSeed(payload: Payload): Promise<ResolvedTenantFor
       limit: 50,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     const names = all.docs.map((d) => `${d.name} (${d.subdomain})`).join(', ')
     throw new Error(
@@ -199,8 +198,10 @@ async function resolveMediaIds(
   payload: Payload,
   tenantId: number,
   imageUrls: Record<MediaKey, string>,
+  step: SeedStep,
 ): Promise<Record<MediaKey, number>> {
   if (process.env.MOMENTO_SEED_SKIP_MEDIA === 'true') {
+    step.detail('MOMENTO_SEED_SKIP_MEDIA=true — koristim postojeće slike')
     const need = Object.keys(SEED_MEDIA_ALTS).length
     const any = await payload.find({
       collection: 'media',
@@ -208,6 +209,7 @@ async function resolveMediaIds(
       limit: need,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     const ids = any.docs.map((d) => (typeof d.id === 'number' ? d.id : Number(d.id))).filter(Boolean)
     if (ids.length < need) {
@@ -218,9 +220,11 @@ async function resolveMediaIds(
   }
 
   const keys = Object.keys(SEED_MEDIA_ALTS) as MediaKey[]
-  const entries = await Promise.all(
-    keys.map(async (k) => [k, await getOrCreateSeedMedia(payload, k, imageUrls[k], tenantId)] as const),
-  )
+  const entries: [MediaKey, number][] = []
+  for (const key of keys) {
+    step.detail(`medij: ${key}…`)
+    entries.push([key, await getOrCreateSeedMedia(payload, key, imageUrls[key], tenantId)])
+  }
   return Object.fromEntries(entries) as Record<MediaKey, number>
 }
 
@@ -239,13 +243,17 @@ async function ensureTenantMenu(
   payload: Payload,
   tenantId: number,
   logoMediaId: number,
+  step: SeedStep,
 ): Promise<void> {
   if (process.env.MOMENTO_SEED_SKIP_MENU === 'true') {
-    console.info('      → kolekcija Izbornik: preskočeno (MOMENTO_SEED_SKIP_MENU=true)')
+    step.skip('Izbornik preskočen (MOMENTO_SEED_SKIP_MENU=true)')
     return
   }
 
+  step.detail('Učitavam tekstove navigacije…')
   const { getMomentoLocalePack } = await import('../src/data/momentoSeedDefaults')
+
+  step.detail('Tražim tenant-menu u bazi…')
   const existing = await payload.find({
     collection: 'menu',
     where: {
@@ -254,19 +262,22 @@ async function ensureTenantMenu(
     limit: 1,
     depth: 0,
     overrideAccess: true,
+    context: seedPayloadContext,
   })
 
   let id: string | number | undefined = existing.docs[0]?.id
   if (id != null) {
+    step.detail(`Provjeravam postojeći izbornik id=${id}…`)
     const existingDoc = await payload.findByID({
       collection: 'menu',
       id,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     if (!menuDocIsMomentoSeedStub(existingDoc as Record<string, unknown>)) {
-      console.info(
-        `      → Izbornik već postoji id=${id} — nisam dirao (ručno uređeno; MOMENTO_SEED_CLEAN ili obriši ručno za seed)`,
+      step.skip(
+        `Izbornik id=${id} već postoji (ručno uređen). Za seed: MOMENTO_SEED_CLEAN=true ili obriši ručno.`,
       )
       return
     }
@@ -291,31 +302,42 @@ async function ensureTenantMenu(
   }
 
   if (id == null) {
+    step.detail('Kreiram novi izbornik (hr)…')
     const created = await payload.create({
       collection: 'menu',
       locale: 'hr',
       overrideAccess: true,
+      context: seedPayloadContext,
       data: localized('hr'),
     })
     id = created.id
-    console.info(`      → kreiran Izbornik id=${id}`)
+    step.detail(`Kreiran id=${id}`)
   } else {
-    console.info(`      → ažuriram Izbornik id=${id}`)
+    step.detail(`Ažuriram postojeći seed izbornik id=${id}…`)
   }
 
   for (const loc of LOCALES) {
+    step.detail(`Sprema lokalizaciju: ${loc}…`)
     await payload.update({
       collection: 'menu',
       id: id!,
       locale: loc,
       overrideAccess: true,
+      context: seedPayloadContext,
       data: localized(loc),
     })
   }
+
+  step.done(`Izbornik id=${id} (hr, en, de)`)
 }
 
-async function cleanMomentoSeedArtifacts(payload: Payload, tenantId: number, slug: string): Promise<void> {
-  console.info('      → MOMENTO_SEED_CLEAN: brišem stare seed zapise…')
+async function cleanMomentoSeedArtifacts(
+  payload: Payload,
+  tenantId: number,
+  slug: string,
+  step: SeedStep,
+): Promise<void> {
+  step.detail('MOMENTO_SEED_CLEAN — brišem stare seed zapise…')
   const delCount = { pages: 0, media: 0, menus: 0 }
 
   const pageRows = await payload.find({
@@ -326,10 +348,16 @@ async function cleanMomentoSeedArtifacts(payload: Payload, tenantId: number, slu
     limit: 50,
     depth: 0,
     overrideAccess: true,
+    context: seedPayloadContext,
   })
   for (const doc of pageRows.docs) {
     if (doc?.id != null) {
-      await payload.delete({ collection: 'pages', id: doc.id, overrideAccess: true })
+      await payload.delete({
+        collection: 'pages',
+        id: doc.id,
+        overrideAccess: true,
+        context: seedPayloadContext,
+      })
       delCount.pages++
     }
   }
@@ -343,10 +371,16 @@ async function cleanMomentoSeedArtifacts(payload: Payload, tenantId: number, slu
       limit: 30,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     for (const doc of found.docs) {
       if (doc?.id != null) {
-        await payload.delete({ collection: 'media', id: doc.id, overrideAccess: true })
+        await payload.delete({
+          collection: 'media',
+          id: doc.id,
+          overrideAccess: true,
+          context: seedPayloadContext,
+        })
         delCount.media++
       }
     }
@@ -359,17 +393,23 @@ async function cleanMomentoSeedArtifacts(payload: Payload, tenantId: number, slu
       limit: 20,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     for (const doc of menus.docs) {
       if (doc?.id != null) {
-        await payload.delete({ collection: 'menu', id: doc.id, overrideAccess: true })
+        await payload.delete({
+          collection: 'menu',
+          id: doc.id,
+          overrideAccess: true,
+          context: seedPayloadContext,
+        })
         delCount.menus++
       }
     }
   }
 
-  console.info(
-    `      → obrisano: stranice=${delCount.pages}, mediji=${delCount.media}, izbornici=${delCount.menus}`,
+  step.detail(
+    `Obrisano: stranice=${delCount.pages}, mediji=${delCount.media}, izbornici=${delCount.menus}`,
   )
 }
 
@@ -383,52 +423,56 @@ async function run(): Promise<void> {
     process.env.MOMENTO_SEED_TENANT_SUBDOMAIN?.trim() ||
     (process.env.MOMENTO_SEED_TENANT_NAME || 'Momento').trim()
 
-  banner('Momento landing')
-  console.info(`  slug:         ${slug}`)
-  console.info(`  tenant:       ${tenantHint}`)
-  console.info(`  clean:        ${process.env.MOMENTO_SEED_CLEAN === 'true' ? 'da' : 'ne'}`)
+  log.banner('Momento landing', {
+    slug,
+    tenant: tenantHint,
+    clean: process.env.MOMENTO_SEED_CLEAN === 'true' ? 'da' : 'ne',
+  })
 
-  step(1, totalSteps, 'Učitavam module (layout builder + Payload)…')
+  const s1 = log.step(1, totalSteps, 'Učitavam module')
   const { buildMomentoPayloadLayout, momentoDemoImageUrls, momentoPageTitle, momentoPageMeta } =
     await import('../src/data/momentoLandingDemo')
   const [{ getPayload }, { default: payloadConfig }] = await Promise.all([
     import('payload'),
     import('@payload-config'),
   ])
+  s1.done('layout builder + Payload')
 
-  step(2, totalSteps, 'Spajam se na bazu…')
+  const s2 = log.step(2, totalSteps, 'Spajam se na bazu')
   const resolvedConfig = await Promise.resolve(payloadConfig as Promise<typeof payloadConfig> | typeof payloadConfig)
   const payload = await getPayload({ config: resolvedConfig })
+  s2.done('povezano')
 
   try {
-    step(3, totalSteps, 'Tenant + seed mediji…')
+    const s3 = log.step(3, totalSteps, 'Tenant + mediji')
     const tenant = await resolveTenantForSeed(payload)
     const tenantId = tenant.id
-    console.info(`      → tenant id=${tenantId} (${tenant.name} · ${tenant.subdomain})`)
+    s3.detail(`tenant id=${tenantId} (${tenant.name} · ${tenant.subdomain})`)
 
     if (process.env.MOMENTO_SEED_CLEAN === 'true') {
-      await cleanMomentoSeedArtifacts(payload, tenantId, slug)
+      await cleanMomentoSeedArtifacts(payload, tenantId, slug, s3)
     }
 
-    const mediaIds = await resolveMediaIds(payload, tenantId, momentoDemoImageUrls)
-    console.info(
-      `      → media ids: ${Object.entries(mediaIds)
+    const mediaIds = await resolveMediaIds(payload, tenantId, momentoDemoImageUrls, s3)
+    s3.detail(
+      `media: ${Object.entries(mediaIds)
         .map(([k, v]) => `${k}=${v}`)
         .join(', ')}`,
     )
+    s3.done('tenant + mediji')
 
-    step(4, totalSteps, 'Izbornik…')
-    await ensureTenantMenu(payload, tenantId, mediaIds.hero)
+    const s4 = log.step(4, totalSteps, 'Izbornik')
+    await ensureTenantMenu(payload, tenantId, mediaIds.hero, s4)
 
-    step(5, totalSteps, 'Sastavljam layout (7 blokova × 3 jezika)…')
+    const s5 = log.step(5, totalSteps, 'Layout (7 blokova × 3 jezika)')
     const layouts = {
       hr: buildMomentoPayloadLayout(mediaIds, 'hr'),
       en: buildMomentoPayloadLayout(mediaIds, 'en'),
       de: buildMomentoPayloadLayout(mediaIds, 'de'),
     }
-    console.info(`      → ${layouts.hr.length} blokova × 3 jezika`)
+    s5.done(`${layouts.hr.length} blokova × 3 jezika`)
 
-    step(6, totalSteps, 'Stranica `pages` (create ili update)…')
+    const s6 = log.step(6, totalSteps, 'Stranica pages')
     const existing = await payload.find({
       collection: 'pages',
       where: {
@@ -437,18 +481,21 @@ async function run(): Promise<void> {
       limit: 1,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
 
     let pageId: string | number
 
     if (existing.docs[0]?.id) {
       pageId = existing.docs[0].id
-      console.info(`      → postojeća stranica id=${pageId}`)
+      s6.detail(`postojeća stranica id=${pageId}`)
     } else {
+      s6.detail('kreiram novu stranicu (hr)…')
       const created = await payload.create({
         collection: 'pages',
         locale: 'hr',
         overrideAccess: true,
+        context: seedPayloadContext,
         data: {
           title: momentoPageTitle('hr'),
           slug,
@@ -458,15 +505,17 @@ async function run(): Promise<void> {
         },
       })
       pageId = created.id
-      console.info(`      → nova stranica id=${pageId}`)
+      s6.detail(`nova stranica id=${pageId}`)
     }
 
     for (const locale of LOCALES) {
+      s6.detail(`lokalizacija: ${locale}…`)
       await payload.update({
         collection: 'pages',
         id: pageId,
         locale,
         overrideAccess: true,
+        context: seedPayloadContext,
         data: {
           title: momentoPageTitle(locale),
           layout: layouts[locale],
@@ -474,22 +523,21 @@ async function run(): Promise<void> {
           tenant: tenantId,
         },
       })
-      console.info(`      → ${locale}: spremljeno`)
     }
 
-    console.info(`\n  ✓ Završeno. Payload → Pages → „${momentoPageTitle('hr')}” (slug /${slug})`)
-    console.info('  → Navigacija: Admin → Izbornik (tenant-menu). Podnožje: zadnji blok „Momento — podnožje” u layoutu stranice.')
+    s6.done(`stranica id=${pageId} (/${slug})`)
+
+    log.success(
+      `Momento landing spremljen — Admin → Pages → „${momentoPageTitle('hr')}”. Navigacija: Izbornik (tenant-menu).`,
+    )
   } finally {
     await shutdownDbPool(payload)
   }
 }
 
 run()
-  .then(() => {
-    console.info('\n[seed:momento] Izlaz iz procesa (0).\n')
-    process.exit(0)
-  })
+  .then(() => process.exit(0))
   .catch((err) => {
-    console.error('\n[seed:momento] Greška — izlaz (1).\n', err)
+    log.error('Seed nije uspio.', err)
     process.exit(1)
   })

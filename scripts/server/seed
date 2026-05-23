@@ -19,6 +19,7 @@ done
 set +a
 
 export ALLOW_SEED="${ALLOW_SEED:-true}"
+export NODE_NO_WARNINGS=1
 
 cd "$OPS_PATH"
 
