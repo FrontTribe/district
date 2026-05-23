@@ -1,4 +1,5 @@
 import { unstable_cache } from 'next/cache'
+import { draftMode } from 'next/headers'
 import { getPayload } from 'payload'
 import payloadConfig from '@/payload.config'
 import type { Page } from '@/payload-types'
@@ -13,6 +14,7 @@ async function fetchPageBySlugImpl(
   slug: string,
   locale: SupportedLocale,
   depth: number,
+  draft = false,
 ): Promise<Page | null> {
   try {
     const payload = await getPayload({ config: payloadConfig })
@@ -21,6 +23,7 @@ async function fetchPageBySlugImpl(
       where: { slug: { equals: slug } },
       depth,
       locale: normalizeLocale(locale),
+      draft,
     })
     return (pageQuery.docs[0] as Page) || null
   } catch {
@@ -32,6 +35,7 @@ async function fetchPagesByTenantImpl(
   tenantId: string | null,
   locale: SupportedLocale,
   depth: number,
+  draft = false,
 ): Promise<Page[]> {
   try {
     const payload = await getPayload({ config: payloadConfig })
@@ -42,6 +46,7 @@ async function fetchPagesByTenantImpl(
       depth,
       locale: normalizeLocale(locale),
       where: whereClause,
+      draft,
       /** Newest first so a freshly seeded hub page (three-columns) wins on main domain. */
       sort: '-createdAt',
     })
@@ -66,13 +71,14 @@ export async function getCachedPageBySlug(
 ): Promise<Page | null> {
   const localeKey = locale ?? 'default'
   const loc = normalizeLocale(locale)
+  const { isEnabled: isDraft } = await draftMode()
 
-  if (process.env.NODE_ENV === 'development') {
-    return fetchPageBySlugImpl(slug, loc, depth)
+  if (process.env.NODE_ENV === 'development' || isDraft) {
+    return fetchPageBySlugImpl(slug, loc, depth, isDraft)
   }
 
   return unstable_cache(
-    async (): Promise<Page | null> => fetchPageBySlugImpl(slug, loc, depth),
+    async (): Promise<Page | null> => fetchPageBySlugImpl(slug, loc, depth, false),
     ['page-by-slug', slug, localeKey, String(depth)],
     {
       tags: [CACHE_TAGS.pages(), CACHE_TAGS.page(slug)],
@@ -97,13 +103,14 @@ export async function getCachedPagesByTenant(
   const localeKey = locale ?? 'default'
   const tenantKey = tenantId ?? 'main'
   const loc = normalizeLocale(locale)
+  const { isEnabled: isDraft } = await draftMode()
 
-  if (process.env.NODE_ENV === 'development') {
-    return fetchPagesByTenantImpl(tenantId, loc, depth)
+  if (process.env.NODE_ENV === 'development' || isDraft) {
+    return fetchPagesByTenantImpl(tenantId, loc, depth, isDraft)
   }
 
   return unstable_cache(
-    async (): Promise<Page[]> => fetchPagesByTenantImpl(tenantId, loc, depth),
+    async (): Promise<Page[]> => fetchPagesByTenantImpl(tenantId, loc, depth, false),
     ['pages-by-tenant', tenantKey, localeKey, String(depth)],
     {
       tags: [CACHE_TAGS.pages(), CACHE_TAGS.pagesByTenant(tenantId)],

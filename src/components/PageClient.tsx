@@ -2,8 +2,11 @@
 
 import { Page as PageType } from '@/payload-types'
 import { BlockRenderer } from './BlockRenderer'
-import { useState, useEffect } from 'react'
+import { useLivePreview } from '@payloadcms/live-preview-react'
 import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { getPayloadServerURL } from '@/utils/payloadServerUrl'
+
+const LIVE_PREVIEW_DEPTH = 6
 
 export default function PageClient({
   page: initialPage,
@@ -14,22 +17,17 @@ export default function PageClient({
   locale?: string
   tenantVisualTheme?: TenantVisualTheme
 }) {
-  const [_hasRendered, setHasRendered] = useState(false)
+  const { data: page } = useLivePreview({
+    initialData: initialPage,
+    serverURL: getPayloadServerURL(),
+    depth: LIVE_PREVIEW_DEPTH,
+  })
 
-  // Track if we've rendered content
-  useEffect(() => {
-    if (initialPage?.layout && initialPage.layout.length > 0) {
-      setHasRendered(true)
-    }
-  }, [initialPage])
-
-  // If we have no data at all, don't render anything
-  if (!initialPage) {
+  if (!page) {
     return null
   }
 
-  // If we have no layout, show a fallback
-  if (!initialPage.layout || initialPage.layout.length === 0) {
+  if (!page.layout || page.layout.length === 0) {
     return (
       <div className="prose mx-auto max-w-4xl p-4 lg:p-8">
         <div className="text-center text-gray-500">
@@ -41,7 +39,7 @@ export default function PageClient({
 
   return (
     <BlockRenderer
-      blocks={initialPage.layout}
+      blocks={page.layout}
       locale={locale}
       tenantVisualTheme={tenantVisualTheme}
     />

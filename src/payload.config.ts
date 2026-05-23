@@ -25,6 +25,10 @@ import Documents from './collections/documents'
 import Buildings from './collections/buildings'
 import { loadRentlioOptions } from './utils/rentlio'
 import { migrations } from './migrations'
+import {
+  getLivePreviewFrontendUrl,
+  getLivePreviewPagePath,
+} from './utils/livePreviewFrontendUrl'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -67,16 +71,12 @@ export default buildConfig({
           tenantSubdomain = user.tenant.subdomain
         }
 
-        const frontendURL = tenantSubdomain
-          ? `https://${tenantSubdomain}.test:3000`
-          : 'https://localhost:3000'
+        const frontendURL = getLivePreviewFrontendUrl(tenantSubdomain)
 
-        let pagePath = '/'
-        if (data.slug !== '/') {
-          pagePath = locale ? `/${locale.code}/${data.slug}` : `/${data.slug}`
-        } else {
-          pagePath = locale ? `/${locale.code}` : '/'
-        }
+        const pagePath = getLivePreviewPagePath(
+          typeof data.slug === 'string' ? data.slug : '/',
+          locale?.code,
+        )
 
         const draftURL = new URL(`${frontendURL}/api/draft`)
         draftURL.searchParams.set('url', pagePath)

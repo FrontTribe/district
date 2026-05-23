@@ -8,7 +8,6 @@ import { HubBottombar } from '@/components/HubBottombar'
 import { MainPageLoader } from '@/components/MainPageLoader'
 import { Page, Tenant } from '@/payload-types'
 import '../styles.scss'
-import { RefreshRouteOnSave } from '@/components/RefreshRouteOnSave'
 import { localeLang } from '@/utils/locale'
 import { notFound } from 'next/navigation'
 import PageClient from '@/components/PageClient'
@@ -152,8 +151,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   const homeInner = (
     <>
-      <RefreshRouteOnSave />
-
       {/* Menu Wrapper — hidden when tenant home is a full RE landing (in-page nav) */}
       {!hideGlobalMenuForTenantLandingNav && !hideGlobalMenuForMomento && (
         <MenuWrapper

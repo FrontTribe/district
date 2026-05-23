@@ -2,6 +2,7 @@
 import { RefreshRouteOnSave as PayloadLivePreview } from '@payloadcms/live-preview-react'
 import { useRouter } from 'next/navigation.js'
 import React from 'react'
+import { getPayloadServerURL } from '@/utils/payloadServerUrl'
 
 export const RefreshRouteOnSave: React.FC = () => {
   const router = useRouter()
@@ -9,7 +10,8 @@ export const RefreshRouteOnSave: React.FC = () => {
   return (
     <PayloadLivePreview
       refresh={() => router.refresh()}
-      serverURL={process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}
+      serverURL={getPayloadServerURL()}
+      depth={6}
     />
   )
 }
