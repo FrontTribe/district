@@ -10,7 +10,7 @@ export function RealEstateLandingShell({
   footer,
 }: {
   children: React.ReactNode
-  /** Tamno podnožje (`.real-estate-landing .footer`) — iz kolekcije Podnožja. */
+  /** Tamno podnožje dolazi iz layout bloka „RE Landing — Footer”. */
   footer?: React.ReactNode
 }) {
   const rootRef = useRef<HTMLDivElement>(null)

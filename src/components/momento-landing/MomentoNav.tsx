@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { localeLang } from '@/utils/locale'
+import { getMomentoUiCopy } from '@/data/momentoUiCopy'
 import { MomentoMobileMenu } from './MomentoMobileMenu'
 
 export type MomentoNavItem = {
@@ -31,6 +32,7 @@ function scrollToSection(scrollTarget: string) {
 }
 
 export function MomentoNav({ logoText = 'Momento', menuItems, locale, visitCtaHref = '#lokacija' }: Props) {
+  const ui = getMomentoUiCopy(locale)
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const pathname = usePathname()
@@ -115,12 +117,12 @@ export function MomentoNav({ logoText = 'Momento', menuItems, locale, visitCtaHr
               className="cta-pill"
               onClick={(e) => onNavClick({ label: '', link: visitCtaHref, scrollTarget: 'lokacija' }, e)}
             >
-              Posjeti nas <span className="arr">↗</span>
+              {ui.nav.visitCta} <span className="arr">↗</span>
             </Link>
             <button
               type="button"
               className="nav-toggle"
-              aria-label={menuOpen ? 'Zatvori izbornik' : 'Otvori izbornik'}
+              aria-label={menuOpen ? ui.nav.menuClose : ui.nav.menuOpen}
               aria-expanded={menuOpen}
               aria-controls="momento-mobile-menu"
               onClick={() => setMenuOpen((open) => !open)}

@@ -13,16 +13,17 @@ import { localeLang } from '@/utils/locale'
 import { notFound } from 'next/navigation'
 import PageClient from '@/components/PageClient'
 import { RealEstateLandingShell } from '@/components/real-estate-landing'
-import { MomentoFooter, MomentoLandingShell } from '@/components/momento-landing'
+import { MomentoLandingShell } from '@/components/momento-landing'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
 import { getTenantVisualTheme } from '@/utils/tenantVisualTheme'
 import { getCachedPagesByTenant } from '@/utils/getCachedPages'
 import { generateMetadataFromPages } from '@/utils/generateMetadata'
 import { buildHubSocialLinks } from '@/utils/hubSocialLinks'
 import { mergePageLayoutForPublicPage } from '@/utils/mergeReLandingLayoutForPublic'
+import { enrichInquiryFormsInPage } from '@/utils/enrichInquiryFormsInPage'
 
 /** Payload `depth` za početnu — učitava `building` u unit browser bloku (manje praznog SSR-a). */
-const HOME_PAGES_DEPTH = 3
+const HOME_PAGES_DEPTH = 6
 
 function getRealEstateLandingFlags(page: Page | undefined) {
   const layout = page?.layout
@@ -122,7 +123,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
   const tenantVisualTheme = getTenantVisualTheme(subdomain)
 
-  const pagesForClient = pages.map((page) => mergePageLayoutForPublicPage(page, menuGlobal))
+  const pagesForClient = await Promise.all(
+    pages.map((p) =>
+      enrichInquiryFormsInPage(mergePageLayoutForPublicPage(p, menuGlobal), locale),
+    ),
+  )
 
   const firstBlockType = pagesForClient[0]?.layout?.[0]?.blockType
   const isHubTriptychHome = !currentTenant && firstBlockType === 'three-columns'
@@ -207,37 +212,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
               />
             )
-            const reLandingFooterNode =
-              footerGlobal && isRealEstateLandingPage ? (
-                <Footer
-                  variant="reLanding"
-                  leftContent={footerGlobal.leftContent}
-                  rightContent={footerGlobal.rightContent}
-                  bottomContent={footerGlobal.bottomContent}
-                />
-              ) : undefined
-            const momentoFooterNode =
-              footerGlobal && isMomentoPage ? (
-                <MomentoFooter
-                  logoText={menuGlobal?.logoText ?? 'Momento.'}
-                  tagline={footerGlobal.leftContent?.subheading ?? undefined}
-                  navLinks={
-                    menuGlobal?.menuItems?.map((item) => ({
-                      label: item.label,
-                      href: item.link,
-                    })) ?? undefined
-                  }
-                  email={footerGlobal.rightContent?.contact?.email ?? undefined}
-                  phone={footerGlobal.rightContent?.contact?.phone ?? undefined}
-                  instagram={
-                    footerGlobal.rightContent?.contact?.instagram
-                      ? `https://instagram.com/${footerGlobal.rightContent.contact.instagram.replace(/^@/, '')}`
-                      : undefined
-                  }
-                  copyright={footerGlobal.bottomContent?.copyright ?? undefined}
-                  madeBy={footerGlobal.bottomContent?.madeBy ?? undefined}
-                />
-              ) : undefined
             const momentoMenu =
               menuGlobal && isMomentoPage
                 ? {
@@ -255,11 +229,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             return (
               <div key={page.id}>
                 {isRealEstateLandingPage ? (
-                  <RealEstateLandingShell footer={reLandingFooterNode}>{inner}</RealEstateLandingShell>
+                  <RealEstateLandingShell>{inner}</RealEstateLandingShell>
                 ) : isMomentoPage ? (
-                  <MomentoLandingShell menu={momentoMenu} footer={momentoFooterNode}>
-                    {inner}
-                  </MomentoLandingShell>
+                  <MomentoLandingShell menu={momentoMenu}>{inner}</MomentoLandingShell>
                 ) : (
                   inner
                 )}
@@ -279,7 +251,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         )}
       </div>
 
-      {/* Footer — kolekcija Podnožja (marketing RE landing strip je unutar RealEstateLandingShell) */}
+      {/* Footer — kolekcija Podnožja (RE landing podnožje je blok u layoutu) */}
       {footerGlobal && !isHubTriptychHome && !homeLanding.isRealEstateLandingPage && !isMomentoTenantHome && (
         <Footer
           variant={tenantVisualTheme === 'boutique' ? 'boutique' : 'default'}

@@ -1,52 +1,169 @@
 'use client'
 
-import React, { useId, useLayoutEffect, useRef } from 'react'
+import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from '@/lib/gsap'
+import type { Form } from '@/payload-types'
+import { InquirySelectField } from './InquirySelectField'
 import { SplitWords } from './shared/SplitWords'
 import { revealWordsIn } from './shared/revealWords'
+import {
+  inquiryFormFieldsAreUsable,
+  resolveInquiryFormFields,
+} from '@/utils/reLandingInquiryFormFallback'
+
+type FormField = NonNullable<Form['fields']>[number]
+
+function resolveFormId(form: string | number | Form | null | undefined): string | undefined {
+  if (form == null) return undefined
+  if (typeof form === 'string' || typeof form === 'number') return String(form)
+  return String(form.id)
+}
+
+function formHasFields(form: Form | null | undefined): form is Form {
+  return inquiryFormFieldsAreUsable(form?.fields ?? undefined)
+}
+
+function renderFormField(
+  field: FormField,
+  values: Record<string, string>,
+  onChange: (name: string, value: string) => void,
+  uid: string,
+) {
+  if (field.blockType === 'message') return null
+
+  const name = 'name' in field ? field.name : ''
+  if (!name) return null
+
+  const inputId = `re-inq-${name}-${uid}`
+  const label = field.label?.trim() || name
+  const required = Boolean(field.required)
+  const value = values[name] ?? ''
+  const onFieldChange = (next: string) => onChange(name, next)
+
+  if (field.blockType === 'textarea') {
+    return (
+      <div key={inputId} className="cta__field">
+        <label htmlFor={inputId}>{label}</label>
+        <textarea
+          id={inputId}
+          name={name}
+          rows={3}
+          required={required}
+          placeholder={field.placeholder ?? undefined}
+          value={value}
+          onChange={(e) => onFieldChange(e.target.value)}
+        />
+      </div>
+    )
+  }
+
+  if (field.blockType === 'select') {
+    const placeholder = field.placeholder?.trim() || '…'
+    const options = (field.options ?? []).filter((opt) => opt.label && opt.value)
+    return (
+      <InquirySelectField
+        key={inputId}
+        id={inputId}
+        name={name}
+        label={label}
+        placeholder={placeholder}
+        required={required}
+        value={value}
+        options={options.map((opt) => ({ label: opt.label, value: opt.value }))}
+        onChange={onFieldChange}
+      />
+    )
+  }
+
+  const inputType =
+    field.blockType === 'email' ? 'email' : field.blockType === 'number' ? 'number' : 'text'
+  const autoComplete =
+    name === 'name' ? 'name' : name === 'email' ? 'email' : name === 'phone' ? 'tel' : undefined
+
+  return (
+    <div key={inputId} className="cta__field">
+      <label htmlFor={inputId}>{label}</label>
+      <input
+        id={inputId}
+        name={name}
+        type={inputType}
+        autoComplete={autoComplete}
+        required={required}
+        placeholder={field.placeholder ?? undefined}
+        value={value}
+        onChange={(e) => onFieldChange(e.target.value)}
+      />
+    </div>
+  )
+}
 
 export function RealEstateLandingInquiry({
   sectionId = 'kontakt',
   eyebrow,
   headingParts,
   introHtml,
-  formActionUrl,
-  formMethod,
+  form,
+  locale = 'hr',
   submitButtonLabel,
   disabledSubmitHelp,
-  nameFieldLabel,
-  emailFieldLabel,
-  phoneFieldLabel,
-  interestFieldLabel,
-  messageFieldLabel,
-  interestPlaceholder,
-  messagePlaceholder,
-  privacyHtml,
-  interestOptions,
-  contacts,
+  successMessage,
 }: {
   sectionId?: string
-  eyebrow: string
+  eyebrow?: string | null
   headingParts: { text: string; italic?: boolean }[]
   introHtml?: string | null
-  formActionUrl?: string | null
-  formMethod?: 'GET' | 'POST' | null
+  form?: string | number | Form | null
+  locale?: string
   submitButtonLabel?: string | null
   disabledSubmitHelp?: string | null
-  nameFieldLabel?: string | null
-  emailFieldLabel?: string | null
-  phoneFieldLabel?: string | null
-  interestFieldLabel?: string | null
-  messageFieldLabel?: string | null
-  interestPlaceholder?: string | null
-  messagePlaceholder?: string | null
-  privacyHtml?: string | null
-  interestOptions: { label: string; value: string }[]
-  contacts: { label: string; valueHtml: string }[]
+  successMessage?: string | null
 }) {
-  const resolvedMethod: 'GET' | 'POST' = formMethod === 'GET' ? 'GET' : 'POST'
+  const formId = resolveFormId(form)
+  const [resolvedForm, setResolvedForm] = useState<Form | null>(() =>
+    form && typeof form === 'object' && formHasFields(form) ? form : null,
+  )
+  const [formLoading, setFormLoading] = useState(false)
+
+  useEffect(() => {
+    const seed = form && typeof form === 'object' ? form : null
+    if (formHasFields(seed)) {
+      setResolvedForm(seed)
+      return
+    }
+    if (!formId) {
+      setResolvedForm(null)
+      return
+    }
+
+    const controller = new AbortController()
+    setFormLoading(true)
+
+    fetch(`/api/re-landing/inquiry-form?id=${encodeURIComponent(formId)}&locale=${locale}`, {
+      signal: controller.signal,
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((doc: Form | null) => {
+        if (formHasFields(doc)) setResolvedForm(doc)
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!controller.signal.aborted) setFormLoading(false)
+      })
+
+    return () => controller.abort()
+  }, [form, formId, locale])
+
+  const fields = useMemo(
+    () => resolveInquiryFormFields(resolvedForm, locale),
+    [resolvedForm, locale],
+  )
+
   const ref = useRef<HTMLElement>(null)
   const uid = useId().replace(/:/g, '')
+  const [values, setValues] = useState<Record<string, string>>({})
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useLayoutEffect(() => {
     if (!ref.current || !gsap) return
@@ -57,21 +174,40 @@ export function RealEstateLandingInquiry({
     return () => ctx.revert()
   }, [])
 
-  const nameId = `re-inq-name-${uid}`
-  const emailId = `re-inq-email-${uid}`
-  const phoneId = `re-inq-phone-${uid}`
-  const interestId = `re-inq-interest-${uid}`
-  const messageId = `re-inq-msg-${uid}`
+  const handleChange = (name: string, value: string) => {
+    setValues((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!formId) return
+    try {
+      setSubmitting(true)
+      setError(null)
+      const res = await fetch('/api/form-submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ form: formId, submissionData: values }),
+      })
+      if (!res.ok) throw new Error('Failed to submit form')
+      setSubmitted(true)
+      setValues({})
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Submission failed')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <section ref={ref} id={sectionId} className="cta">
       <div className="cta__inner">
         <div>
-          <div className="eyebrow">{eyebrow}</div>
+          {eyebrow?.trim() ? <div className="eyebrow">{eyebrow}</div> : null}
           <h2 className="serif">
             {headingParts.map((p, i) =>
               p.italic ? (
-                <span key={i} className="it">
+                <span key={i} className="it ac">
                   <SplitWords text={p.text} />{' '}
                 </span>
               ) : (
@@ -86,67 +222,29 @@ export function RealEstateLandingInquiry({
           ) : null}
         </div>
 
-        <form
-          className="cta__form"
-          action={formActionUrl ?? undefined}
-          method={formActionUrl ? resolvedMethod : undefined}
-        >
-          <div className="cta__field">
-            <label htmlFor={nameId}>{nameFieldLabel ?? ''}</label>
-            <input id={nameId} name="name" type="text" autoComplete="name" required={!!formActionUrl} />
+        {submitted ? (
+          <div className="cta__success sans">
+            {successMessage?.trim() ?? 'Hvala — javit ćemo vam se uskoro.'}
           </div>
-          <div className="cta__field">
-            <label htmlFor={emailId}>{emailFieldLabel ?? ''}</label>
-            <input id={emailId} name="email" type="email" autoComplete="email" required={!!formActionUrl} />
-          </div>
-          <div className="cta__field">
-            <label htmlFor={phoneId}>{phoneFieldLabel ?? ''}</label>
-            <input id={phoneId} name="phone" type="tel" autoComplete="tel" />
-          </div>
-          <div className="cta__field">
-            <label htmlFor={interestId}>{interestFieldLabel ?? ''}</label>
-            <select id={interestId} name="interest" defaultValue="" required={!!formActionUrl}>
-              <option value="" disabled>
-                {interestPlaceholder ?? ''}
-              </option>
-              {interestOptions.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="cta__field">
-            <label htmlFor={messageId}>{messageFieldLabel ?? ''}</label>
-            <textarea
-              id={messageId}
-              name="message"
-              rows={3}
-              placeholder={messagePlaceholder ?? undefined}
-            />
-          </div>
-          <button type="submit" className="cta__submit" disabled={!formActionUrl}>
-            <span>
-              {formActionUrl
-                ? (submitButtonLabel?.trim() ?? '')
-                : (disabledSubmitHelp?.trim() ?? '')}
-            </span>
-            <i />
-          </button>
-        </form>
-      </div>
-
-      {privacyHtml?.trim() ? (
-        <div className="cta__privacy sans" dangerouslySetInnerHTML={{ __html: privacyHtml }} />
-      ) : null}
-
-      <div className="cta__contacts">
-        {contacts.map((c) => (
-          <div key={c.label} className="cell">
-            <div className="lbl">{c.label}</div>
-            <div className="v" dangerouslySetInnerHTML={{ __html: c.valueHtml }} />
-          </div>
-        ))}
+        ) : (
+          <form className="cta__form" onSubmit={handleSubmit}>
+            {fields.map((field) => renderFormField(field, values, handleChange, uid))}
+            {!fields.length && formId && formLoading ? (
+              <div className="cta__form-loading sans">…</div>
+            ) : null}
+            {error ? <div className="cta__error sans">{error}</div> : null}
+            <button type="submit" className="cta__submit" disabled={!formId || submitting}>
+              <span>
+                {!formId
+                  ? (disabledSubmitHelp?.trim() ?? '')
+                  : submitting
+                    ? '…'
+                    : (submitButtonLabel?.trim() ?? 'Pošalji')}
+              </span>
+              <i />
+            </button>
+          </form>
+        )}
       </div>
     </section>
   )

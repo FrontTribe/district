@@ -34,8 +34,10 @@ import { RealEstateLandingGalleryBlock } from '@/blocks/RealEstateLandingGallery
 import { RealEstateLandingCurrentProjectBlock } from '@/blocks/RealEstateLandingCurrentProject'
 import { RealEstateLandingPartnerBlock } from '@/blocks/RealEstateLandingPartner'
 import { RealEstateLandingInquiryBlock } from '@/blocks/RealEstateLandingInquiry'
+import { RealEstateLandingFooterBlock } from '@/blocks/RealEstateLandingFooter'
 import { RealEstateLandingUnitBrowserBlock } from '@/blocks/RealEstateLandingUnitBrowser'
 import { RealEstateLandingPastProjectsBlock } from '@/blocks/RealEstateLandingPastProjects'
+import { MomentoFooterBlock } from '@/blocks/MomentoFooter'
 
 const blockComponents = {
   section: SectionBlock,
@@ -71,16 +73,18 @@ const blockComponents = {
   'real-estate-landing-current-project': RealEstateLandingCurrentProjectBlock,
   'real-estate-landing-partner': RealEstateLandingPartnerBlock,
   'real-estate-landing-inquiry': RealEstateLandingInquiryBlock,
+  'real-estate-landing-page-footer': RealEstateLandingFooterBlock,
   'real-estate-landing-unit-browser': RealEstateLandingUnitBrowserBlock,
   'real-estate-landing-past-projects': RealEstateLandingPastProjectsBlock,
+  'momento-footer': MomentoFooterBlock,
 }
 
 type _Block = NonNullable<Page['layout']>[number]
 
 const LANDING_PREFIX = 'real-estate-landing-'
 
-function isLandingBlockType(blockType?: string | null) {
-  return !!blockType?.startsWith(LANDING_PREFIX)
+function isFullBleedBlockType(blockType?: string | null) {
+  return !!blockType?.startsWith(LANDING_PREFIX) || blockType === 'momento-footer'
 }
 
 function isMomentoTheme(theme: TenantVisualTheme) {
@@ -94,11 +98,6 @@ function renderSingleBlock(
   tenantVisualTheme: TenantVisualTheme,
 ) {
   const { blockType } = block
-
-  /** Podnožje RE landingske stranice dolazi iz kolekcije `footer`, ne iz layout bloka (stari zapisi mogu još imati blok). */
-  if (blockType === 'real-estate-landing-page-footer') {
-    return null
-  }
 
   if (blockType && blockType in blockComponents) {
     const BlockComponent = blockComponents[blockType as keyof typeof blockComponents]
@@ -122,7 +121,7 @@ export const BlockRenderer: React.FC<{
   blocks: Page['layout'] | undefined | null
   locale?: string
   tenantVisualTheme?: TenantVisualTheme
-}> = ({ blocks, locale = 'en', tenantVisualTheme = 'default' }) => {
+}> = ({ blocks, locale = 'hr', tenantVisualTheme = 'default' }) => {
   if (!blocks || blocks.length === 0) {
     return null
   }
@@ -155,7 +154,7 @@ export const BlockRenderer: React.FC<{
       continue
     }
 
-    if (isMomentoTheme(tenantVisualTheme) || isLandingBlockType(t)) {
+    if (isMomentoTheme(tenantVisualTheme) || isFullBleedBlockType(t)) {
       flushProse(`prose-before-${i}`)
       nodes.push(renderSingleBlock(block, i, locale, tenantVisualTheme))
       i++

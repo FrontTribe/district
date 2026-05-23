@@ -3,13 +3,6 @@ import Link from 'next/link'
 import { RealEstateLandingPageFooter } from '@/components/real-estate-landing/RealEstateLandingPageFooter'
 import './Footer.scss'
 
-function stripHtmlTags(html: string): string {
-  return html
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
 function replaceCopyrightYear(copyright: string): string {
   return copyright.replace(/\d{4}/, new Date().getFullYear().toString())
 }
@@ -92,23 +85,42 @@ export const Footer: React.FC<FooterProps> = ({
   const isReLanding = variant === 'reLanding'
 
   if (isReLanding && bottomContent) {
-    const headingRaw = leftContent?.heading?.trim() ?? ''
-    const brandHtml = headingRaw.includes('<') ? headingRaw : null
-    const brandPlain = (brandHtml ? stripHtmlTags(headingRaw) : headingRaw) || 'district.'
-    const links =
-      bottomContent.links?.map((l) => ({
-        label: l.text,
-        href: l.url,
-        openInNewTab: Boolean(l.openInNewTab),
-      })) ?? null
+    const brandText =
+      leftContent?.heading?.replace(/<[^>]+>/g, '').trim() || 'district.'
+
+    const addressLines = [rightContent?.address?.street, rightContent?.address?.city].filter(
+      Boolean,
+    ) as string[]
 
     return (
       <RealEstateLandingPageFooter
-        brand={brandPlain}
-        brandHtml={brandHtml}
-        line2={replaceCopyrightYear(bottomContent.copyright)}
-        line3={leftContent?.subheading?.trim() ?? ''}
-        links={links?.length ? links : null}
+        columns={[
+          {
+            label: rightContent?.address?.heading ?? 'Sjedište',
+            lines: addressLines.map((text) => ({ text, linkType: 'none' as const })),
+          },
+          ...(rightContent?.contact?.phone
+            ? [
+                {
+                  label: rightContent.contact.heading ?? 'Telefon',
+                  lines: [{ text: rightContent.contact.phone, linkType: 'phone' as const }],
+                },
+              ]
+            : []),
+          ...(rightContent?.contact?.email
+            ? [
+                {
+                  label: 'Pošta',
+                  lines: [{ text: rightContent.contact.email, linkType: 'email' as const }],
+                },
+              ]
+            : []),
+        ].filter((c) => c.lines.length > 0)}
+        brandText={brandText}
+        copyrightLine={replaceCopyrightYear(bottomContent.copyright)}
+        addressLine={
+          leftContent?.subheading?.trim() || addressLines.join(', ')
+        }
       />
     )
   }

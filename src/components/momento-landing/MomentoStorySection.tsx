@@ -3,26 +3,16 @@
 import React from 'react'
 import { MomentoSplit } from './shared/MomentoSplit'
 import { resolveMediaUrl } from './utils'
-
-const MARQUEE_WORDS = [
-  { t: 'Espresso' },
-  { t: 'Matcha latte', em: true },
-  { t: 'Fresh sokovi' },
-  { t: 'Slastice', em: true },
-  { t: 'Craft pivo' },
-  { t: 'Vina', em: true },
-  { t: 'Kroasani' },
-  { t: 'Aperitiv', em: true },
-]
+import { getMomentoUiCopy } from '@/data/momentoUiCopy'
 
 /** Redoslijed i naslovi kao u `Momento by District.html` (6 pločica). */
 const GALLERY_TILE_SPECS = [
-  { cls: 't1', cap: 'Lounge', imageIndex: 0 },
-  { cls: 't2', cap: 'Bar', imageIndex: 1 },
-  { cls: 't3', cap: 'Terasa', imageIndex: 3 },
-  { cls: 't4', cap: 'Detalji', imageIndex: 2 },
-  { cls: 't5', cap: 'Atmosfera', imageIndex: 4 },
-  { cls: 't6', cap: 'Enterijer', imageIndex: 5 },
+  { cls: 't1', imageIndex: 0 },
+  { cls: 't2', imageIndex: 1 },
+  { cls: 't3', imageIndex: 5 },
+  { cls: 't4', imageIndex: 2 },
+  { cls: 't5', imageIndex: 4 },
+  { cls: 't6', imageIndex: 3 },
 ] as const
 
 const GALLERY_FALLBACK_URLS = [
@@ -44,7 +34,7 @@ type Props = {
   subtitle: string
   images?: ImageItem[] | null
   sectionId?: string
-  introLine?: string
+  locale?: string
 }
 
 function gallerySrc(images: ImageItem[] | null | undefined, imageIndex: number): string {
@@ -53,83 +43,101 @@ function gallerySrc(images: ImageItem[] | null | undefined, imageIndex: number):
   return GALLERY_FALLBACK_URLS[imageIndex] ?? ''
 }
 
-function buildGalleryTiles(images?: ImageItem[] | null) {
-  return GALLERY_TILE_SPECS.map((spec) => ({
+function buildGalleryTiles(images: ImageItem[] | null | undefined, captions: string[]) {
+  return GALLERY_TILE_SPECS.map((spec, i) => ({
     cls: spec.cls,
-    cap: spec.cap,
+    cap: captions[i] ?? '',
     src: gallerySrc(images, spec.imageIndex),
   })).filter((tile) => tile.src)
 }
 
-export function MomentoStorySection({ title, subtitle, images, sectionId = 'o-nama', introLine }: Props) {
+function splitStoryTitle(title: string): { line1: string; line2: string } {
+  const dash = title.indexOf(' — ')
+  if (dash > 0) {
+    const after = title.slice(dash + 3).trim()
+    const words = after.split(/\s+/)
+    if (words.length > 4) {
+      const mid = Math.ceil(words.length / 2)
+      return {
+        line1: words.slice(0, mid).join(' '),
+        line2: words.slice(mid).join(' '),
+      }
+    }
+    return { line1: after, line2: '' }
+  }
+  return { line1: title, line2: '' }
+}
+
+export function MomentoStorySection({
+  title,
+  subtitle,
+  images,
+  sectionId = 'o-nama',
+  locale = 'hr',
+}: Props) {
+  const ui = getMomentoUiCopy(locale)
   const storySrc = gallerySrc(images, 0)
-  const galleryTiles = buildGalleryTiles(images)
+  const galleryTiles = buildGalleryTiles(images, ui.story.galleryCaptions)
+  const { line1, line2 } = splitStoryTitle(title)
 
   return (
     <div className="momento-story-flow">
       <section className="section section--o-nama" id={sectionId}>
         <div className="shell">
           <div className="section-head">
-            <div className="num reveal">01 / O nama</div>
+            <div className="num reveal">{ui.story.sectionAbout}</div>
             <h2>
-              <MomentoSplit>Vaš dnevni ritam</MomentoSplit>
-              <br />
-              <MomentoSplit>
-                <em>u srcu Retfale.</em>
-              </MomentoSplit>
+              {line1 ? <MomentoSplit>{line1}</MomentoSplit> : null}
+              {line2 ? (
+                <>
+                  <br />
+                  <MomentoSplit>
+                    <em>{line2}</em>
+                  </MomentoSplit>
+                </>
+              ) : null}
             </h2>
           </div>
 
           <div className="story-grid">
             {storySrc ? (
               <div className="story-img reveal-clip">
-                <img src={storySrc} alt="Momento interijer" />
+                <img src={storySrc} alt={ui.story.interiorAlt} />
                 <div className="badge-open">
                   <span className="pulse" />
-                  <span>Otvoreno sada</span>
+                  <span>{ui.story.openNow}</span>
                 </div>
               </div>
             ) : null}
 
             <div className="story-text">
-              <h3 className="reveal">
-                {introLine ?? (
-                  <>
-                    U prizemlju zgrade
-                    <br />
-                    <em>District Boutique</em>-a.
-                  </>
-                )}
-              </h3>
               <p className="reveal" data-delay="1">
-                {subtitle || title}
+                {subtitle}
               </p>
               <div className="tag-row reveal" data-delay="3">
-                {['Kava', 'Matcha', 'Fresh sokovi', 'Craft pivo', 'Vina', 'Kroasani', 'Slastice', 'Aperitiv'].map(
-                  (tag) => (
-                    <span className="tag" key={tag}>
-                      {tag}
-                    </span>
-                  ),
-                )}
+                {ui.story.tags.map((tag) => (
+                  <span className="tag" key={tag}>
+                    {tag}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <MomentoMarquee />
+      <MomentoMarquee locale={locale} />
 
       {galleryTiles.length > 0 ? (
         <section className="section section--prostor" id="prostor">
           <div className="shell">
             <div className="section-head section-head--prostor">
-              <div className="num">02 / Prostor</div>
+              <div className="num">{ui.story.sectionSpace}</div>
               <h2>
-                <MomentoSplit>Svjetlo, zelenilo,</MomentoSplit>
+                <MomentoSplit>{ui.story.spaceHeadingLine1}</MomentoSplit>
                 <br />
                 <MomentoSplit>
-                  <em>i miris kave.</em>
+                  <em>{ui.story.spaceHeadingLine2}</em>
                 </MomentoSplit>
               </h2>
             </div>
@@ -148,13 +156,14 @@ export function MomentoStorySection({ title, subtitle, images, sectionId = 'o-na
   )
 }
 
-function MomentoMarquee() {
+function MomentoMarquee({ locale }: { locale: string }) {
+  const ui = getMomentoUiCopy(locale)
   return (
     <div className="marquee">
       <div className="marquee-track">
         {[0, 1, 2].map((k) => (
           <span key={k}>
-            {MARQUEE_WORDS.map((w, i) => (
+            {ui.story.marquee.map((w, i) => (
               <React.Fragment key={`${k}-${i}`}>
                 {w.em ? <em>{w.t}</em> : <span>{w.t}</span>}
                 <span className="star">✦</span>

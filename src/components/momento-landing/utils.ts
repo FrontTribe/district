@@ -38,6 +38,16 @@ export function splitHeroHeading(heading: string): { line1: string; line2: strin
   return { line1: parts[0]!, line2: parts.slice(1).join(' ') }
 }
 
+/** e.g. "Naš meni." → { lead: "Naš", accent: "meni." } */
+export function splitMenuHeading(title: string): { lead: string; accent: string } {
+  const trimmed = title.trim()
+  const words = trimmed.split(/\s+/)
+  if (words.length <= 1) return { lead: trimmed, accent: '' }
+  const accent = words[words.length - 1]!
+  const lead = words.slice(0, -1).join(' ')
+  return { lead, accent }
+}
+
 const OFFERS_RE = /posebna|special|sonderangebot/i
 
 export function isOffersCategory(name: string): boolean {

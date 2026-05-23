@@ -1,48 +1,89 @@
 import React from 'react'
 
-export type PageFooterLink = { label: string; href: string; openInNewTab?: boolean }
+export type FooterLineLinkType = 'none' | 'url' | 'email' | 'phone'
+
+export type FooterLine = {
+  text: string
+  linkType?: FooterLineLinkType | null
+  href?: string | null
+  openInNewTab?: boolean | null
+}
+
+export type FooterColumn = {
+  label: string
+  lines: FooterLine[]
+}
+
+function replaceCopyrightYear(text: string): string {
+  return text.replace(/\d{4}/, new Date().getFullYear().toString())
+}
+
+function resolveLineHref(line: FooterLine): string | null {
+  const linkType = line.linkType ?? 'none'
+  if (linkType === 'none') return null
+  if (linkType === 'url') return line.href?.trim() || null
+  if (linkType === 'email') return `mailto:${line.text.trim()}`
+  if (linkType === 'phone') return `tel:${line.text.replace(/[^\d+]/g, '')}`
+  return null
+}
+
+function FooterLineItem({ line }: { line: FooterLine }) {
+  const href = resolveLineHref(line)
+  if (!href) return <>{line.text}</>
+
+  const openInNewTab = Boolean(line.openInNewTab)
+  return (
+    <a
+      href={href}
+      {...(openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+    >
+      {line.text}
+    </a>
+  )
+}
 
 /**
- * Jednoredno podnožje kao u District RE exportu.
- * Koristi klase `re-footer*` da se ne sudaraju s globalnim `Footer.scss` (`.footer`).
+ * RE landing podnozje — 4 stupca + donja traka (redizajn).
  */
 export function RealEstateLandingPageFooter({
-  brand,
-  brandHtml,
-  line2,
-  line3,
-  links,
+  columns,
+  brandText,
+  copyrightLine,
+  addressLine,
 }: {
-  brand: string
-  brandHtml?: string | null
-  line2: string
-  line3: string
-  links?: PageFooterLink[] | null
+  columns: FooterColumn[]
+  brandText: string
+  copyrightLine: string
+  addressLine: string
 }) {
+  const copyright = replaceCopyrightYear(copyrightLine.trim())
+
   return (
-    <footer className="re-footer">
-      {brandHtml?.trim() ? (
-        <div className="re-footer__brand" dangerouslySetInnerHTML={{ __html: brandHtml }} />
-      ) : (
-        <div className="re-footer__brand">{brand}</div>
-      )}
-      <div className="re-footer__line">{line2}</div>
-      <div className="re-footer__tail">
-        {line3.trim() ? <div className="re-footer__tagline">{line3}</div> : null}
-        {links?.length ? (
-          <nav className="re-footer__links" aria-label="Footer links">
-            {links.map((l) => (
-              <a
-                key={`${l.href}-${l.label}`}
-                className="re-footer__link"
-                href={l.href}
-                {...(l.openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-              >
-                {l.label}
-              </a>
-            ))}
-          </nav>
-        ) : null}
+    <footer className="footer">
+      {columns.length ? (
+        <div className="footer__columns">
+          {columns.map((col) => (
+            <div key={col.label} className="footer__col">
+              <div className="footer__col-label">{col.label}</div>
+              <div className="footer__col-value">
+                {col.lines.map((line, i) => (
+                  <React.Fragment key={`${line.text}-${i}`}>
+                    {i > 0 ? <br /> : null}
+                    <FooterLineItem line={line} />
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="footer__bar">
+        <div className="footer__brand">
+          <b>{brandText.trim()}</b>
+        </div>
+        <div className="footer__copyright">{copyright}</div>
+        <div className="footer__address">{addressLine.trim()}</div>
       </div>
     </footer>
   )

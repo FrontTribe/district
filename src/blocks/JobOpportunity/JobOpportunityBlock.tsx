@@ -21,6 +21,7 @@ export const JobOpportunityBlock: React.FC<
       ctaNote={props.ctaNote}
       backgroundImage={props.backgroundImage}
       sectionId={props.sectionId}
+      locale={props.locale}
     />
   ) : (
     <JobOpportunityBlockDefault {...props} />

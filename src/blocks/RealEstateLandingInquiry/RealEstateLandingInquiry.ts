@@ -16,126 +16,55 @@ const RealEstateLandingInquiry: Block = {
   },
   admin: reLandingBlockMeta({
     en:
-      'Landing contact band: all copy and the form POST URL come from this block (or Menu defaults when URL is empty). Not the Forms collection — set Form action URL here or under Menu → RE landing defaults.',
+      'Contact section: heading left + Payload Form (4 fields: name, email-phone, interest, message). Footer columns are in the Footer block.',
     hr:
-      'Kontakt traka: sav tekst i POST URL dolaze iz ovog bloka (ili zadano iz Izbornika ako je URL prazan). Nije kolekcija Obrasci — URL ovdje ili u Izbornik → RE landing zadane vrijednosti.',
+      'Kontakt sekcija: naslov lijevo + Payload obrazac (4 polja: ime, email-telefon, interes, poruka). Stupci podnožja su u bloku Podnožje.',
   }),
   fields: [
     reLandingSectionIdField,
-    { name: 'eyebrow', type: 'text', required: true },
-    reLandingHeadingPartsField,
-    reLandingInquiryIntroHtmlField,
     {
-      name: 'formActionUrl',
+      name: 'eyebrow',
       type: 'text',
-      label: { en: 'Form action URL', hr: 'URL obrasca' },
+      label: { en: 'Eyebrow (optional)', hr: 'Eyebrow (opcionalno)' },
       admin: {
         description: {
-          en:
-            'POST endpoint where the browser submits the form (Formspark, Basin, Getform, …). If empty here, the public site uses the default URL from Menu → “RE landing — form & footer defaults” for this tenant. This block is not the Forms collection — edit under Pages → layout.',
-          hr:
-            'POST endpoint za slanje obrasca. Ako je ovdje prazno, na sajtu se koristi zadani URL iz Izbornik → „RE landing — zadani obrazac i podnožje”. Nije kolekcija Obrasci — uređuje se u Stranice → layout.',
+          en: 'Hidden when empty. Redesign uses heading only.',
+          hr: 'Skriveno kad je prazno. Redizajn koristi samo naslov.',
         },
       },
     },
+    reLandingHeadingPartsField,
+    reLandingInquiryIntroHtmlField,
     {
-      name: 'formMethod',
-      type: 'select',
-      defaultValue: 'POST',
-      options: [
-        { label: 'POST', value: 'POST' },
-        { label: 'GET', value: 'GET' },
-      ],
+      name: 'form',
+      type: 'relationship',
+      relationTo: 'forms',
+      label: { en: 'Form (Form Builder)', hr: 'Obrazac (Form Builder)' },
+      required: true,
+      admin: {
+        description: {
+          en: '4 fields recommended: name, contact (email+phone), interest (select), message (textarea).',
+          hr: 'Preporučeno 4 polja: ime, kontakt (email+telefon), interes (select), poruka (textarea).',
+        },
+      },
     },
     {
       name: 'submitButtonLabel',
       type: 'text',
       label: { en: 'Submit button label', hr: 'Natpis gumba za slanje' },
-      defaultValue: 'Pošalji upit',
+      defaultValue: '— POŠALJI PORUKU',
     },
     {
       name: 'disabledSubmitHelp',
       type: 'text',
-      label: { en: 'Help text when URL missing', hr: 'Poruka kad nema URL' },
-      defaultValue: 'Postavite URL obrasca u CMS-u',
+      label: { en: 'Help text when form missing', hr: 'Poruka kad nema obrasca' },
+      defaultValue: 'Odaberite obrazac u CMS-u',
     },
     {
-      name: 'nameFieldLabel',
+      name: 'successMessage',
       type: 'text',
-      label: { en: 'Label: full name', hr: 'Oznaka: ime i prezime' },
-      defaultValue: 'Ime i prezime',
-    },
-    {
-      name: 'emailFieldLabel',
-      type: 'text',
-      label: { en: 'Label: email', hr: 'Oznaka: email' },
-      defaultValue: 'E-pošta',
-    },
-    {
-      name: 'phoneFieldLabel',
-      type: 'text',
-      label: { en: 'Label: phone', hr: 'Oznaka: telefon' },
-      defaultValue: 'Telefon',
-    },
-    {
-      name: 'interestFieldLabel',
-      type: 'text',
-      label: { en: 'Label: inquiry type', hr: 'Oznaka: vrsta upita' },
-      defaultValue: 'Inquiry type',
-    },
-    {
-      name: 'messageFieldLabel',
-      type: 'text',
-      label: { en: 'Label: message', hr: 'Oznaka: poruka' },
-      defaultValue: 'Poruka',
-    },
-    {
-      name: 'interestPlaceholder',
-      type: 'text',
-      label: { en: 'Interest placeholder', hr: 'Placeholder odabira' },
-      defaultValue: 'Odaberite…',
-    },
-    {
-      name: 'messagePlaceholder',
-      type: 'text',
-      label: { en: 'Message placeholder', hr: 'Placeholder poruke' },
-      defaultValue: 'Opcionalno',
-    },
-    {
-      name: 'privacyHtml',
-      type: 'textarea',
-      label: { en: 'Privacy / GDPR note (HTML)', hr: 'Privatnost / GDPR (HTML)' },
-      admin: {
-        description: {
-          en: 'Shown below the form fields, above the four contact cells (matches landing layout).',
-          hr: 'Ispod polja obrasca, iznad četiriju kontakt-ćelija (usklađeno s landing layoutom).',
-        },
-      },
-    },
-    {
-      name: 'interestOptions',
-      type: 'array',
-      label: { en: 'Inquiry type options', hr: 'Opcije vrste upita' },
-      minRows: 1,
-      fields: [
-        { name: 'label', type: 'text', required: true },
-        { name: 'value', type: 'text', required: true },
-      ],
-    },
-    {
-      name: 'contacts',
-      type: 'array',
-      label: { en: 'Contact cells', hr: 'Kontakt ćelije' },
-      minRows: 1,
-      fields: [
-        { name: 'label', type: 'text', required: true },
-        {
-          name: 'valueHtml',
-          type: 'textarea',
-          required: true,
-          label: { en: 'Value (HTML)', hr: 'Vrijednost (HTML)' },
-        },
-      ],
+      label: { en: 'Success message', hr: 'Poruka nakon slanja' },
+      defaultValue: 'Hvala — javit ćemo vam se uskoro.',
     },
   ],
 }

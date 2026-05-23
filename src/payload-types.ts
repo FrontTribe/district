@@ -304,7 +304,7 @@ export interface Document {
   focalY?: number | null;
 }
 /**
- * Pages for tenants and main domain. Layout blocks are grouped in the editor: District · Real estate (RE landing + legacy RE), District · Boutique, District · Momento (reserved), District · Hub & pages. RE landing form and contact row: edit “RE Landing — Inquiry” in the page layout. The RE landing strip footer is edited in the Footers collection (not in the page layout).
+ * Pages for tenants and main domain. RE landing contact: “RE Landing — Inquiry” (left copy + Form Builder). RE landing footer: “RE Landing — Footer” block as the last layout item.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
@@ -785,6 +785,8 @@ export interface Page {
         | RealEstateLandingInquiryBlock
         | RealEstateLandingUnitBrowserBlock
         | RealEstateLandingPastProjectsBlock
+        | RealEstateLandingPageFooterBlock
+        | MomentoFooterBlock
         | {
             heading: string;
             subheading?: string | null;
@@ -940,7 +942,7 @@ export interface Page {
   createdAt: string;
 }
 /**
- * Reusable form definitions (e.g. blocks that reference a form ID). The Real Estate landing contact section is the “RE Landing — Inquiry” block in Pages → layout — configure labels and POST URL there, not here.
+ * Reusable form definitions. RE landing contact form: create here, then select in Pages → “RE Landing — Inquiry”.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "forms".
@@ -1009,19 +1011,7 @@ export interface Form {
             blockType: 'number';
           }
         | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
             placeholder?: string | null;
-            options?:
-              | {
-                  label: string;
-                  value: string;
-                  id?: string | null;
-                }[]
-              | null;
-            required?: boolean | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'select';
@@ -1036,21 +1026,13 @@ export interface Form {
             blockType: 'state';
           }
         | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            required?: boolean | null;
+            placeholder?: string | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'text';
           }
         | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            required?: boolean | null;
+            placeholder?: string | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'textarea';
@@ -1554,7 +1536,10 @@ export interface RealEstateLandingInquiryBlock {
    * HTML id for in-page links, e.g. kat, kontakt
    */
   sectionId?: string | null;
-  eyebrow: string;
+  /**
+   * Hidden when empty. Redesign uses heading only.
+   */
+  eyebrow?: string | null;
   /**
    * Build the main heading from ordered fragments (plain or italic).
    */
@@ -1571,37 +1556,12 @@ export interface RealEstateLandingInquiryBlock {
    */
   introHtml?: string | null;
   /**
-   * POST endpoint where the browser submits the form (Formspark, Basin, Getform, …). If empty here, the public site uses the default URL from Menu → “RE landing — form & footer defaults” for this tenant. This block is not the Forms collection — edit under Pages → layout.
+   * 4 fields recommended: name, contact (email+phone), interest (select), message (textarea).
    */
-  formActionUrl?: string | null;
-  formMethod?: ('POST' | 'GET') | null;
+  form: number | Form;
   submitButtonLabel?: string | null;
   disabledSubmitHelp?: string | null;
-  nameFieldLabel?: string | null;
-  emailFieldLabel?: string | null;
-  phoneFieldLabel?: string | null;
-  interestFieldLabel?: string | null;
-  messageFieldLabel?: string | null;
-  interestPlaceholder?: string | null;
-  messagePlaceholder?: string | null;
-  /**
-   * Shown below the form fields, above the four contact cells (matches landing layout).
-   */
-  privacyHtml?: string | null;
-  interestOptions?:
-    | {
-        label: string;
-        value: string;
-        id?: string | null;
-      }[]
-    | null;
-  contacts?:
-    | {
-        label: string;
-        valueHtml: string;
-        id?: string | null;
-      }[]
-    | null;
+  successMessage?: string | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'real-estate-landing-inquiry';
@@ -1748,6 +1708,72 @@ export interface RealEstateLandingPastProjectsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'real-estate-landing-past-projects';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingPageFooterBlock".
+ */
+export interface RealEstateLandingPageFooterBlock {
+  /**
+   * Typically 4 cells: Headquarters, Phone, Email, Follow us — each with one or more text lines (optional link).
+   */
+  columns?:
+    | {
+        label: string;
+        lines?:
+          | {
+              text: string;
+              linkType?: ('none' | 'url' | 'email' | 'phone') | null;
+              /**
+               * Full URL, e.g. https://instagram.com/…
+               */
+              href?: string | null;
+              openInNewTab?: boolean | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  brandText: string;
+  /**
+   * Year is auto-updated on the site (e.g. © 2026 — Company).
+   */
+  copyrightLine: string;
+  addressLine: string;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-page-footer';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MomentoFooterBlock".
+ */
+export interface MomentoFooterBlock {
+  logoText?: string | null;
+  tagline?: string | null;
+  navLinks?:
+    | {
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  pagesHeading?: string | null;
+  contactHeading?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  socialHeading?: string | null;
+  /**
+   * e.g. district.hr or full https://instagram.com/…
+   */
+  instagram?: string | null;
+  megaLine?: string | null;
+  copyright?: string | null;
+  madeBy?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'momento-footer';
 }
 /**
  * Manage navigation menus for tenants and main domain
@@ -2521,6 +2547,8 @@ export interface PagesSelect<T extends boolean = true> {
         'real-estate-landing-inquiry'?: T | RealEstateLandingInquiryBlockSelect<T>;
         'real-estate-landing-unit-browser'?: T | RealEstateLandingUnitBrowserBlockSelect<T>;
         'real-estate-landing-past-projects'?: T | RealEstateLandingPastProjectsBlockSelect<T>;
+        'real-estate-landing-page-footer'?: T | RealEstateLandingPageFooterBlockSelect<T>;
+        'momento-footer'?: T | MomentoFooterBlockSelect<T>;
         'real-estate-hero'?:
           | T
           | {
@@ -2903,32 +2931,10 @@ export interface RealEstateLandingInquiryBlockSelect<T extends boolean = true> {
         id?: T;
       };
   introHtml?: T;
-  formActionUrl?: T;
-  formMethod?: T;
+  form?: T;
   submitButtonLabel?: T;
   disabledSubmitHelp?: T;
-  nameFieldLabel?: T;
-  emailFieldLabel?: T;
-  phoneFieldLabel?: T;
-  interestFieldLabel?: T;
-  messageFieldLabel?: T;
-  interestPlaceholder?: T;
-  messagePlaceholder?: T;
-  privacyHtml?: T;
-  interestOptions?:
-    | T
-    | {
-        label?: T;
-        value?: T;
-        id?: T;
-      };
-  contacts?:
-    | T
-    | {
-        label?: T;
-        valueHtml?: T;
-        id?: T;
-      };
+  successMessage?: T;
   id?: T;
   blockName?: T;
 }
@@ -3032,6 +3038,58 @@ export interface RealEstateLandingPastProjectsBlockSelect<T extends boolean = tr
             };
         id?: T;
       };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingPageFooterBlock_select".
+ */
+export interface RealEstateLandingPageFooterBlockSelect<T extends boolean = true> {
+  columns?:
+    | T
+    | {
+        label?: T;
+        lines?:
+          | T
+          | {
+              text?: T;
+              linkType?: T;
+              href?: T;
+              openInNewTab?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  brandText?: T;
+  copyrightLine?: T;
+  addressLine?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MomentoFooterBlock_select".
+ */
+export interface MomentoFooterBlockSelect<T extends boolean = true> {
+  logoText?: T;
+  tagline?: T;
+  navLinks?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  pagesHeading?: T;
+  contactHeading?: T;
+  email?: T;
+  phone?: T;
+  socialHeading?: T;
+  instagram?: T;
+  megaLine?: T;
+  copyright?: T;
+  madeBy?: T;
   id?: T;
   blockName?: T;
 }
@@ -3221,19 +3279,7 @@ export interface FormsSelect<T extends boolean = true> {
         select?:
           | T
           | {
-              name?: T;
-              label?: T;
-              width?: T;
-              defaultValue?: T;
               placeholder?: T;
-              options?:
-                | T
-                | {
-                    label?: T;
-                    value?: T;
-                    id?: T;
-                  };
-              required?: T;
               id?: T;
               blockName?: T;
             };
@@ -3250,22 +3296,14 @@ export interface FormsSelect<T extends boolean = true> {
         text?:
           | T
           | {
-              name?: T;
-              label?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
+              placeholder?: T;
               id?: T;
               blockName?: T;
             };
         textarea?:
           | T
           | {
-              name?: T;
-              label?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
+              placeholder?: T;
               id?: T;
               blockName?: T;
             };

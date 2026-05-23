@@ -1,5 +1,5 @@
 /**
- * Početne vrijednosti za `pnpm run seed:momento` — upisuju se u Payload (`pages.layout`, `menu`, `footer`).
+ * Početne vrijednosti za `pnpm run seed:momento` — upisuju se u Payload (`pages.layout`, `menu`).
  * Produkcija čita isključivo iz CMS-a.
  *
  * Cjenik i posebne ponude iz `Momento by District.html` (window.MENU_DATA / window.OFFERS).
@@ -7,6 +7,7 @@
  */
 
 import menuJson from '@/data/momentoMenuSeedData.json'
+import { translateMenuItem, translateOfferPop } from '@/data/momentoMenuI18n'
 
 export type MomentoLocale = 'hr' | 'en' | 'de'
 
@@ -78,18 +79,15 @@ export type MomentoSeedLocalePack = {
     }[]
   }
   footer: {
-    title: string
-    leftHeading: string
-    leftSubheading: string
+    logoText: string
+    tagline: string
+    pagesHeading: string
     contactHeading: string
+    socialHeading: string
     email: string
     phone: string
     instagram: string
-    addressHeading: string
-    venue: string
-    street: string
-    city: string
-    country: string
+    megaLine: string
     madeBy: string
   }
 }
@@ -161,28 +159,38 @@ function buildMenuCategories(locale: MomentoLocale): MomentoMenuCategorySeed[] {
         : locale === 'de'
           ? 'Kombi-Angebote für jeden Tageszeitpunkt.'
           : 'Kombinacije koje nas razmaze.',
-    menuItems: menuJson.offers.map((o) => ({
-      itemName: o.name,
-      itemPrice: o.price,
-      itemDescription: o.pop || undefined,
-      isPopular: Boolean(o.featured),
-    })),
+    menuItems: menuJson.offers.map((o) => {
+      const row = translateMenuItem(
+        { name: o.name, price: o.price, desc: o.pop, featured: o.featured },
+        locale,
+      )
+      return {
+        itemName: row.itemName,
+        itemPrice: row.itemPrice,
+        itemDescription: translateOfferPop(o.pop, locale) ?? row.itemDescription,
+        isPopular: row.isPopular,
+      }
+    }),
   }
 
   const fromMenu = menuJson.menuData.map((cat) => ({
     categoryName: titleMap?.[cat.title] ?? cat.title,
-    menuItems: cat.items.map((item) => ({
-      itemName: item.name,
-      itemPrice: item.price,
-      itemDescription: item.desc || undefined,
-    })),
+    menuItems: cat.items.map((item) => {
+      const row = translateMenuItem(item, locale)
+      return {
+        itemName: row.itemName,
+        itemPrice: row.itemPrice,
+        itemDescription: row.itemDescription,
+        isPopular: row.isPopular,
+      }
+    }),
   }))
 
   return [offersCategory, ...fromMenu]
 }
 
 const hrPack: MomentoSeedLocalePack = {
-  pageTitle: 'Landing page - Momento by DISTRICT',
+  pageTitle: 'Momento by DISTRICT',
   metaTitle: 'Momento by District - lounge & caffe bar u srcu Retfale',
   metaDescription:
     'Momento lounge & caffe bar u prizemlju District Boutique-a — kava, slastice, craft pivo, vina i opuštena atmosfera u srcu Retfale, Osijek.',
@@ -213,8 +221,8 @@ const hrPack: MomentoSeedLocalePack = {
     sectionId: 'o-nama',
   },
   menu: {
-    title: 'Cjenik',
-    subtitle: 'Naš meni — od jutarnje kave do večernjeg pića.',
+    title: 'Naš meni.',
+    subtitle: 'Od jutarnje kave do večernjeg pića.',
     popularBadgeText: 'Popularno',
     sectionId: 'menu',
     categories: buildMenuCategories('hr'),
@@ -226,7 +234,7 @@ const hrPack: MomentoSeedLocalePack = {
       'Uvijek tražimo strastvene ljude koji će se pridružiti našem timu. Ako volite gostoprimstvo, odličnu hranu i stvaranje nezaboravnih iskustava, voljeli bismo čuti vaše mišljenje.',
     buttonText: 'Prijavi se',
     buttonUrl: 'mailto:support@district.hr?subject=Momento%20—%20prijava%20za%20posao',
-    badgeText: 'Momento zapošljava',
+    badgeText: '05 / Momento zapošljava',
     features: ['Odličan tim', 'Ugodna atmosfera', 'Kompetitivna plaća'],
     ctaNote: 'Pošalji nam svoj CV sada!',
     sectionId: 'karijera',
@@ -242,25 +250,22 @@ const hrPack: MomentoSeedLocalePack = {
     workingHours: WORKING_HOURS,
   },
   footer: {
-    title: 'Podnožje — Momento (seed)',
-    leftHeading: '<b>district.</b>',
-    leftSubheading: 'Lounge & caffe bar u prizemlju District Boutique-a. Vaš trenutak, svaki dan.',
+    logoText: 'Momento.',
+    tagline: 'Lounge & caffe bar u prizemlju District Boutique-a. Vaš trenutak, svaki dan.',
+    pagesHeading: 'Stranice',
     contactHeading: 'Kontakt',
+    socialHeading: 'Pratite nas',
     email: 'support@district.hr',
     phone: '+385 99 554 4337',
     instagram: 'district.hr',
-    addressHeading: 'Adresa',
-    venue: 'District',
-    street: 'Ljudevita Posavskog 7',
-    city: '31000 Osijek',
-    country: 'Hrvatska',
-    madeBy: 'Kreirao Front Tribe · seed:momento',
+    megaLine: '— Vaš trenutak, vaš Momento —',
+    madeBy: 'Kreirao Front Tribe',
   },
 }
 
 const enPack: MomentoSeedLocalePack = {
   ...hrPack,
-  pageTitle: 'Landing page - Momento by DISTRICT',
+  pageTitle: 'Momento by DISTRICT',
   metaTitle: 'Momento by District — lounge & coffee bar in the heart of Retfala',
   metaDescription:
     'Momento lounge & coffee bar on the ground floor of District Boutique — coffee, pastries, craft beer, wines and a relaxed atmosphere in Retfala, Osijek.',
@@ -289,8 +294,8 @@ const enPack: MomentoSeedLocalePack = {
     sectionId: 'o-nama',
   },
   menu: {
-    title: 'Menu',
-    subtitle: 'Our menu — from morning coffee to evening drinks.',
+    title: 'Our menu.',
+    subtitle: 'From morning coffee to evening drinks.',
     popularBadgeText: 'Popular',
     sectionId: 'menu',
     categories: buildMenuCategories('en'),
@@ -302,7 +307,7 @@ const enPack: MomentoSeedLocalePack = {
       "We're always looking for passionate people to join our team. If you love hospitality, great food and creating memorable experiences, we'd love to hear from you.",
     buttonText: 'Apply now',
     buttonUrl: 'mailto:support@district.hr?subject=Momento%20—%20job%20application',
-    badgeText: "We're hiring",
+    badgeText: '05 / Now hiring',
     features: ['Great team', 'Welcoming atmosphere', 'Competitive pay'],
     ctaNote: 'Send us your CV today!',
     sectionId: 'karijera',
@@ -318,25 +323,22 @@ const enPack: MomentoSeedLocalePack = {
     workingHours: WORKING_HOURS,
   },
   footer: {
-    title: 'Footer — Momento (seed)',
-    leftHeading: '<b>district.</b>',
-    leftSubheading: 'Lounge & coffee bar on the ground floor of District Boutique. Your moment, every day.',
+    logoText: 'Momento.',
+    tagline: 'Lounge & coffee bar on the ground floor of District Boutique. Your moment, every day.',
+    pagesHeading: 'Pages',
     contactHeading: 'Contact',
+    socialHeading: 'Follow us',
     email: 'support@district.hr',
     phone: '+385 99 554 4337',
     instagram: 'district.hr',
-    addressHeading: 'Address',
-    venue: 'District',
-    street: 'Ljudevita Posavskog 7',
-    city: '31000 Osijek',
-    country: 'Croatia',
-    madeBy: 'Made by Front Tribe · seed:momento',
+    megaLine: '— Your moment, your Momento —',
+    madeBy: 'Made by Front Tribe',
   },
 }
 
 const dePack: MomentoSeedLocalePack = {
   ...hrPack,
-  pageTitle: 'Landing page - Momento by DISTRICT',
+  pageTitle: 'Momento by DISTRICT',
   metaTitle: 'Momento by District — Lounge & Coffee Bar im Herzen von Retfala',
   metaDescription:
     'Momento Lounge & Coffee Bar im Erdgeschoss des District Boutique — Kaffee, Süßes, Craft-Bier, Weine und entspannte Atmosphäre in Retfala, Osijek.',
@@ -365,8 +367,8 @@ const dePack: MomentoSeedLocalePack = {
     sectionId: 'o-nama',
   },
   menu: {
-    title: 'Speisekarte',
-    subtitle: 'Unsere Karte — vom Morgenkaffee bis zum Abendgetränk.',
+    title: 'Unsere Karte.',
+    subtitle: 'Vom Morgenkaffee bis zum Abendgetränk.',
     popularBadgeText: 'Beliebt',
     sectionId: 'menu',
     categories: buildMenuCategories('de'),
@@ -378,7 +380,7 @@ const dePack: MomentoSeedLocalePack = {
       'Wir suchen ständig engagierte Menschen für unser Team. Wenn Sie Gastfreundschaft, gutes Essen und unvergessliche Erlebnisse lieben, freuen wir uns auf Ihre Nachricht.',
     buttonText: 'Jetzt bewerben',
     buttonUrl: 'mailto:support@district.hr?subject=Momento%20—%20Bewerbung',
-    badgeText: 'Wir stellen ein',
+    badgeText: '05 / Wir stellen ein',
     features: ['Tolles Team', 'Angenehme Atmosphäre', 'Attraktive Bezahlung'],
     ctaNote: 'Senden Sie uns jetzt Ihren Lebenslauf!',
     sectionId: 'karijera',
@@ -394,20 +396,17 @@ const dePack: MomentoSeedLocalePack = {
     workingHours: WORKING_HOURS,
   },
   footer: {
-    title: 'Fußzeile — Momento (Seed)',
-    leftHeading: '<b>district.</b>',
-    leftSubheading:
+    logoText: 'Momento.',
+    tagline:
       'Lounge & Coffee Bar im Erdgeschoss des District Boutique. Ihr Moment, jeden Tag.',
+    pagesHeading: 'Seiten',
     contactHeading: 'Kontakt',
+    socialHeading: 'Folgen Sie uns',
     email: 'support@district.hr',
     phone: '+385 99 554 4337',
     instagram: 'district.hr',
-    addressHeading: 'Adresse',
-    venue: 'District',
-    street: 'Ljudevita Posavskog 7',
-    city: '31000 Osijek',
-    country: 'Kroatien',
-    madeBy: 'Erstellt von Front Tribe · seed:momento',
+    megaLine: '— Ihr Moment, Ihr Momento —',
+    madeBy: 'Erstellt von Front Tribe',
   },
 }
 

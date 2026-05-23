@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import PageClient from '@/components/PageClient'
-import { Footer } from '@/components/Footer'
 import { RealEstateLandingShell } from '@/components/real-estate-landing'
 import { getCachedPageBySlug } from '@/utils/getCachedPages'
-import { getTenantFooter, getTenantMenu } from '@/utils/getTenantData'
+import { getTenantMenu } from '@/utils/getTenantData'
 import { mergePageLayoutForPublicPage } from '@/utils/mergeReLandingLayoutForPublic'
+import { enrichInquiryFormsInPage } from '@/utils/enrichInquiryFormsInPage'
 import { localeLang } from '@/utils/locale'
 import type { ReLandingLocale } from '@/data/realEstateLandingLocales'
 
@@ -16,7 +16,7 @@ const PREVIEW_SLUG = (process.env.RE_SEED_PAGE_SLUG || 'real-estate').trim()
 export const metadata: Metadata = {
   title: 'Real Estate Landing — Preview (CMS)',
   description:
-    'Isti `pages` zapis kao produkcija — učitava se slug iz CMS-a (default: real-estate). Pokreni `pnpm run seed:re-landing` ako stranica ne postoji.',
+    'Isti `pages` zapis kao produkcija — učitava se slug iz CMS-a (default: real-estate). Pokreni `pnpm run seed:real-estate` ako stranica ne postoji.',
 }
 
 type Props = { params: Promise<{ locale: string }> }
@@ -45,7 +45,7 @@ export default async function PreviewRealEstateLandingPage({ params }: Props) {
           <code className="rounded bg-neutral-100 px-1">{locale}</code>
         </p>
         <p className="mt-4">
-          Pokreni <code className="rounded bg-neutral-100 px-1">pnpm run seed:re-landing</code> ili uredi
+          Pokreni <code className="rounded bg-neutral-100 px-1">pnpm run seed:real-estate</code> ili uredi
           postojeću stranicu u Payloadu.
         </p>
       </div>
@@ -61,9 +61,11 @@ export default async function PreviewRealEstateLandingPage({ params }: Props) {
         : null
 
   const menu = await getTenantMenu(tenantIdStr, locale)
-  const footerGlobal = await getTenantFooter(tenantIdStr, locale)
 
-  const mergedPage = mergePageLayoutForPublicPage(page, menu)
+  const mergedPage = await enrichInquiryFormsInPage(
+    mergePageLayoutForPublicPage(page, menu),
+    locale,
+  )
 
   const layout = mergedPage.layout ?? []
   const blockType = (b: { blockType?: string | null }) => String(b.blockType ?? '')
@@ -81,18 +83,7 @@ export default async function PreviewRealEstateLandingPage({ params }: Props) {
 
   return (
     <>
-      <RealEstateLandingShell
-        footer={
-          footerGlobal ? (
-            <Footer
-              variant="reLanding"
-              leftContent={footerGlobal.leftContent}
-              rightContent={footerGlobal.rightContent}
-              bottomContent={footerGlobal.bottomContent}
-            />
-          ) : undefined
-        }
-      >
+      <RealEstateLandingShell>
         <PageClient page={mergedPage} locale={locale} />
       </RealEstateLandingShell>
     </>

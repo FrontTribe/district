@@ -4,7 +4,7 @@ import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import type { Tenant } from '@/payload-types'
 import { RealEstateLandingShell } from '@/components/real-estate-landing'
-import { MomentoFooter, MomentoLandingShell } from '@/components/momento-landing'
+import { MomentoLandingShell } from '@/components/momento-landing'
 import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
@@ -13,6 +13,7 @@ import { getCachedPageBySlug } from '@/utils/getCachedPages'
 import { localeLang } from '@/utils/locale'
 import { generateMetadataFromPage } from '@/utils/generateMetadata'
 import { mergePageLayoutForPublicPage } from '@/utils/mergeReLandingLayoutForPublic'
+import { enrichInquiryFormsInPage } from '@/utils/enrichInquiryFormsInPage'
 
 type PageProps = {
   params: Promise<{
@@ -76,7 +77,10 @@ export default async function Page({ params }: PageProps) {
   const isBoutiqueTenantPage = Boolean(currentTenant && tenantVisualTheme === 'boutique')
   const isMomentoTenantPage = Boolean(currentTenant && tenantVisualTheme === 'momento')
 
-  const mergedPage = mergePageLayoutForPublicPage(page, menuGlobal)
+  const mergedPage = await enrichInquiryFormsInPage(
+    mergePageLayoutForPublicPage(page, menuGlobal),
+    locale,
+  )
 
   const layout = mergedPage.layout ?? []
   const blockType = (b: { blockType?: string | null }) => String(b.blockType ?? '')
@@ -96,39 +100,7 @@ export default async function Page({ params }: PageProps) {
   const showTenantMenu = Boolean(
     currentTenant && !(isRealEstateLandingPage && hasLandingNav) && !isMomentoTenantPage,
   )
-  const showTenantFooter = Boolean(currentTenant && footerGlobal && !isMomentoTenantPage)
-  const reLandingFooterNode =
-    footerGlobal && currentTenant && isRealEstateLandingPage ? (
-      <Footer
-        variant="reLanding"
-        leftContent={footerGlobal.leftContent}
-        rightContent={footerGlobal.rightContent}
-        bottomContent={footerGlobal.bottomContent}
-      />
-    ) : undefined
-
-  const momentoFooterNode =
-    footerGlobal && isMomentoTenantPage ? (
-      <MomentoFooter
-        logoText={menuGlobal?.logoText ?? 'Momento.'}
-        tagline={footerGlobal.leftContent?.subheading ?? undefined}
-        navLinks={
-          menuGlobal?.menuItems?.map((item) => ({
-            label: item.label,
-            href: item.link,
-          })) ?? undefined
-        }
-        email={footerGlobal.rightContent?.contact?.email ?? undefined}
-        phone={footerGlobal.rightContent?.contact?.phone ?? undefined}
-        instagram={
-          footerGlobal.rightContent?.contact?.instagram
-            ? `https://instagram.com/${footerGlobal.rightContent.contact.instagram.replace(/^@/, '')}`
-            : undefined
-        }
-        copyright={footerGlobal.bottomContent?.copyright ?? undefined}
-        madeBy={footerGlobal.bottomContent?.madeBy ?? undefined}
-      />
-    ) : undefined
+  const showTenantFooter = Boolean(currentTenant && footerGlobal && !isMomentoTenantPage && !isRealEstateLandingPage)
 
   const momentoMenu =
     menuGlobal && isMomentoTenantPage
@@ -198,11 +170,9 @@ export default async function Page({ params }: PageProps) {
       )}
 
       {isRealEstateLandingPage ? (
-        <RealEstateLandingShell footer={reLandingFooterNode}>{pageClient}</RealEstateLandingShell>
+        <RealEstateLandingShell>{pageClient}</RealEstateLandingShell>
       ) : isMomentoTenantPage ? (
-        <MomentoLandingShell menu={momentoMenu} footer={momentoFooterNode}>
-          {pageClient}
-        </MomentoLandingShell>
+        <MomentoLandingShell menu={momentoMenu}>{pageClient}</MomentoLandingShell>
       ) : isLegacyRealEstatePage ? (
         <main className="real-estate-preview">{pageClient}</main>
       ) : (

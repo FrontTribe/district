@@ -5,6 +5,7 @@ import { MomentoSplit } from './shared/MomentoSplit'
 import { MomentoMap } from './MomentoMap'
 import { dayLabel } from './utils'
 import { googleMapsSearchUrl } from '@/utils/googleMapsLoader'
+import { getMomentoUiCopy } from '@/data/momentoUiCopy'
 
 type WorkingHour = {
   day: string
@@ -36,8 +37,10 @@ export function MomentoLocation({
   locale = 'hr',
   contactPhone = '+385 99 554 4337',
   contactEmail = 'support@district.hr',
-  mapSubline = 'Osijek · Retfala',
+  mapSubline,
 }: Props) {
+  const ui = getMomentoUiCopy(locale)
+  const subline = mapSubline ?? ui.location.mapSubline
   const today = new Date().getDay()
   const dayIndex: Record<string, number> = {
     sunday: 0,
@@ -53,17 +56,20 @@ export function MomentoLocation({
   const streetLine = addressLines[0] ?? address
   const cityLine = addressLines.slice(1).join(', ') || '31000 Osijek, Hrvatska'
   const mapsUrl = googleMapsSearchUrl(coordinates.lat, coordinates.lng, address)
+  const titleWords = title.split(' ')
+  const titleLead = titleWords.slice(0, 2).join(' ') || title
+  const titleTail = titleWords.slice(2).join(' ') || ui.location.titleTail
 
   return (
     <section className="section" id={sectionId}>
       <div className="shell">
         <div className="section-head">
-          <div className="num reveal">06 / Lokacija</div>
+          <div className="num reveal">{ui.location.sectionLabel}</div>
           <h2>
-            <MomentoSplit>{title.split(' ').slice(0, 2).join(' ') || title}</MomentoSplit>
+            <MomentoSplit>{titleLead}</MomentoSplit>
             <br />
             <MomentoSplit>
-              <em>{title.split(' ').slice(2).join(' ') || 'pronaći.'}</em>
+              <em>{titleTail}</em>
             </MomentoSplit>
           </h2>
         </div>
@@ -73,12 +79,12 @@ export function MomentoLocation({
             {description ? <p className="reveal">{description}</p> : null}
             <div className="info-stack">
               <div className="info-block reveal" data-delay="1">
-                <div className="lbl">Adresa</div>
+                <div className="lbl">{ui.location.addressLabel}</div>
                 <div className="val">{streetLine}</div>
                 <div className="sub">{cityLine}</div>
               </div>
               <div className="info-block reveal" data-delay="2">
-                <div className="lbl">Kontakt</div>
+                <div className="lbl">{ui.location.contactLabel}</div>
                 <div className="val">
                   <a href={`tel:${contactPhone.replace(/\s/g, '')}`}>{contactPhone}</a>
                 </div>
@@ -87,19 +93,19 @@ export function MomentoLocation({
                 </div>
               </div>
               <div className="info-block reveal" data-delay="3">
-                <div className="lbl">Radno vrijeme</div>
+                <div className="lbl">{ui.location.hoursLabel}</div>
                 <div className="hours-grid">
                   {(workingHours ?? []).map((h) => {
                     const i = dayIndex[h.day] ?? -1
                     const time =
                       h.isOpen === false
-                        ? 'Zatvoreno'
+                        ? ui.location.closed
                         : `${h.openTime ?? ''}${h.openTime && h.closeTime ? ' – ' : ''}${h.closeTime ?? ''}`
                     return (
                       <React.Fragment key={h.day}>
                         <div className={`day ${i === today ? 'today' : ''}`}>
                           {dayLabel(h.day, locale)}
-                          {i === today ? ' · danas' : ''}
+                          {i === today ? ui.location.today : ''}
                         </div>
                         <div className={`time ${i === today ? 'today' : ''}`}>{time}</div>
                       </React.Fragment>
@@ -117,10 +123,10 @@ export function MomentoLocation({
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`Otvori ${streetLine} u Google Maps`}
+              aria-label={ui.location.mapsAria(streetLine)}
             >
               <div className="txt">{streetLine}</div>
-              <div className="sub">{mapSubline}</div>
+              <div className="sub">{subline}</div>
             </a>
           </div>
         </div>

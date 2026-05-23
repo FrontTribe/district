@@ -1,14 +1,17 @@
 'use client'
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { getMomentoUiCopy } from '@/data/momentoUiCopy'
 
 type Props = {
   active: string
   onSelect: (value: string) => void
   categories: { categoryName: string }[]
+  locale?: string
 }
 
-export function MomentoMenuBar({ active, onSelect, categories }: Props) {
+export function MomentoMenuBar({ active, onSelect, categories, locale = 'hr' }: Props) {
+  const ui = getMomentoUiCopy(locale)
   const trackRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
@@ -56,7 +59,7 @@ export function MomentoMenuBar({ active, onSelect, categories }: Props) {
         <button
           type="button"
           className="menu-bar-hint menu-bar-hint--left"
-          aria-label="Prethodne kategorije"
+          aria-label={ui.menu.prevCategories}
           onClick={() => scrollBy(-1)}
         >
           <span aria-hidden>←</span>
@@ -65,7 +68,7 @@ export function MomentoMenuBar({ active, onSelect, categories }: Props) {
 
       <div className="menu-bar" ref={trackRef}>
         <button type="button" className={active === 'all' ? 'active' : ''} onClick={() => onSelect('all')}>
-          Sve
+          {ui.menu.filterAll}
         </button>
         {categories.map((c) => (
           <button
@@ -83,7 +86,7 @@ export function MomentoMenuBar({ active, onSelect, categories }: Props) {
         <button
           type="button"
           className="menu-bar-hint menu-bar-hint--right"
-          aria-label="Više kategorija"
+          aria-label={ui.menu.moreCategories}
           onClick={() => scrollBy(1)}
         >
           <span aria-hidden>→</span>

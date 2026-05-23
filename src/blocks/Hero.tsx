@@ -128,6 +128,7 @@ export const HeroBlock: React.FC<{
         subheading={subheading}
         sectionId={sectionId}
         backgroundMedia={backgroundMedia}
+        locale={locale}
       />
     )
   }

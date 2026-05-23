@@ -2,8 +2,7 @@
  * Graditelj `pages.layout` za seed (`buildRealEstateLandingPayloadLayout`).
  * Početni tekstovi za Payload dolaze iz `reLandingSeedDefaults.ts` — produkcija čita samo CMS.
  *
- * Završni blok je **RE Landing — Inquiry** (`#kontakt`). Tamno podnožje dolazi iz kolekcije **Podnožja** (`footer`),
- * ne iz layout bloka.
+ * Završni blokovi: **RE Landing — Inquiry** (`#kontakt`) + **RE Landing — Footer** (`.footer`).
  *
  * Slike: `public/re-landing/` — isti JPEG-i kao u `District Real Estate.html` (bundler manifest).
  * Ažuriraj datoteke: `node scripts/extract-district-html-images.mjs`
@@ -94,6 +93,7 @@ export type RealEstateLandingLayoutSeedOptions = {
   buildingId?: number
   typologyItems?: TypologyFromPdfItem[]
   typologyIntro?: string
+  formId?: number
 }
 
 function mediaPick(media: MediaIds, key: ReLandingDemoMediaKey): number {
@@ -261,23 +261,23 @@ export function buildRealEstateLandingPayloadLayout(
     {
       blockType: 'real-estate-landing-inquiry' as const,
       sectionId: SECTION_IDS.inquiry,
-      eyebrow: pack.inquiry.eyebrow,
+      eyebrow: pack.inquiry.eyebrow ?? null,
       headingParts: pack.inquiry.headingParts.map((h) => ({ ...h })),
       introHtml: pack.inquiry.introHtml ?? null,
-      formActionUrl: pack.inquiry.formActionUrl,
-      formMethod: pack.inquiry.formMethod,
+      form: opts?.formId as number,
       submitButtonLabel: pack.inquiry.submitButtonLabel,
       disabledSubmitHelp: pack.inquiry.disabledSubmitHelp,
-      nameFieldLabel: pack.inquiry.nameFieldLabel,
-      emailFieldLabel: pack.inquiry.emailFieldLabel,
-      phoneFieldLabel: pack.inquiry.phoneFieldLabel,
-      interestFieldLabel: pack.inquiry.interestFieldLabel,
-      messageFieldLabel: pack.inquiry.messageFieldLabel,
-      interestPlaceholder: pack.inquiry.interestPlaceholder,
-      messagePlaceholder: pack.inquiry.messagePlaceholder,
-      privacyHtml: pack.inquiry.privacyHtml,
-      interestOptions: pack.inquiry.interestOptions.map((o) => ({ ...o })),
-      contacts: pack.inquiry.contacts.map((c) => ({ ...c })),
+      successMessage: pack.inquiry.successMessage,
+    },
+    {
+      blockType: 'real-estate-landing-page-footer' as const,
+      columns: pack.footer.columns.map((c) => ({
+        label: c.label,
+        lines: c.lines.map((l) => ({ ...l })),
+      })),
+      brandText: pack.footer.brandText,
+      copyrightLine: pack.footer.copyrightLine,
+      addressLine: pack.footer.addressLine,
     },
   ]
 }

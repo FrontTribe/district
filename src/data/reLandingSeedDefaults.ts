@@ -1,9 +1,9 @@
 /**
- * Početne vrijednosti za `pnpm run seed:re-landing` — upisuju se u Payload (`pages.layout`).
+ * Početne vrijednosti za `pnpm run seed:real-estate` — upisuju se u Payload (`pages.layout`).
  * Produkcija i preview čitaju isključivo iz CMS-a; ova datoteka nije runtime izvor istine.
  *
- * Blok **RE Landing — Inquiry** usklađen je s `District Real Estate.html` (`.cta`).
- * Jednoredno podnožje (`.footer`) dolazi iz kolekcije **Podnožja**, ne iz layout bloka.
+ * Blok **RE Landing — Inquiry** usklađen je s `District Real Estate.html` (`.cta`) — obrazac iz Payload Form Buildera.
+ * Podnožje (`.footer`) je blok **RE Landing — Footer** u `pages.layout`.
  *
  * Uredi sadržaj u Adminu nakon prvog seeda; ponovni seed može pregaziti lokalizirane blokove.
  */
@@ -97,34 +97,37 @@ export type ReLandingSeedLocalePack = {
     ctaLabel: string
   }
   inquiry: {
-    eyebrow: string
+    eyebrow?: string | null
     headingParts: ReLandingHeadingPart[]
-    /** Ispod naslova, iznad obrasca (HTML). */
     introHtml?: string | null
-    /** Vanjski endpoint (Formspark, Basin…). null = uredi u CMS-u. */
-    formActionUrl: string | null
-    formMethod: 'GET' | 'POST'
     submitButtonLabel: string
     disabledSubmitHelp: string
-    nameFieldLabel: string
-    emailFieldLabel: string
-    phoneFieldLabel: string
-    interestFieldLabel: string
-    messageFieldLabel: string
-    interestPlaceholder: string
-    messagePlaceholder: string
-    /** Ispod obrasca, iznad retka kontakt-ćelija (GDPR / privatnost). */
-    privacyHtml: string
-    interestOptions: { label: string; value: string }[]
-    /** Dizajn: 4 ćelije u retku (`repeat(4, 1fr)`). */
-    contacts: { label: string; valueHtml: string }[]
+    successMessage: string
   }
-  /** Zadano u seed paketu (vizualno podnožje dolazi iz kolekcije Podnožja, ne iz layout bloka). */
+  formSeed: {
+    nameFieldLabel: string
+    namePlaceholder: string
+    contactFieldLabel: string
+    contactPlaceholder: string
+    interestFieldLabel: string
+    interestPlaceholder: string
+    messageFieldLabel: string
+    messagePlaceholder: string
+    interestOptions: { label: string; value: string }[]
+  }
   footer: {
-    brand: string
-    brandHtml: string
-    line3: string
-    links?: { label: string; href: string; openInNewTab?: boolean }[]
+    columns: {
+      label: string
+      lines: {
+        text: string
+        linkType: 'none' | 'url' | 'email' | 'phone'
+        href?: string
+        openInNewTab?: boolean
+      }[]
+    }[]
+    brandText: string
+    copyrightLine: string
+    addressLine: string
   }
 }
 
@@ -274,44 +277,72 @@ export const reLandingSeedPacks: Record<ReLandingLocale, ReLandingSeedLocalePack
       ctaLabel: 'Kontaktiraj nas',
     },
     inquiry: {
-      eyebrow: 'Kontakt',
-      headingParts: [{ text: 'Javi' }, { text: 'nam se', italic: true }],
-      formActionUrl: null,
-      formMethod: 'POST',
-      submitButtonLabel: 'Pošalji upit',
-      disabledSubmitHelp: 'Postavite URL obrasca u CMS-u',
+      headingParts: [{ text: 'Razgovarajmo' }, { text: 'o adresi.', italic: true }],
+      submitButtonLabel: '— POŠALJI PORUKU',
+      disabledSubmitHelp: 'Odaberite obrazac u CMS-u',
+      successMessage: 'Hvala — javit ćemo vam se uskoro.',
+    },
+    formSeed: {
       nameFieldLabel: 'Ime i prezime',
-      emailFieldLabel: 'E-pošta',
-      phoneFieldLabel: 'Telefon',
-      interestFieldLabel: 'Zanimanje',
+      namePlaceholder: 'Marko Horvat',
+      contactFieldLabel: 'Email — telefon',
+      contactPlaceholder: 'marko@dom.hr · +385',
+      interestFieldLabel: 'Stan koji vas zanima',
+      interestPlaceholder: 'Odaberite tipologiju…',
       messageFieldLabel: 'Poruka',
-      interestPlaceholder: 'Odaberite…',
-      messagePlaceholder: 'Opcionalno',
-      privacyHtml:
-        'Podaci iz obrasca koriste se isključivo u svrhu odgovora na upit, u skladu s primjenjivim propisima o zaštiti osobnih podataka.',
+      messagePlaceholder: 'Zanima me južno orijentiran stan, oko 70 m², s lodom…',
       interestOptions: [
-        { label: 'Stan', value: 'stan' },
-        { label: 'Poslovni prostor', value: 'poslovni' },
+        { label: 'Garsonijera', value: 'garsonijera' },
+        { label: 'Jednosobni', value: 'jednosobni' },
+        { label: 'Dvosobni', value: 'dvosobni' },
+        { label: 'Trosobni', value: 'trosobni' },
         { label: 'Ostalo', value: 'ostalo' },
-      ],
-      contacts: [
-        { label: 'Telefon', valueHtml: '<a href="tel:+38511234567">+385 1 234 5678</a>' },
-        { label: 'E-pošta', valueHtml: '<a href="mailto:info@example.com">info@example.com</a>' },
-        {
-          label: 'Adresa',
-          valueHtml: '<span>Ulica Ljudevita Posavskog 7<br>31000 Osijek</span>',
-        },
-        { label: 'Posjet', valueHtml: 'Po dogovoru' },
       ],
     },
     footer: {
-      brand: 'district.',
-      brandHtml: '<b>district.</b>',
-      line3: 'Real Estate',
-      links: [
-        { label: 'Politika privatnosti', href: '/politika-privatnosti' },
-        { label: 'Instagram', href: 'https://www.instagram.com/', openInNewTab: true },
+      columns: [
+        {
+          label: 'Sjedište',
+          lines: [
+            { text: 'Ulica Ljudevita Posavskog 7', linkType: 'none' },
+            { text: '31000 Osijek', linkType: 'none' },
+          ],
+        },
+        {
+          label: 'Telefon',
+          lines: [
+            { text: '+385 99 231 123', linkType: 'phone' },
+            { text: 'Pon — Pet · 09 — 17h', linkType: 'none' },
+          ],
+        },
+        {
+          label: 'Pošta',
+          lines: [
+            { text: 'support@district.hr', linkType: 'email' },
+            { text: 'prodaja@district.hr', linkType: 'email' },
+          ],
+        },
+        {
+          label: 'Pratite',
+          lines: [
+            {
+              text: 'Instagram',
+              linkType: 'url',
+              href: 'https://www.instagram.com/',
+              openInNewTab: true,
+            },
+            {
+              text: 'Facebook',
+              linkType: 'url',
+              href: 'https://www.facebook.com/',
+              openInNewTab: true,
+            },
+          ],
+        },
       ],
+      brandText: 'district.',
+      copyrightLine: '© 2026 — MP BYD D.O.O.',
+      addressLine: 'Ulica Ljudevita Posavskog 7, Osijek',
     },
   },
   en: {
@@ -459,44 +490,72 @@ export const reLandingSeedPacks: Record<ReLandingLocale, ReLandingSeedLocalePack
       ctaLabel: 'Contact us',
     },
     inquiry: {
-      eyebrow: 'Contact',
-      headingParts: [{ text: 'Get' }, { text: 'in touch', italic: true }],
-      formActionUrl: null,
-      formMethod: 'POST',
-      submitButtonLabel: 'Send inquiry',
-      disabledSubmitHelp: 'Set the form action URL in the CMS',
+      headingParts: [{ text: "Let's talk" }, { text: 'about the address.', italic: true }],
+      submitButtonLabel: '— SEND MESSAGE',
+      disabledSubmitHelp: 'Select a form in the CMS',
+      successMessage: 'Thank you — we will get back to you shortly.',
+    },
+    formSeed: {
       nameFieldLabel: 'Full name',
-      emailFieldLabel: 'Email',
-      phoneFieldLabel: 'Phone',
-      interestFieldLabel: 'Interest',
+      namePlaceholder: 'Mark Horvat',
+      contactFieldLabel: 'Email — phone',
+      contactPlaceholder: 'mark@home.com · +385',
+      interestFieldLabel: 'Unit of interest',
+      interestPlaceholder: 'Choose typology…',
       messageFieldLabel: 'Message',
-      interestPlaceholder: 'Choose…',
-      messagePlaceholder: 'Optional',
-      privacyHtml:
-        'Information you submit is used only to respond to your inquiry, in line with applicable data protection law.',
+      messagePlaceholder: 'I am interested in a south-facing unit, around 70 m², with a loggia…',
       interestOptions: [
-        { label: 'Apartment', value: 'stan' },
-        { label: 'Commercial space', value: 'poslovni' },
+        { label: 'Studio', value: 'garsonijera' },
+        { label: 'One-bedroom', value: 'jednosobni' },
+        { label: 'Two-bedroom', value: 'dvosobni' },
+        { label: 'Three-bedroom', value: 'trosobni' },
         { label: 'Other', value: 'ostalo' },
-      ],
-      contacts: [
-        { label: 'Phone', valueHtml: '<a href="tel:+38511234567">+385 1 234 5678</a>' },
-        { label: 'Email', valueHtml: '<a href="mailto:info@example.com">info@example.com</a>' },
-        {
-          label: 'Address',
-          valueHtml: '<span>Ljudevita Posavskog 7<br>31000 Osijek</span>',
-        },
-        { label: 'Visits', valueHtml: 'By appointment' },
       ],
     },
     footer: {
-      brand: 'district.',
-      brandHtml: '<b>district.</b>',
-      line3: 'Real Estate',
-      links: [
-        { label: 'Privacy policy', href: '/politika-privatnosti' },
-        { label: 'Instagram', href: 'https://www.instagram.com/', openInNewTab: true },
+      columns: [
+        {
+          label: 'Headquarters',
+          lines: [
+            { text: 'Ljudevita Posavskog 7', linkType: 'none' },
+            { text: '31000 Osijek', linkType: 'none' },
+          ],
+        },
+        {
+          label: 'Phone',
+          lines: [
+            { text: '+385 99 231 123', linkType: 'phone' },
+            { text: 'Mon — Fri · 09 — 17h', linkType: 'none' },
+          ],
+        },
+        {
+          label: 'Email',
+          lines: [
+            { text: 'support@district.hr', linkType: 'email' },
+            { text: 'prodaja@district.hr', linkType: 'email' },
+          ],
+        },
+        {
+          label: 'Follow',
+          lines: [
+            {
+              text: 'Instagram',
+              linkType: 'url',
+              href: 'https://www.instagram.com/',
+              openInNewTab: true,
+            },
+            {
+              text: 'Facebook',
+              linkType: 'url',
+              href: 'https://www.facebook.com/',
+              openInNewTab: true,
+            },
+          ],
+        },
       ],
+      brandText: 'district.',
+      copyrightLine: '© 2026 — MP BYD D.O.O.',
+      addressLine: 'Ljudevita Posavskog 7, Osijek',
     },
   },
   de: {
@@ -644,44 +703,72 @@ export const reLandingSeedPacks: Record<ReLandingLocale, ReLandingSeedLocalePack
       ctaLabel: 'Kontakt aufnehmen',
     },
     inquiry: {
-      eyebrow: 'Kontakt',
-      headingParts: [{ text: 'Schreiben' }, { text: 'Sie uns', italic: true }],
-      formActionUrl: null,
-      formMethod: 'POST',
-      submitButtonLabel: 'Anfrage senden',
-      disabledSubmitHelp: 'Formular-URL im CMS eintragen',
+      headingParts: [{ text: 'Sprechen wir' }, { text: 'über die Adresse.', italic: true }],
+      submitButtonLabel: '— NACHRICHT SENDEN',
+      disabledSubmitHelp: 'Formular im CMS auswählen',
+      successMessage: 'Vielen Dank — wir melden uns in Kürze.',
+    },
+    formSeed: {
       nameFieldLabel: 'Vor- und Nachname',
-      emailFieldLabel: 'E-Mail',
-      phoneFieldLabel: 'Telefon',
-      interestFieldLabel: 'Interesse',
+      namePlaceholder: 'Marko Horvat',
+      contactFieldLabel: 'E-Mail — Telefon',
+      contactPlaceholder: 'marko@dom.hr · +385',
+      interestFieldLabel: 'Gewünschte Wohnung',
+      interestPlaceholder: 'Typologie wählen…',
       messageFieldLabel: 'Nachricht',
-      interestPlaceholder: 'Bitte wählen…',
-      messagePlaceholder: 'Optional',
-      privacyHtml:
-        'Ihre Angaben werden ausschließlich zur Beantwortung Ihrer Anfrage gemäß den geltenden Datenschutzvorschriften verwendet.',
+      messagePlaceholder: 'Ich interessiere mich für eine Südwohnung, ca. 70 m², mit Loggia…',
       interestOptions: [
-        { label: 'Wohnung', value: 'stan' },
-        { label: 'Gewerbefläche', value: 'poslovni' },
+        { label: 'Garçonnière', value: 'garsonijera' },
+        { label: 'Einzimmerwohnung', value: 'jednosobni' },
+        { label: 'Zweizimmerwohnung', value: 'dvosobni' },
+        { label: 'Dreizimmerwohnung', value: 'trosobni' },
         { label: 'Sonstiges', value: 'ostalo' },
-      ],
-      contacts: [
-        { label: 'Telefon', valueHtml: '<a href="tel:+38511234567">+385 1 234 5678</a>' },
-        { label: 'E-Mail', valueHtml: '<a href="mailto:info@example.com">info@example.com</a>' },
-        {
-          label: 'Adresse',
-          valueHtml: '<span>Ljudevita Posavskog 7<br>31000 Osijek</span>',
-        },
-        { label: 'Termine', valueHtml: 'Nach Vereinbarung' },
       ],
     },
     footer: {
-      brand: 'district.',
-      brandHtml: '<b>district.</b>',
-      line3: 'Real Estate',
-      links: [
-        { label: 'Datenschutz', href: '/politika-privatnosti' },
-        { label: 'Instagram', href: 'https://www.instagram.com/', openInNewTab: true },
+      columns: [
+        {
+          label: 'Sitz',
+          lines: [
+            { text: 'Ljudevita Posavskog 7', linkType: 'none' },
+            { text: '31000 Osijek', linkType: 'none' },
+          ],
+        },
+        {
+          label: 'Telefon',
+          lines: [
+            { text: '+385 99 231 123', linkType: 'phone' },
+            { text: 'Mo — Fr · 09 — 17h', linkType: 'none' },
+          ],
+        },
+        {
+          label: 'E-Mail',
+          lines: [
+            { text: 'support@district.hr', linkType: 'email' },
+            { text: 'prodaja@district.hr', linkType: 'email' },
+          ],
+        },
+        {
+          label: 'Folgen',
+          lines: [
+            {
+              text: 'Instagram',
+              linkType: 'url',
+              href: 'https://www.instagram.com/',
+              openInNewTab: true,
+            },
+            {
+              text: 'Facebook',
+              linkType: 'url',
+              href: 'https://www.facebook.com/',
+              openInNewTab: true,
+            },
+          ],
+        },
       ],
+      brandText: 'district.',
+      copyrightLine: '© 2026 — MP BYD D.O.O.',
+      addressLine: 'Ljudevita Posavskog 7, Osijek',
     },
   },
 }

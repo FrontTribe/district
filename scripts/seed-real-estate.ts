@@ -2,17 +2,17 @@
  * Seeds the Real Estate landing page (Payload `pages.layout`; početni tekstovi u
  * `src/data/reLandingSeedDefaults.ts`). Produkcija čita isključivo CMS.
  *
- * Layout završava blokom **upit** (`real-estate-landing-inquiry`, sidro `#kontakt`). Tamno podnožje
- * dolazi iz kolekcije **Podnožja** (`footer`), ne iz layout bloka.
+ * Layout završava blokovima **upit** (`real-estate-landing-inquiry`) + **podnožje** (`real-estate-landing-page-footer`).
+ * Obrazac: Payload Form Builder (`forms` kolekcija), referenciran iz inquiry bloka.
  *
  * Prerequisites: `.env` / `.env.local` with `DATABASE_URI`, `PAYLOAD_SECRET`, S3 credentials (media uses S3).
  * Slike za landing: `public/re-landing/*.jpg` (5 komada). Ažuriraj iz `District Real Estate.html`:
- *   pnpm run extract:re-landing-images
+ *   pnpm run extract:real-estate-images
  * Note: those files are loaded before importing Payload config — a static `import` of `payload.config` would run before `dotenv` and leave `PAYLOAD_SECRET` empty.
  *
  * Usage (from repo root):
- *   pnpm run seed:re-landing
- *   pnpm run clean:re-landing   — prvo briše stare RE seed zapise za tenanta, zatim isti seed kao gore
+ *   pnpm run seed:real-estate
+ *   pnpm run clean:real-estate   — prvo briše stare RE seed zapise za tenanta, zatim isti seed kao gore
  *
  * Env (optional):
  *   RE_SEED_TENANT_NAME   — tenant display name (default: "Real estate")
@@ -24,13 +24,15 @@
  *   STANOVI_DOCUMENT_ID   — isto kao gore (alias)
  *   STANOVI_PDF           — lokalna datoteka (dev); ako postoji, upload u `documents` s naslovom seeda
  *   RE_SEED_NON_INTERACTIVE — "true" = bez readline odabira PDF-a (CI / produkcija skripta)
- *   STANOVI_BUILDING_TITLE — buildings.title for upsert (default: KVART ŽIGICA — stanovi (seed))
- *   RE_SEED_SKIP_FOOTER   — ako je "true", ne dira kolekciju Podnožja (marketing footer)
+ *   STANOVI_BUILDING_TITLE — buildings.title for upsert (default: KVART ŽIGICA — stanovi)
+ *   ALLOW_SEED           — set `true` to run against non-dev DATABASE_URI (see scripts/seed-guard.ts)
+ *   RE_SEED_SKIP_FOOTER   — ako je "true", ne dira kolekciju Podnožja (marketing footer za ostale stranice)
+ *   RE_SEED_MARKETING_FOOTER — ako je "true", kreira/ažurira marketing Podnožje u kolekciji (nije RE landing strip)
  *   RE_SEED_FORCE_TENANT_FOOTER — pregazi marketing Podnožje čak i kad nije seed stub (ručno uređeno).
  *   RE_SEED_CLEAN — ako je "true", prije ostalog briše za ovog tenanta: stranicu (slug+tenant), zgradu
  *     (STANOVI_BUILDING_TITLE), seed medije (altovi re-landing + tlocrt), dokument naslova
  *     `seed:re-landing:unit-details-pdf`, te marketing Podnožje (osim ako RE_SEED_CLEAN_SKIP_FOOTER=true).
- *     Koristi `pnpm run clean:re-landing` (isti skript, postavlja RE_SEED_CLEAN).
+ *     Koristi `pnpm run clean:real-estate` (isti skript, postavlja RE_SEED_CLEAN).
  *   RE_SEED_CLEAN_SKIP_FOOTER — uz RE_SEED_CLEAN: ne briši kolekciju Podnožja (marketing footer za tenanta).
  */
 import fs from 'node:fs'
@@ -49,7 +51,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function banner(title: string) {
   const line = '━'.repeat(56)
-  console.info(`\n${line}\n  seed:re-landing  │  ${title}\n${line}`)
+  console.info(`\n${line}\n  seed:real-estate  │  ${title}\n${line}`)
 }
 
 function step(n: number, total: number, label: string) {
@@ -77,12 +79,21 @@ dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
 const LOCALES = ['hr', 'en', 'de'] as const
 
 const SEED_MEDIA_ALTS = {
+  hero: 'KVART ŽIGICA — hero',
+  tzd018: 'KVART ŽIGICA — interijer 1',
+  tzd019: 'KVART ŽIGICA — interijer 2',
+  tzd021: 'KVART ŽIGICA — interijer 3',
+  tzd026: 'KVART ŽIGICA — interijer 4',
+} as const
+
+/** Legacy altovi — brišu se uz clean; traže se pri ponovnom seedu ako novi alt još ne postoji. */
+const LEGACY_SEED_MEDIA_ALTS: Record<keyof typeof SEED_MEDIA_ALTS, string> = {
   hero: 'seed:re-landing:hero',
   tzd018: 'seed:re-landing:tzd018',
   tzd019: 'seed:re-landing:tzd019',
   tzd021: 'seed:re-landing:tzd021',
   tzd026: 'seed:re-landing:tzd026',
-} as const
+}
 
 type MediaKey = keyof typeof SEED_MEDIA_ALTS
 
@@ -125,20 +136,31 @@ async function getOrCreateSeedMedia(
   tenantId: number,
 ): Promise<number> {
   const alt = SEED_MEDIA_ALTS[key]
-  const found = await payload.find({
-    collection: 'media',
-    where: { alt: { equals: alt } },
-    limit: 1,
-    depth: 0,
-    overrideAccess: true,
-  })
-  const existing = found.docs[0]
-  if (existing?.id) {
-    return typeof existing.id === 'number' ? existing.id : Number(existing.id)
+  const legacyAlt = LEGACY_SEED_MEDIA_ALTS[key]
+  for (const lookupAlt of [alt, legacyAlt]) {
+    const found = await payload.find({
+      collection: 'media',
+      where: { alt: { equals: lookupAlt } },
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const existing = found.docs[0]
+    if (existing?.id) {
+      if (lookupAlt === legacyAlt && alt !== legacyAlt) {
+        await payload.update({
+          collection: 'media',
+          id: existing.id,
+          overrideAccess: true,
+          data: { alt },
+        })
+      }
+      return typeof existing.id === 'number' ? existing.id : Number(existing.id)
+    }
   }
 
   const { buffer, mime, ext } = await loadSeedImageBytes(sourceUrl)
-  const name = `re-landing-seed-${key}.${ext}`
+  const name = `re-landing-${key}.${ext}`
 
   const created = await payload.create({
     collection: 'media',
@@ -235,8 +257,11 @@ async function resolveMediaIds(
   return Object.fromEntries(entries) as Record<MK, number>
 }
 
-const STANOVI_DOC_TITLE = 'seed:re-landing:unit-details-pdf'
-const STANOVI_FLOORPLAN_ALT = 'seed:re-landing:floorplan-placeholder'
+const STANOVI_DOC_TITLE = 'KVART ŽIGICA — jedinice (PDF)'
+const LEGACY_STANOVI_DOC_TITLE = 'seed:re-landing:unit-details-pdf'
+const STANOVI_FLOORPLAN_ALT = 'KVART ŽIGICA — tlocrt (placeholder)'
+const LEGACY_STANOVI_FLOORPLAN_ALT = 'seed:re-landing:floorplan-placeholder'
+const LEGACY_STANOVI_BUILDING_TITLE = 'KVART ŽIGICA — stanovi (seed)'
 
 function parseEnvStanoviDocumentId(): number | null {
   const raw =
@@ -315,16 +340,26 @@ async function getOrCreateStanoviPdfDocument(
   payload: Payload,
   pdfPath: string,
 ): Promise<number> {
-  const found = await payload.find({
-    collection: 'documents',
-    where: { title: { equals: STANOVI_DOC_TITLE } },
-    limit: 1,
-    depth: 0,
-    overrideAccess: true,
-  })
-  const existing = found.docs[0]
-  if (existing?.id) {
-    return typeof existing.id === 'number' ? existing.id : Number(existing.id)
+  for (const title of [STANOVI_DOC_TITLE, LEGACY_STANOVI_DOC_TITLE]) {
+    const found = await payload.find({
+      collection: 'documents',
+      where: { title: { equals: title } },
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const existing = found.docs[0]
+    if (existing?.id) {
+      if (title === LEGACY_STANOVI_DOC_TITLE) {
+        await payload.update({
+          collection: 'documents',
+          id: existing.id,
+          overrideAccess: true,
+          data: { title: STANOVI_DOC_TITLE },
+        })
+      }
+      return typeof existing.id === 'number' ? existing.id : Number(existing.id)
+    }
   }
 
   const buffer = fs.readFileSync(pdfPath)
@@ -344,16 +379,26 @@ async function getOrCreateStanoviPdfDocument(
 }
 
 async function getOrCreateStanoviFloorPlanMedia(payload: Payload, tenantId: number): Promise<number> {
-  const found = await payload.find({
-    collection: 'media',
-    where: { alt: { equals: STANOVI_FLOORPLAN_ALT } },
-    limit: 1,
-    depth: 0,
-    overrideAccess: true,
-  })
-  const existing = found.docs[0]
-  if (existing?.id) {
-    return typeof existing.id === 'number' ? existing.id : Number(existing.id)
+  for (const alt of [STANOVI_FLOORPLAN_ALT, LEGACY_STANOVI_FLOORPLAN_ALT]) {
+    const found = await payload.find({
+      collection: 'media',
+      where: { alt: { equals: alt } },
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const existing = found.docs[0]
+    if (existing?.id) {
+      if (alt === LEGACY_STANOVI_FLOORPLAN_ALT) {
+        await payload.update({
+          collection: 'media',
+          id: existing.id,
+          overrideAccess: true,
+          data: { alt: STANOVI_FLOORPLAN_ALT },
+        })
+      }
+      return typeof existing.id === 'number' ? existing.id : Number(existing.id)
+    }
   }
 
   const png = await sharp({
@@ -393,7 +438,7 @@ async function seedStanoviBuildingsFromPdf(
   typologyItems: import('../src/utils/deriveTypologyFromStanoviPdf').TypologyFromPdfItem[] | null
   pdfUnitCount: number | null
 }> {
-  const buildingTitle = (process.env.STANOVI_BUILDING_TITLE || 'KVART ŽIGICA — stanovi (seed)').trim()
+  const buildingTitle = (process.env.STANOVI_BUILDING_TITLE || 'KVART ŽIGICA — stanovi').trim()
 
   const lookupExistingBuildingId = async (): Promise<number | null> => {
     const found = await payload.find({
@@ -602,7 +647,7 @@ function footerDocIsReLandingSeedStub(doc: Record<string, unknown>): boolean {
  * - Novi tenant: kreira zapis.
  * - Postoji zapis iz seeda (`madeBy` s `seed:re-landing` ili naslov s ` (seed)`): **uvijek** ga ponovno
  *   uskladi s tenantom (naziv · subdomain) bez potrebe za RE_SEED_FORCE_TENANT_FOOTER.
- * - Ručno uređeno podnožje: ne diramo (osim RE_SEED_FORCE_TENANT_FOOTER=true ili clean:re-landing).
+ * - Ručno uređeno podnožje: ne diramo (osim RE_SEED_FORCE_TENANT_FOOTER=true ili clean:real-estate).
  */
 async function ensureTenantMarketingFooter(
   payload: Payload,
@@ -635,7 +680,7 @@ async function ensureTenantMarketingFooter(
     })
     if (!footerDocIsReLandingSeedStub(existingDoc as Record<string, unknown>)) {
       console.info(
-        `      → Podnožje (kolekcija) već postoji id=${id} — nisam dirao (ručno uređeno; RE_SEED_FORCE_TENANT_FOOTER=true ili pnpm run clean:re-landing za seed tekstove)`,
+        `      → Podnožje (kolekcija) već postoji id=${id} — nisam dirao (ručno uređeno; RE_SEED_FORCE_TENANT_FOOTER=true ili pnpm run clean:real-estate za seed tekstove)`,
       )
       return
     }
@@ -643,40 +688,43 @@ async function ensureTenantMarketingFooter(
 
   const localized = (loc: 'hr' | 'en' | 'de') => {
     const p = getReLandingLocalePack(loc)
+    const phoneCol = p.footer.columns.find((c) => /telefon|phone/i.test(c.label))
     const tel =
-      p.inquiry.contacts
-        .find((c) => /telefon|phone/i.test(c.label))
-        ?.valueHtml.replace(/<[^>]+>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim() || '+385 1 234 5678'
-    const mailMatch = p.inquiry.contacts
-      .find((c) => /e-poš|email|e-mail/i.test(c.label))
-      ?.valueHtml.match(/mailto:([^"'>\s]+)/i)
-    const email = mailMatch?.[1]?.trim() || 'info@example.com'
+      phoneCol?.lines.find((l) => l.linkType === 'phone')?.text.trim() ||
+      '+385 99 231 123'
+    const mailCol = p.footer.columns.find((c) => /pošta|email|e-mail|mail/i.test(c.label))
+    const email =
+      mailCol?.lines.find((l) => l.linkType === 'email')?.text.trim() || 'support@district.hr'
+
+    const hqCol = p.footer.columns.find((c) => /sjedište|headquarters|sitz/i.test(c.label))
+    const hqLines = hqCol?.lines.map((l) => l.text.trim()).filter(Boolean) ?? []
+    const street = hqLines[0] || 'Ulica Ljudevita Posavskog 7'
+    const city = hqLines[1] || '31000 Osijek'
 
     const contactHeading = loc === 'hr' ? 'Kontakt' : loc === 'en' ? 'Contact' : 'Kontakt'
     const addressHeading = loc === 'hr' ? 'Adresa' : loc === 'en' ? 'Address' : 'Adresse'
     const title =
       loc === 'hr'
-        ? `Podnožje — ${tenant.name} (seed)`
+        ? `Podnožje — ${tenant.name}`
         : loc === 'en'
-          ? `Footer — ${tenant.name} (seed)`
-          : `Fußzeile — ${tenant.name} (Seed)`
+          ? `Footer — ${tenant.name}`
+          : `Fußzeile — ${tenant.name}`
 
-    const tagline = p.footer.line3
-
+    const socialCol = p.footer.columns.find((c) => /pratite|follow|folgen/i.test(c.label))
     const bottomLinks =
-      p.footer.links?.map((l) => ({
-        text: l.label,
-        url: l.href,
-        openInNewTab: Boolean(l.openInNewTab),
-      })) ?? []
+      socialCol?.lines
+        .filter((l) => l.linkType === 'url' && l.href)
+        .map((l) => ({
+          text: l.text,
+          url: l.href!,
+          openInNewTab: Boolean(l.openInNewTab),
+        })) ?? []
 
     return {
       title,
       leftContent: {
-        heading: '<p><b>district.</b></p>',
-        subheading: tagline,
+        heading: `<p><b>${p.footer.brandText}</b></p>`,
+        subheading: p.footer.addressLine,
       },
       rightContent: {
         contact: {
@@ -687,13 +735,13 @@ async function ensureTenantMarketingFooter(
         address: {
           heading: addressHeading,
           venue: 'District',
-          street: 'Ljudevita Posavskog 7',
-          city: '31000 Osijek',
+          street,
+          city,
           country: loc === 'hr' ? 'Hrvatska' : loc === 'en' ? 'Croatia' : 'Kroatien',
         },
       },
       bottomContent: {
-        copyright: `© ${year}`,
+        copyright: p.footer.copyrightLine.replace(/\d{4}/, String(year)),
         ...(bottomLinks.length ? { links: bottomLinks } : {}),
       },
     }
@@ -728,21 +776,154 @@ async function ensureTenantMarketingFooter(
   }
 }
 
-function assertReLandingEndsWithInquiry(layout: { blockType?: string }[], locale: string): void {
+function assertReLandingLayoutTail(layout: { blockType?: string }[], locale: string): void {
   const n = layout.length
-  if (n < 1) {
-    throw new Error(`[seed:re-landing] layout prekratak za ${locale} (${n} blokova)`)
+  if (n < 2) {
+    throw new Error(`[seed:real-estate] layout prekratak za ${locale} (${n} blokova)`)
   }
-  const last = layout[n - 1]?.blockType
-  if (last !== 'real-estate-landing-inquiry') {
+  const inquiry = layout[n - 2]?.blockType
+  const footer = layout[n - 1]?.blockType
+  if (inquiry !== 'real-estate-landing-inquiry') {
     throw new Error(
-      `[seed:re-landing] zadnji blok mora biti upit (${locale}), dobiveno: ${String(last)}`,
+      `[seed:real-estate] pretposljednji blok mora biti upit (${locale}), dobiveno: ${String(inquiry)}`,
+    )
+  }
+  if (footer !== 'real-estate-landing-page-footer') {
+    throw new Error(
+      `[seed:real-estate] zadnji blok mora biti podnožje (${locale}), dobiveno: ${String(footer)}`,
     )
   }
 }
 
+const RE_LANDING_INQUIRY_FORM_TITLE = 'Upit — KVART ŽIGICA'
+const LEGACY_RE_LANDING_INQUIRY_FORM_TITLES = ['RE Landing — inquiry (seed)', 'RE Landing — inquiry']
+
+/** Minimal Lexical rich text for Payload Form Builder `confirmationMessage`. */
+function lexicalPlainParagraph(text: string) {
+  return {
+    root: {
+      type: 'root',
+      format: '',
+      indent: 0,
+      version: 1,
+      direction: 'ltr' as const,
+      children: [
+        {
+          type: 'paragraph',
+          format: '',
+          indent: 0,
+          version: 1,
+          direction: 'ltr' as const,
+          children: [
+            {
+              type: 'text',
+              detail: 0,
+              format: 0,
+              mode: 'normal',
+              style: '',
+              text,
+              version: 1,
+            },
+          ],
+        },
+      ],
+    },
+  }
+}
+
+async function ensureReLandingInquiryForm(payload: Payload): Promise<number> {
+  console.info('      → tražim postojeći obrazac…')
+  const existing = await payload.find({
+    collection: 'forms',
+    locale: 'hr',
+    limit: 50,
+    depth: 0,
+    overrideAccess: true,
+  })
+
+  let id: string | number | undefined = existing.docs.find(
+    (doc) =>
+      doc.title?.trim() === RE_LANDING_INQUIRY_FORM_TITLE ||
+      LEGACY_RE_LANDING_INQUIRY_FORM_TITLES.includes(doc.title?.trim() ?? ''),
+  )?.id
+
+  const buildFields = (loc: 'hr' | 'en' | 'de') => {
+    const fs = getReLandingLocalePack(loc).formSeed
+    return [
+      {
+        blockType: 'text' as const,
+        name: 'name',
+        label: fs.nameFieldLabel,
+        required: true,
+        placeholder: fs.namePlaceholder,
+      },
+      {
+        blockType: 'text' as const,
+        name: 'contact',
+        label: fs.contactFieldLabel,
+        required: true,
+        placeholder: fs.contactPlaceholder,
+      },
+      {
+        blockType: 'select' as const,
+        name: 'interest',
+        label: fs.interestFieldLabel,
+        required: true,
+        placeholder: fs.interestPlaceholder,
+        options: fs.interestOptions.map((o) => ({ label: o.label, value: o.value })),
+      },
+      {
+        blockType: 'textarea' as const,
+        name: 'message',
+        label: fs.messageFieldLabel,
+        required: false,
+        placeholder: fs.messagePlaceholder,
+      },
+    ]
+  }
+
+  const formDataForLocale = (loc: 'hr' | 'en' | 'de') => {
+    const pack = getReLandingLocalePack(loc)
+    return {
+      title: RE_LANDING_INQUIRY_FORM_TITLE,
+      submitButtonLabel: pack.inquiry.submitButtonLabel,
+      confirmationType: 'message' as const,
+      confirmationMessage: lexicalPlainParagraph(pack.inquiry.successMessage),
+      fields: buildFields(loc),
+    }
+  }
+
+  if (id == null) {
+    console.info('      → kreiram obrazac (hr)…')
+    const created = await payload.create({
+      collection: 'forms',
+      locale: 'hr',
+      overrideAccess: true,
+      data: formDataForLocale('hr'),
+    })
+    id = created.id
+    console.info(`      → kreiran obrazac id=${id}`)
+  } else {
+    console.info(`      → obrazac već postoji id=${id} — ažuriram lokalizacije`)
+  }
+
+  for (const loc of ['hr', 'en', 'de'] as const) {
+    console.info(`      → obrazac lokalizacija: ${loc}`)
+    await payload.update({
+      collection: 'forms',
+      id: id!,
+      locale: loc,
+      overrideAccess: true,
+      data: formDataForLocale(loc),
+    })
+  }
+
+  console.info(`      → obrazac spreman id=${id}`)
+  return Number(id)
+}
+
 /**
- * Briše rezultate prethodnog `seed:re-landing` za istog tenanta (slug + STANOVI_BUILDING_TITLE + seed altovi).
+ * Briše rezultate prethodnog `seed:real-estate` za istog tenanta (slug + STANOVI_BUILDING_TITLE + seed altovi).
  * Zgrada i dokument naslova `seed:re-landing:unit-details-pdf` nisu vezani na tenanta u CMS-u — oprez ako dijelite bazu.
  */
 async function cleanReLandingSeedArtifacts(
@@ -750,7 +931,7 @@ async function cleanReLandingSeedArtifacts(
   tenantId: number,
   slug: string,
 ): Promise<void> {
-  const buildingTitle = (process.env.STANOVI_BUILDING_TITLE || 'KVART ŽIGICA — stanovi (seed)').trim()
+  const buildingTitle = (process.env.STANOVI_BUILDING_TITLE || 'KVART ŽIGICA — stanovi').trim()
   console.info('      → RE_SEED_CLEAN: brišem stare seed zapise…')
 
   const delCount = { pages: 0, buildings: 0, media: 0, documents: 0, footers: 0 }
@@ -771,21 +952,29 @@ async function cleanReLandingSeedArtifacts(
     }
   }
 
-  const bRows = await payload.find({
-    collection: 'buildings',
-    where: { title: { equals: buildingTitle } },
-    limit: 20,
-    depth: 0,
-    overrideAccess: true,
-  })
-  for (const doc of bRows.docs) {
-    if (doc?.id != null) {
-      await payload.delete({ collection: 'buildings', id: doc.id, overrideAccess: true })
-      delCount.buildings++
+  const buildingTitles = [buildingTitle, LEGACY_STANOVI_BUILDING_TITLE]
+  for (const title of buildingTitles) {
+    const bRows = await payload.find({
+      collection: 'buildings',
+      where: { title: { equals: title } },
+      limit: 20,
+      depth: 0,
+      overrideAccess: true,
+    })
+    for (const doc of bRows.docs) {
+      if (doc?.id != null) {
+        await payload.delete({ collection: 'buildings', id: doc.id, overrideAccess: true })
+        delCount.buildings++
+      }
     }
   }
 
-  const seedAlts = [...Object.values(SEED_MEDIA_ALTS), STANOVI_FLOORPLAN_ALT]
+  const seedAlts = [
+    ...Object.values(SEED_MEDIA_ALTS),
+    ...Object.values(LEGACY_SEED_MEDIA_ALTS),
+    STANOVI_FLOORPLAN_ALT,
+    LEGACY_STANOVI_FLOORPLAN_ALT,
+  ]
   for (const alt of seedAlts) {
     const found = await payload.find({
       collection: 'media',
@@ -804,17 +993,19 @@ async function cleanReLandingSeedArtifacts(
     }
   }
 
-  const seedPdf = await payload.find({
-    collection: 'documents',
-    where: { title: { equals: STANOVI_DOC_TITLE } },
-    limit: 10,
-    depth: 0,
-    overrideAccess: true,
-  })
-  for (const doc of seedPdf.docs) {
-    if (doc?.id != null) {
-      await payload.delete({ collection: 'documents', id: doc.id, overrideAccess: true })
-      delCount.documents++
+  for (const docTitle of [STANOVI_DOC_TITLE, LEGACY_STANOVI_DOC_TITLE]) {
+    const seedPdf = await payload.find({
+      collection: 'documents',
+      where: { title: { equals: docTitle } },
+      limit: 10,
+      depth: 0,
+      overrideAccess: true,
+    })
+    for (const doc of seedPdf.docs) {
+      if (doc?.id != null) {
+        await payload.delete({ collection: 'documents', id: doc.id, overrideAccess: true })
+        delCount.documents++
+      }
     }
   }
 
@@ -845,7 +1036,10 @@ async function cleanReLandingSeedArtifacts(
 }
 
 async function run(): Promise<void> {
-  const totalSteps = 7
+  const { assertSeedAllowed } = await import('./seed-guard.ts')
+  assertSeedAllowed('seed:real-estate')
+
+  const totalSteps = 8
   const slug = (process.env.RE_SEED_PAGE_SLUG || 'real-estate').trim()
   const tenantHint =
     process.env.RE_SEED_TENANT_SUBDOMAIN?.trim() ||
@@ -890,9 +1084,16 @@ async function run(): Promise<void> {
         .join(', ')}`,
     )
 
-    await ensureTenantMarketingFooter(payload, tenantId, tenant)
+    if (process.env.RE_SEED_MARKETING_FOOTER === 'true') {
+      await ensureTenantMarketingFooter(payload, tenantId, tenant)
+    } else {
+      console.info('      → marketing Podnožje (kolekcija): preskočeno (RE landing podnožje je u layoutu)')
+    }
 
-    step(4, totalSteps, 'Stanovi PDF → dokument, tlocrt, zgrada, tipologija…')
+    step(4, totalSteps, 'Obrazac (Form Builder) za RE landing upit…')
+    const inquiryFormId = await ensureReLandingInquiryForm(payload)
+
+    step(5, totalSteps, 'Stanovi PDF → dokument, tlocrt, zgrada, tipologija…')
     const stanovi = await seedStanoviBuildingsFromPdf(payload, tenantId)
     if (stanovi.typologyItems?.length) {
       console.info(
@@ -907,7 +1108,7 @@ async function run(): Promise<void> {
       console.info('      → nema zgrade za unit browser (PDF ili skip)')
     }
 
-    step(5, totalSteps, 'Sastavljam layout blokova (hr, en, de)…')
+    step(6, totalSteps, 'Sastavljam layout blokova (hr, en, de)…')
     const { reLandingPageTitle, reLandingMeta, typologyIntroFromPdf } = await import(
       '../src/data/realEstateLandingLocales'
     )
@@ -919,6 +1120,7 @@ async function run(): Promise<void> {
         stanovi.typologyItems?.length && stanovi.pdfUnitCount != null
           ? typologyIntroFromPdf(loc, stanovi.pdfUnitCount, stanovi.typologyItems.length)
           : undefined,
+      formId: inquiryFormId,
     })
 
     const layouts = {
@@ -927,10 +1129,10 @@ async function run(): Promise<void> {
       de: buildRealEstateLandingPayloadLayout(mediaIds, typologyOpts('de'), 'de'),
     }
     for (const loc of LOCALES) {
-      assertReLandingEndsWithInquiry(layouts[loc], loc)
+      assertReLandingLayoutTail(layouts[loc], loc)
     }
-    console.info(`      → ${layouts.hr.length} blokova × 3 jezika (zadnji: upit; podnožje = kolekcija Podnožja)`)
-    step(6, totalSteps, 'Stranica `pages` (create ili update)…')
+    console.info(`      → ${layouts.hr.length} blokova × 3 jezika (upit + podnožje u layoutu)`)
+    step(7, totalSteps, 'Stranica `pages` (create ili update)…')
     const existing = await payload.find({
       collection: 'pages',
       where: {
@@ -963,7 +1165,7 @@ async function run(): Promise<void> {
       console.info(`      → nova stranica id=${pageId}`)
     }
 
-    step(7, totalSteps, 'Lokalizacije hr, en, de…')
+    step(8, totalSteps, 'Lokalizacije hr, en, de…')
     for (const locale of LOCALES) {
       await payload.update({
         collection: 'pages',
@@ -982,10 +1184,10 @@ async function run(): Promise<void> {
 
     console.info(`\n  ✓ Završeno. Otvori Payload → Pages → „${reLandingPageTitle('hr')}” (slug /${slug})`)
     console.info(
-      '  → Tamno podnožje na RE početnoj: kolekcija Podnožja (footer) za tenanta — uredi u Adminu → Podnožja.',
+      '  → RE landing podnožje: zadnji blok „RE landing — podnožje” u layoutu stranice.',
     )
     console.info(
-      '  → Kontakt obrazac: predzadnji blok „RE landing — upit” u layoutu — nije kolekcija Obrasci; URL slanja = vanjski POST (Formspark, Basin, …).',
+      '  → Kontakt obrazac: blok „RE landing — upit” + obrazac u Obrasci (Form Builder).',
     )
     console.info(
       '  → Frontend dev: cache za stranice / menu / footer je isključen; u produkciji pričekaj revalidaciju ili spremi stranicu u Adminu.',
@@ -997,10 +1199,10 @@ async function run(): Promise<void> {
 
 run()
   .then(() => {
-    console.info('\n[seed:re-landing] Izlaz iz procesa (0).\n')
+    console.info('\n[seed:real-estate] Izlaz iz procesa (0).\n')
     process.exit(0)
   })
   .catch((err) => {
-    console.error('\n[seed:re-landing] Greška — izlaz (1).\n', err)
+    console.error('\n[seed:real-estate] Greška — izlaz (1).\n', err)
     process.exit(1)
   })

@@ -26,6 +26,7 @@ import RealEstateLandingGallery from '@/blocks/RealEstateLandingGallery'
 import RealEstateLandingCurrentProject from '@/blocks/RealEstateLandingCurrentProject'
 import RealEstateLandingPartner from '@/blocks/RealEstateLandingPartner'
 import RealEstateLandingInquiry from '@/blocks/RealEstateLandingInquiry'
+import RealEstateLandingFooter from '@/blocks/RealEstateLandingFooter'
 import RealEstateLandingUnitBrowser from '@/blocks/RealEstateLandingUnitBrowser'
 import RealEstateLandingPastProjects from '@/blocks/RealEstateLandingPastProjects'
 import RealEstateHero from '@/blocks/RealEstateHero'
@@ -36,6 +37,7 @@ import RealEstateLiveCamera from '@/blocks/RealEstateLiveCamera'
 import RealEstateLookingForJob from '@/blocks/RealEstateLookingForJob'
 import RealEstateContact from '@/blocks/RealEstateContact'
 import { Anchor } from '@/blocks/Anchor'
+import MomentoFooter from '@/blocks/MomentoFooter'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
@@ -48,9 +50,9 @@ const Pages: CollectionConfig = {
     group: { en: 'Site Content', hr: 'Sadržaj stranice' },
     description: {
       en:
-        'Pages for tenants and main domain. Layout blocks are grouped in the editor: District · Real estate (RE landing + legacy RE), District · Boutique, District · Momento (reserved), District · Hub & pages. RE landing form and contact row: edit “RE Landing — Inquiry” in the page layout. The RE landing strip footer is edited in the Footers collection (not in the page layout).',
+        'Pages for tenants and main domain. RE landing contact: “RE Landing — Inquiry” (left copy + Form Builder). RE landing footer: “RE Landing — Footer” block as the last layout item.',
       hr:
-        'Stranice za stanare i glavnu domenu. Blokovi u layoutu su u Adminu grupirani: District · Nekretnine (RE landing + stari RE), District · Boutique, District · Momento (rezervirano), District · Hub i stranice. RE landing obrazac i red kontakta: „RE landing — upit” u layoutu. Jednoredno tamno podnožje na RE landing stranici uređuje se u kolekciji Podnožja, ne u layoutu stranice.',
+        'Stranice za stanare i glavnu domenu. RE landing kontakt: „RE landing — upit” (tekst lijevo + Form Builder). RE landing podnožje: blok „RE landing — podnožje” kao zadnji u layoutu.',
     },
   },
   access: {
@@ -171,6 +173,8 @@ const Pages: CollectionConfig = {
         RealEstateLandingInquiry,
         RealEstateLandingUnitBrowser,
         RealEstateLandingPastProjects,
+        RealEstateLandingFooter,
+        MomentoFooter,
         RealEstateHero,
         RealEstateAboutUs,
         RealEstateProjectsWeDid,

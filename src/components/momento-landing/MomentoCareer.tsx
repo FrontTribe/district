@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { MomentoSplit } from './shared/MomentoSplit'
 import { resolveMediaUrl, splitCareerHeading } from './utils'
+import { getMomentoUiCopy } from '@/data/momentoUiCopy'
 
 type Props = {
   title: string
@@ -16,6 +17,7 @@ type Props = {
   ctaNote: string
   backgroundImage?: unknown
   sectionId?: string
+  locale?: string
 }
 
 function DotIcon() {
@@ -37,7 +39,9 @@ export function MomentoCareer({
   ctaNote,
   backgroundImage,
   sectionId = 'karijera',
+  locale = 'hr',
 }: Props) {
+  const ui = getMomentoUiCopy(locale)
   const imageUrl = resolveMediaUrl(backgroundImage)
   const { lead, accent } = splitCareerHeading(title)
 
@@ -46,7 +50,7 @@ export function MomentoCareer({
       <div className="career">
         <div className="career-text">
           <div className="career-text-inner">
-            <div className="num reveal">{badgeText || '05 / Momento zapošljava'}</div>
+            <div className="num reveal">{badgeText || ui.career.sectionFallback}</div>
             <h2>
               {lead ? <MomentoSplit>{lead}</MomentoSplit> : null}
               {accent ? (
@@ -98,8 +102,8 @@ export function MomentoCareer({
         <div className="career-card reveal-clip">
           {imageUrl ? <img src={imageUrl} alt="" /> : null}
           <div className="quote">
-            <em>&quot;Najbolji dani su oni kada gosti odlaze s osmijehom.&quot;</em>
-            <span className="who">— Momento tim</span>
+            <em>&quot;{ui.career.quote}&quot;</em>
+            <span className="who">{ui.career.quoteAuthor}</span>
           </div>
         </div>
       </div>

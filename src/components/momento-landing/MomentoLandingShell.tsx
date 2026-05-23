@@ -14,11 +14,9 @@ export type MomentoShellMenuProps = {
 
 export function MomentoLandingShell({
   children,
-  footer,
   menu,
 }: {
   children: React.ReactNode
-  footer?: React.ReactNode
   menu?: MomentoShellMenuProps
 }) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -66,7 +64,6 @@ export function MomentoLandingShell({
         />
       ) : null}
       {children}
-      {footer}
     </div>
   )
 }

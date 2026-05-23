@@ -21,6 +21,7 @@ type Props = {
   images: ImageItem[]
   sectionId?: string
   tenantVisualTheme?: TenantVisualTheme
+  locale?: string
 }
 
 export const ImageGridBlock: React.FC<Props> = (props) =>
@@ -30,6 +31,7 @@ export const ImageGridBlock: React.FC<Props> = (props) =>
       subtitle={props.subtitle}
       images={props.images}
       sectionId={props.sectionId}
+      locale={props.locale}
     />
   ) : (
     <ImageGridBlockDefault {...props} />

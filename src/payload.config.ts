@@ -138,14 +138,25 @@ export default buildConfig({
         admin: {
           group: { en: 'Forms', hr: 'Obrasci' },
           description: {
-            en: 'Reusable form definitions (e.g. blocks that reference a form ID). The Real Estate landing contact section is the “RE Landing — Inquiry” block in Pages → layout — configure labels and POST URL there, not here.',
-            hr: 'Ponovno upotrebljivi obrasci (npr. blokovi s ID obrasca). Kontakt sekcija na RE landing stranici je blok „RE landing — upit” u Stranice → layout — labele i URL slanja postavljaju se tamo, ne u ovoj kolekciji.',
+            en: 'Reusable form definitions. RE landing contact form: create here, then select in Pages → “RE Landing — Inquiry”.',
+            hr: 'Ponovno upotrebljivi obrasci. RE landing kontakt obrazac: kreiraj ovdje, zatim odaberi u Stranice → „RE landing — upit”.',
           },
         },
       },
       formSubmissionOverrides: {
         admin: {
           group: { en: 'Forms', hr: 'Obrasci' },
+        },
+      },
+      fields: {
+        text: {
+          fields: [{ name: 'placeholder', type: 'text', label: 'Placeholder', localized: true }],
+        },
+        textarea: {
+          fields: [{ name: 'placeholder', type: 'text', label: 'Placeholder', localized: true }],
+        },
+        select: {
+          fields: [{ name: 'placeholder', type: 'text', label: 'Placeholder', localized: true }],
         },
       },
     }),

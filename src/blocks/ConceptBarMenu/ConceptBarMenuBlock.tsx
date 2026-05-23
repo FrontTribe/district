@@ -15,6 +15,7 @@ export const ConceptBarMenuBlock: React.FC<
       subtitle={props.subtitle}
       menuCategories={props.menuCategories}
       sectionId={props.sectionId}
+      locale={props.locale}
     />
   ) : (
     <ConceptBarMenuBlockDefault {...props} />

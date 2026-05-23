@@ -85,7 +85,7 @@ export async function getCachedPageBySlug(
  * Cached list of pages for a tenant (or main domain when `tenantId === null`).
  * Used by the tenant home page renderer that stitches together every page block.
  *
- * In **development**, caching is disabled so `pnpm run seed:re-landing` (CLI) is
+ * In **development**, caching is disabled so `pnpm run seed:real-estate` (CLI) is
  * immediately visible — `revalidateTag` from Payload hooks does not reach the
  * Next dev server when the seed runs in a separate process.
  */

@@ -2,8 +2,8 @@
  * Seeds the Momento landing page (Payload `pages.layout`; početni tekstovi u
  * `src/data/momentoSeedDefaults.ts`). Produkcija čita isključivo CMS.
  *
- * Layout blokovi (6): Hero → Intro → Image Grid → Concept Bar Menu → Job Opportunity → Location.
- * Navigacija: kolekcija `menu` (tenant-menu). Podnožje: kolekcija `footer`.
+ * Layout blokovi (7): Hero → Intro → Image Grid → Concept Bar Menu → Job Opportunity → Location → Momento Footer.
+ * Navigacija: kolekcija `menu` (tenant-menu).
  *
  * Prerequisites: `.env` / `.env.local` with `DATABASE_URI`, `PAYLOAD_SECRET`, S3 credentials.
  * Slike: `public/momento-landing/*.jpg` (6 komada). Ažuriraj iz `Momento by District.html`:
@@ -18,12 +18,10 @@
  *   MOMENTO_SEED_TENANT_SUBDOMAIN  — match tenant by subdomain instead of name
  *   MOMENTO_SEED_PAGE_SLUG         — default: "momento"
  *   MOMENTO_SEED_SKIP_MEDIA        — if "true", reuse first 6 image media docs
- *   MOMENTO_SEED_SKIP_FOOTER       — if "true", ne dira kolekciju Podnožja
  *   MOMENTO_SEED_SKIP_MENU         — if "true", ne dira kolekciju Izbornik
- *   MOMENTO_SEED_FORCE_TENANT_FOOTER — pregazi Podnožje čak i kad nije seed stub
- *   MOMENTO_SEED_CLEAN             — briše stranicu, seed medije, menu/footer stubove
- *   MOMENTO_SEED_CLEAN_SKIP_FOOTER — uz CLEAN: ne briši Podnožja
+ *   MOMENTO_SEED_CLEAN             — briše stranicu, seed medije, menu stubove
  *   MOMENTO_SEED_CLEAN_SKIP_MENU   — uz CLEAN: ne briši Izbornik
+ *   ALLOW_SEED                       — set `true` to run against non-dev DATABASE_URI (see scripts/seed-guard.ts)
  */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -40,13 +38,25 @@ dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
 const LOCALES = ['hr', 'en', 'de'] as const
 
 const SEED_MEDIA_ALTS = {
+  hero: 'Momento — lounge hero',
+  interior1: 'Momento — lounge interior',
+  interior2: 'Momento — bar area',
+  interior3: 'Momento — interior detail',
+  terrace: 'Momento — terrace',
+  career: 'Momento — team',
+} as const
+
+const LEGACY_SEED_MEDIA_ALTS: Record<keyof typeof SEED_MEDIA_ALTS, string> = {
   hero: 'seed:momento:hero',
   interior1: 'seed:momento:interior-1',
   interior2: 'seed:momento:interior-2',
   interior3: 'seed:momento:interior-3',
   terrace: 'seed:momento:terrace',
   career: 'seed:momento:career',
-} as const
+}
+
+const MOMENTO_SEED_MENU_TITLE = 'Momento — navigacija'
+const LEGACY_MOMENTO_SEED_MENU_TITLES = ['Momento — navigacija (seed)']
 
 type MediaKey = keyof typeof SEED_MEDIA_ALTS
 
@@ -92,22 +102,33 @@ async function getOrCreateSeedMedia(
   tenantId: number,
 ): Promise<number> {
   const alt = SEED_MEDIA_ALTS[key]
-  const found = await payload.find({
-    collection: 'media',
-    where: {
-      and: [{ alt: { equals: alt } }, { tenant: { equals: tenantId } }],
-    } as Where,
-    limit: 1,
-    depth: 0,
-    overrideAccess: true,
-  })
-  const existing = found.docs[0]
-  if (existing?.id) {
-    return typeof existing.id === 'number' ? existing.id : Number(existing.id)
+  const legacyAlt = LEGACY_SEED_MEDIA_ALTS[key]
+  for (const lookupAlt of [alt, legacyAlt]) {
+    const found = await payload.find({
+      collection: 'media',
+      where: {
+        and: [{ alt: { equals: lookupAlt } }, { tenant: { equals: tenantId } }],
+      } as Where,
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const existing = found.docs[0]
+    if (existing?.id) {
+      if (lookupAlt === legacyAlt && alt !== legacyAlt) {
+        await payload.update({
+          collection: 'media',
+          id: existing.id,
+          overrideAccess: true,
+          data: { alt },
+        })
+      }
+      return typeof existing.id === 'number' ? existing.id : Number(existing.id)
+    }
   }
 
   const { buffer, mime, ext } = readPublicImageFile(sourceUrl)
-  const name = `momento-seed-${key}.${ext}`
+  const name = `momento-${key}.${ext}`
 
   const created = await payload.create({
     collection: 'media',
@@ -203,24 +224,6 @@ async function resolveMediaIds(
   return Object.fromEntries(entries) as Record<MediaKey, number>
 }
 
-function footerDocIsMomentoSeedStub(doc: Record<string, unknown>): boolean {
-  const bottom = doc.bottomContent
-  const collectStrings = (v: unknown): string[] => {
-    if (v == null) return []
-    if (typeof v === 'string') return [v]
-    if (typeof v === 'object' && !Array.isArray(v)) {
-      return Object.values(v as Record<string, unknown>).flatMap(collectStrings)
-    }
-    return []
-  }
-  const madeByStrings =
-    bottom && typeof bottom === 'object' ? collectStrings((bottom as { madeBy?: unknown }).madeBy) : []
-  if (madeByStrings.some((s) => s.includes('seed:momento'))) return true
-  const titleStrings = collectStrings(doc.title)
-  if (titleStrings.some((s) => s.includes('(seed)'))) return true
-  return false
-}
-
 function menuDocIsMomentoSeedStub(doc: Record<string, unknown>): boolean {
   const titleStrings =
     typeof doc.title === 'string'
@@ -228,7 +231,8 @@ function menuDocIsMomentoSeedStub(doc: Record<string, unknown>): boolean {
       : doc.title && typeof doc.title === 'object'
         ? Object.values(doc.title as Record<string, string>)
         : []
-  return titleStrings.some((s) => s.includes('(seed)'))
+  if (titleStrings.some((s) => s === MOMENTO_SEED_MENU_TITLE)) return true
+  return titleStrings.some((s) => LEGACY_MOMENTO_SEED_MENU_TITLES.includes(s) || s.includes('(seed)'))
 }
 
 async function ensureTenantMenu(
@@ -271,7 +275,7 @@ async function ensureTenantMenu(
   const localized = (loc: (typeof LOCALES)[number]) => {
     const pack = getMomentoLocalePack(loc)
     return {
-      title: `Momento — navigacija (seed)`,
+      title: MOMENTO_SEED_MENU_TITLE,
       identifier: 'tenant-menu' as const,
       tenant: tenantId,
       logo: logoMediaId,
@@ -310,98 +314,9 @@ async function ensureTenantMenu(
   }
 }
 
-async function ensureTenantFooter(payload: Payload, tenantId: number): Promise<void> {
-  if (process.env.MOMENTO_SEED_SKIP_FOOTER === 'true') {
-    console.info('      → kolekcija Podnožja: preskočeno (MOMENTO_SEED_SKIP_FOOTER=true)')
-    return
-  }
-
-  const force = process.env.MOMENTO_SEED_FORCE_TENANT_FOOTER === 'true'
-  const { getMomentoLocalePack } = await import('../src/data/momentoSeedDefaults')
-
-  const existing = await payload.find({
-    collection: 'footer',
-    where: { tenant: { equals: tenantId } },
-    limit: 1,
-    depth: 0,
-    overrideAccess: true,
-  })
-
-  let id: string | number | undefined = existing.docs[0]?.id
-  if (id != null && !force) {
-    const existingDoc = await payload.findByID({
-      collection: 'footer',
-      id,
-      depth: 0,
-      overrideAccess: true,
-    })
-    if (!footerDocIsMomentoSeedStub(existingDoc as Record<string, unknown>)) {
-      console.info(
-        `      → Podnožje već postoji id=${id} — nisam dirao (ručno uređeno; MOMENTO_SEED_FORCE_TENANT_FOOTER=true ili clean:momento)`,
-      )
-      return
-    }
-  }
-
-  const year = new Date().getFullYear()
-  const localized = (loc: (typeof LOCALES)[number]) => {
-    const p = getMomentoLocalePack(loc)
-    return {
-      title: p.footer.title,
-      tenant: tenantId,
-      leftContent: {
-        heading: p.footer.leftHeading,
-        subheading: p.footer.leftSubheading,
-      },
-      rightContent: {
-        contact: {
-          heading: p.footer.contactHeading,
-          email: p.footer.email,
-          phone: p.footer.phone,
-          instagram: p.footer.instagram,
-        },
-        address: {
-          heading: p.footer.addressHeading,
-          venue: p.footer.venue,
-          street: p.footer.street,
-          city: p.footer.city,
-          country: p.footer.country,
-        },
-      },
-      bottomContent: {
-        copyright: `Sva prava pridržana © ${year} District d.o.o.`,
-        madeBy: p.footer.madeBy,
-      },
-    }
-  }
-
-  if (id == null) {
-    const created = await payload.create({
-      collection: 'footer',
-      locale: 'hr',
-      overrideAccess: true,
-      data: localized('hr'),
-    })
-    id = created.id
-    console.info(`      → kreirano Podnožje id=${id}`)
-  } else {
-    console.info(`      → ažuriram Podnožje id=${id}`)
-  }
-
-  for (const loc of LOCALES) {
-    await payload.update({
-      collection: 'footer',
-      id: id!,
-      locale: loc,
-      overrideAccess: true,
-      data: localized(loc),
-    })
-  }
-}
-
 async function cleanMomentoSeedArtifacts(payload: Payload, tenantId: number, slug: string): Promise<void> {
   console.info('      → MOMENTO_SEED_CLEAN: brišem stare seed zapise…')
-  const delCount = { pages: 0, media: 0, footers: 0, menus: 0 }
+  const delCount = { pages: 0, media: 0, menus: 0 }
 
   const pageRows = await payload.find({
     collection: 'pages',
@@ -419,7 +334,7 @@ async function cleanMomentoSeedArtifacts(payload: Payload, tenantId: number, slu
     }
   }
 
-  for (const alt of Object.values(SEED_MEDIA_ALTS)) {
+  for (const alt of [...Object.values(SEED_MEDIA_ALTS), ...Object.values(LEGACY_SEED_MEDIA_ALTS)]) {
     const found = await payload.find({
       collection: 'media',
       where: {
@@ -453,28 +368,15 @@ async function cleanMomentoSeedArtifacts(payload: Payload, tenantId: number, slu
     }
   }
 
-  if (process.env.MOMENTO_SEED_CLEAN_SKIP_FOOTER !== 'true') {
-    const footers = await payload.find({
-      collection: 'footer',
-      where: { tenant: { equals: tenantId } },
-      limit: 20,
-      depth: 0,
-      overrideAccess: true,
-    })
-    for (const doc of footers.docs) {
-      if (doc?.id != null) {
-        await payload.delete({ collection: 'footer', id: doc.id, overrideAccess: true })
-        delCount.footers++
-      }
-    }
-  }
-
   console.info(
-    `      → obrisano: stranice=${delCount.pages}, mediji=${delCount.media}, izbornici=${delCount.menus}, podnožja=${delCount.footers}`,
+    `      → obrisano: stranice=${delCount.pages}, mediji=${delCount.media}, izbornici=${delCount.menus}`,
   )
 }
 
 async function run(): Promise<void> {
+  const { assertSeedAllowed } = await import('./seed-guard.ts')
+  assertSeedAllowed('seed:momento')
+
   const totalSteps = 6
   const slug = (process.env.MOMENTO_SEED_PAGE_SLUG || 'momento').trim()
   const tenantHint =
@@ -515,11 +417,10 @@ async function run(): Promise<void> {
         .join(', ')}`,
     )
 
-    step(4, totalSteps, 'Izbornik + Podnožje…')
+    step(4, totalSteps, 'Izbornik…')
     await ensureTenantMenu(payload, tenantId, mediaIds.hero)
-    await ensureTenantFooter(payload, tenantId)
 
-    step(5, totalSteps, 'Sastavljam layout (6 blokova × 3 jezika)…')
+    step(5, totalSteps, 'Sastavljam layout (7 blokova × 3 jezika)…')
     const layouts = {
       hr: buildMomentoPayloadLayout(mediaIds, 'hr'),
       en: buildMomentoPayloadLayout(mediaIds, 'en'),
@@ -577,7 +478,7 @@ async function run(): Promise<void> {
     }
 
     console.info(`\n  ✓ Završeno. Payload → Pages → „${momentoPageTitle('hr')}” (slug /${slug})`)
-    console.info('  → Navigacija: Admin → Izbornik (tenant-menu). Podnožje: Admin → Podnožja.')
+    console.info('  → Navigacija: Admin → Izbornik (tenant-menu). Podnožje: zadnji blok „Momento — podnožje” u layoutu stranice.')
   } finally {
     await shutdownDbPool(payload)
   }

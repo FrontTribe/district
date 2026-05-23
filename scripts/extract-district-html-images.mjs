@@ -67,7 +67,7 @@ function main() {
     console.info(`  → ${fileName} (${buf.length} bytes, ${entry.mime})`)
   }
 
-  console.info('\nGotovo. Slike su u public/re-landing/ — seed:re-landing ih učitava s tih putanja.')
+  console.info('\nGotovo. Slike su u public/re-landing/ — seed:real-estate ih učitava s tih putanja.')
 }
 
 main()

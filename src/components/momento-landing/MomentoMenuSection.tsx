@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react'
 import { gsap, ScrollTrigger } from '@/lib/gsap'
 import { MomentoMenuBar } from './MomentoMenuBar'
 import { MomentoSplit } from './shared/MomentoSplit'
-import { isOffersCategory } from './utils'
+import { isOffersCategory, splitMenuHeading } from './utils'
+import { getMomentoUiCopy } from '@/data/momentoUiCopy'
 
 type MenuItem = {
   itemName: string
@@ -24,6 +25,7 @@ type Props = {
   subtitle?: string | null
   menuCategories?: MenuCategory[] | null
   sectionId?: string
+  locale?: string
 }
 
 function refreshScrollLayout() {
@@ -34,7 +36,6 @@ function refreshScrollLayout() {
   })
 }
 
-/** Fiksni nav + sticky traka filtera — da sadržaj ne završi ispod headera. */
 function menuFilterScrollOffset(sectionId: string): number {
   const nav = document.querySelector('.momento-landing .nav')
   const menuBar = document.querySelector(`#${sectionId} .menu-bar-wrap`)
@@ -57,8 +58,18 @@ function scrollMenuFilterTarget(sectionId: string, target: Element) {
   }
 }
 
-export function MomentoMenuSection({ title, subtitle, menuCategories, sectionId = 'menu' }: Props) {
+export function MomentoMenuSection({
+  title,
+  subtitle,
+  menuCategories,
+  sectionId = 'menu',
+  locale = 'hr',
+}: Props) {
+  const ui = getMomentoUiCopy(locale)
   const categories = menuCategories ?? []
+  const menuHeading = title?.trim()
+    ? splitMenuHeading(title)
+    : { lead: ui.menu.titleFallback, accent: ui.menu.menuEmphasis }
   const offersIndex = categories.findIndex((c) => isOffersCategory(c.categoryName))
   const offersCategory = offersIndex >= 0 ? categories[offersIndex] : null
   const menuCats = categories.filter((_, i) => i !== offersIndex)
@@ -106,12 +117,12 @@ export function MomentoMenuSection({ title, subtitle, menuCategories, sectionId 
         <section className="offers-wrap">
           <div className="shell">
             <div className="section-head">
-              <div className="num reveal">03 / Posebna ponuda</div>
+              <div className="num reveal">{ui.offers.sectionLabel}</div>
               <h2>
-                <MomentoSplit>Kombinacije koje</MomentoSplit>
+                <MomentoSplit>{ui.offers.headingLine1}</MomentoSplit>
                 <br />
                 <MomentoSplit>
-                  <em>nas razmaze.</em>
+                  <em>{ui.offers.headingLine2}</em>
                 </MomentoSplit>
               </h2>
             </div>
@@ -137,12 +148,17 @@ export function MomentoMenuSection({ title, subtitle, menuCategories, sectionId 
       <section className={`section${isFiltered ? ' section--menu-filtered' : ''}`} id={sectionId}>
         <div className="shell">
           <div className="section-head">
-            <div className="num reveal">04 / Cjenik</div>
+            <div className="num reveal">{ui.menu.sectionLabel}</div>
             <h2>
-              <MomentoSplit>{title || 'Naš'}</MomentoSplit>{' '}
-              <MomentoSplit>
-                <em>meni.</em>
-              </MomentoSplit>
+              <MomentoSplit>{menuHeading.lead}</MomentoSplit>
+              {menuHeading.accent ? (
+                <>
+                  {' '}
+                  <MomentoSplit>
+                    <em>{menuHeading.accent}</em>
+                  </MomentoSplit>
+                </>
+              ) : null}
             </h2>
           </div>
           {subtitle ? (
@@ -151,7 +167,7 @@ export function MomentoMenuSection({ title, subtitle, menuCategories, sectionId 
             </p>
           ) : null}
 
-          <MomentoMenuBar active={active} onSelect={setActive} categories={menuCats} />
+          <MomentoMenuBar active={active} onSelect={setActive} categories={menuCats} locale={locale} />
 
           <div className="menu-editorial">
             {menuCats.map((cat, ci) => {
@@ -165,7 +181,7 @@ export function MomentoMenuSection({ title, subtitle, menuCategories, sectionId 
                   <div className="m-cat-head">
                     <span className="ix">— {String(ci + 1).padStart(2, '0')}</span>
                     <h3>{cat.categoryName}</h3>
-                    <span className="count">{cat.menuItems?.length ?? 0} stavki</span>
+                    <span className="count">{ui.menu.itemsCount(cat.menuItems?.length ?? 0)}</span>
                   </div>
                   <div className="menu-grid">
                     {(cat.menuItems ?? []).map((it, i) => (

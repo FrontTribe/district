@@ -10,15 +10,20 @@
  * Usage:
  *   pnpm run seed:hub
  *
- * Tenant home page slugs match the tenant subdomain (e.g. `boutique`, `restaurant`, `real-estate`).
- * Re-run finds legacy `tenant-{slug}` pages and renames slug to the short form on the `hr` locale update.
+ * Tenants: Boutique, Momento, Real estate (`boutique`, `momento`, `real-estate`).
+ * Tenant home page slugs match subdomain. Re-run **does not overwrite** existing tenant pages
+ * (only creates a placeholder if missing). Hub triptych page is updated only when missing or
+ * when `SEED_HUB_FORCE_HUB=true`.
  *
  * Optional env:
  *   SEED_HUB_SLUG        — main hub page slug (default: `district-hub`)
- *   SEED_TENANT_A_NAME, SEED_TENANT_A_SUBDOMAIN — override first tenant (defaults: Boutique / boutique)
- *   SEED_TENANT_B_NAME, SEED_TENANT_B_SUBDOMAIN — (Restaurant / restaurant)
+ *   SEED_TENANT_A_NAME, SEED_TENANT_A_SUBDOMAIN — (Boutique / boutique)
+ *   SEED_TENANT_B_NAME, SEED_TENANT_B_SUBDOMAIN — (Momento / momento)
  *   SEED_TENANT_C_NAME, SEED_TENANT_C_SUBDOMAIN — (Real estate / real-estate)
  *   SEED_USE_SAFE_SUBDOMAINS — if `true`, use demo-a, demo-b, demo-c instead (avoids clashes)
+ *   SEED_HUB_FORCE_PAGES — if `true`, overwrite tenant home pages with placeholder layout (dev only)
+ *   SEED_HUB_FORCE_HUB   — if `true`, overwrite hub page layout even when it already exists
+ *   ALLOW_SEED           — set `true` to run against non-dev DATABASE_URI (see scripts/seed-guard.ts)
  */
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -49,8 +54,8 @@ function getTenantSeeds(): TenantSeed[] {
       subdomain: process.env.SEED_TENANT_A_SUBDOMAIN || 'boutique',
     },
     {
-      name: process.env.SEED_TENANT_B_NAME || 'Restaurant',
-      subdomain: process.env.SEED_TENANT_B_SUBDOMAIN || 'restaurant',
+      name: process.env.SEED_TENANT_B_NAME || 'Momento',
+      subdomain: process.env.SEED_TENANT_B_SUBDOMAIN || 'momento',
     },
     {
       name: process.env.SEED_TENANT_C_NAME || 'Real estate',
@@ -69,17 +74,17 @@ const COLUMN_COPY: Record<
 > = {
   hr: [
     { title: 'Boutique', kicker: '01 / Hotel', subtitle: 'Luksuzni smještaj i osobni pristup.', linkText: 'Ulaz' },
-    { title: 'Restaurant', kicker: '02 / Dining', subtitle: 'Fine dining i bar iskustvo.', linkText: 'Ulaz' },
+    { title: 'Momento', kicker: '02 / Dining', subtitle: 'Fine dining i bar iskustvo.', linkText: 'Ulaz' },
     { title: 'Nekretnine', kicker: '03 / Estate', subtitle: 'Stambeni i poslovni projekti.', linkText: 'Ulaz' },
   ],
   en: [
     { title: 'Boutique', kicker: '01 / Hotel', subtitle: 'Luxury stays with a personal touch.', linkText: 'Enter' },
-    { title: 'Restaurant', kicker: '02 / Dining', subtitle: 'Fine dining and bar experience.', linkText: 'Enter' },
+    { title: 'Momento', kicker: '02 / Dining', subtitle: 'Fine dining and bar experience.', linkText: 'Enter' },
     { title: 'Real Estate', kicker: '03 / Estate', subtitle: 'Residential and commercial projects.', linkText: 'Enter' },
   ],
   de: [
     { title: 'Boutique', kicker: '01 / Hotel', subtitle: 'Luxusunterkünfte mit persönlicher Note.', linkText: 'Eintreten' },
-    { title: 'Restaurant', kicker: '02 / Dining', subtitle: 'Fine Dining und Bar.', linkText: 'Eintreten' },
+    { title: 'Momento', kicker: '02 / Dining', subtitle: 'Fine Dining und Bar.', linkText: 'Eintreten' },
     { title: 'Immobilien', kicker: '03 / Estate', subtitle: 'Wohn- und Gewerbeprojekte.', linkText: 'Eintreten' },
   ],
 }
@@ -127,9 +132,9 @@ function buildHubLayout(
 }
 
 const TENANT_WELCOME: Record<(typeof LOCALES)[number], string> = {
-  hr: '<p>Dobrodošli — ovo je seed stranica tenanta. Uredi sadržaj u Payload CMS-u.</p>',
-  en: '<p>Welcome — this is a seeded tenant page. Edit content in Payload CMS.</p>',
-  de: '<p>Willkommen — dies ist eine Demo-Tenant-Seite. Inhalt im Payload CMS bearbeiten.</p>',
+  hr: '<p>Dobrodošli — placeholder stranica tenanta. Uredi sadržaj u Payload CMS-u.</p>',
+  en: '<p>Welcome — tenant placeholder page. Edit content in Payload CMS.</p>',
+  de: '<p>Willkommen — Platzhalter-Seite. Inhalt im Payload CMS bearbeiten.</p>',
 }
 
 function buildTenantLayout(locale: (typeof LOCALES)[number]) {
@@ -176,6 +181,7 @@ async function upsertTenantHomePage(
   titles: Record<(typeof LOCALES)[number], string>,
 ) {
   const legacySlug = `tenant-${slug}`
+  const forcePages = process.env.SEED_HUB_FORCE_PAGES === 'true'
 
   let existing = await payload.find({
     collection: 'pages',
@@ -198,9 +204,26 @@ async function upsertTenantHomePage(
     })
   }
 
+  const existingDoc = existing.docs[0]
+  if (existingDoc?.id && !forcePages) {
+    if (existingDoc.slug === legacySlug) {
+      await payload.update({
+        collection: 'pages',
+        id: existingDoc.id,
+        locale: 'hr',
+        overrideAccess: true,
+        data: { slug },
+      })
+    }
+    console.info(
+      `Tenant page exists slug=${slug} — skipped layout update (SEED_HUB_FORCE_PAGES=true to overwrite placeholder)`,
+    )
+    return
+  }
+
   let pageId: string | number
-  if (existing.docs[0]?.id) {
-    pageId = existing.docs[0].id
+  if (existingDoc?.id) {
+    pageId = existingDoc.id
   } else {
     const created = await payload.create({
       collection: 'pages',
@@ -239,6 +262,8 @@ async function upsertHubPage(
   seeds: TenantSeed[],
   titles: Record<(typeof LOCALES)[number], string>,
 ) {
+  const forceHub = process.env.SEED_HUB_FORCE_HUB === 'true'
+
   const found = await payload.find({
     collection: 'pages',
     where: {
@@ -249,9 +274,17 @@ async function upsertHubPage(
     overrideAccess: true,
   })
 
+  const existingDoc = found.docs[0]
+  if (existingDoc?.id && !forceHub) {
+    console.info(
+      `Hub page exists slug=${hubSlug} — skipped layout update (SEED_HUB_FORCE_HUB=true to refresh triptych)`,
+    )
+    return
+  }
+
   let pageId: string | number
-  if (found.docs[0]?.id) {
-    pageId = found.docs[0].id
+  if (existingDoc?.id) {
+    pageId = existingDoc.id
   } else {
     const created = await payload.create({
       collection: 'pages',
@@ -281,6 +314,9 @@ async function upsertHubPage(
 }
 
 async function main() {
+  const { assertSeedAllowed } = await import('./seed-guard.ts')
+  assertSeedAllowed('seed:hub')
+
   const [{ getPayload }, { default: payloadConfig }] = await Promise.all([
     import('payload'),
     import('../src/payload.config.ts'),

@@ -3,7 +3,7 @@
  * Početni tekstovi iz `momentoSeedDefaults.ts` — produkcija čita samo CMS.
  *
  * Blokovi (redoslijed kao u Payload adminu):
- * 1. Hero  2. Intro  3. Image Grid  4. Concept Bar Menu  5. Job Opportunity  6. Location
+ * 1. Hero  2. Intro  3. Image Grid  4. Concept Bar Menu  5. Job Opportunity  6. Location  7. Momento Footer
  *
  * Slike: `public/momento-landing/` — iz `Momento by District.html` bundler manifesta.
  * Ažuriraj: `pnpm run extract:momento-images`
@@ -46,6 +46,13 @@ function mediaPick(media: MediaIds, key: MomentoDemoMediaKey): number {
 
 export function buildMomentoPayloadLayout(media: MediaIds, locale: MomentoLocale = 'hr') {
   const pack = getMomentoLocalePack(locale)
+  const year = new Date().getFullYear()
+  const copyright =
+    locale === 'en'
+      ? `All rights reserved © ${year} District d.o.o.`
+      : locale === 'de'
+        ? `Alle Rechte vorbehalten © ${year} District d.o.o.`
+        : `Sva prava pridržana © ${year} District d.o.o.`
 
   return [
     {
@@ -125,6 +132,24 @@ export function buildMomentoPayloadLayout(media: MediaIds, locale: MomentoLocale
         closeTime: row.closeTime,
       })),
       sectionId: pack.location.sectionId,
+    },
+    {
+      blockType: 'momento-footer' as const,
+      logoText: pack.footer.logoText,
+      tagline: pack.footer.tagline,
+      navLinks: pack.nav.links.map((link) => ({
+        label: link.label,
+        href: `#${link.scrollTarget}`,
+      })),
+      pagesHeading: pack.footer.pagesHeading,
+      contactHeading: pack.footer.contactHeading,
+      email: pack.footer.email,
+      phone: pack.footer.phone,
+      socialHeading: pack.footer.socialHeading,
+      instagram: pack.footer.instagram,
+      megaLine: pack.footer.megaLine,
+      copyright,
+      madeBy: pack.footer.madeBy,
     },
   ]
 }

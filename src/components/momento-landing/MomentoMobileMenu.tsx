@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react'
 import Link from 'next/link'
 import { localeLang } from '@/utils/locale'
+import { getMomentoUiCopy } from '@/data/momentoUiCopy'
 import type { MomentoNavItem } from './MomentoNav'
 
 type Props = {
@@ -24,6 +25,8 @@ export function MomentoMobileMenu({
   onItemClick,
   onLocaleSwitch,
 }: Props) {
+  const ui = getMomentoUiCopy(locale)
+
   useEffect(() => {
     if (!isOpen) return
 
@@ -48,9 +51,9 @@ export function MomentoMobileMenu({
 
   return (
     <div className="nav-menu is-open" id="momento-mobile-menu" role="presentation">
-      <button type="button" className="nav-menu__backdrop" aria-label="Zatvori izbornik" onClick={onClose} />
-      <div className="nav-menu__panel" role="dialog" aria-modal="true" aria-label="Navigacija">
-        <nav className="nav-menu__links" aria-label="Mobilna navigacija">
+      <button type="button" className="nav-menu__backdrop" aria-label={ui.nav.menuClose} onClick={onClose} />
+      <div className="nav-menu__panel" role="dialog" aria-modal="true" aria-label={ui.nav.mobileNav}>
+        <nav className="nav-menu__links" aria-label={ui.nav.mobileNav}>
           {menuItems.map((item, index) => (
             <Link
               key={item.label}
@@ -70,7 +73,7 @@ export function MomentoMobileMenu({
         </nav>
 
         <div className="nav-menu__footer">
-          <div className="nav-menu__lang" aria-label="Jezik">
+          <div className="nav-menu__lang" aria-label={ui.nav.language}>
             {localeLang.map((l) => (
               <button
                 key={l.code}
@@ -90,7 +93,7 @@ export function MomentoMobileMenu({
               onClose()
             }}
           >
-            Posjeti nas <span className="arr">↗</span>
+            {ui.nav.visitCta} <span className="arr">↗</span>
           </Link>
         </div>
       </div>
