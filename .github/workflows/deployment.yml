@@ -10,33 +10,79 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set deploy target
+        id: target
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "path=/var/www/district-prod" >> $GITHUB_OUTPUT
+            echo "app=district-prod"           >> $GITHUB_OUTPUT
+          else
+            echo "path=/var/www/district-dev"  >> $GITHUB_OUTPUT
+            echo "app=district-dev"            >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Package source for migration check
+        run: tar --exclude=node_modules --exclude=.next --exclude=.git -czf source.tgz .
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Upload source to server
+        uses: appleboy/scp-action@v0.1.7
         with:
-          node-version: 20
-          cache: pnpm
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT || '22' }}
+          source: source.tgz
+          target: /tmp/
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Verify migrations on server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT || '22' }}
+          timeout: 10m
+          script_stop: true
+          script: |
+            set -euxo pipefail
 
-      - name: Apply migrations (development)
-        if: github.ref_name != 'main'
-        env:
-          DATABASE_URI: ${{ secrets.DATABASE_URI }}
-          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-        run: pnpm run payload -- migrate
+            DEPLOY_PATH="${{ steps.target.outputs.path }}"
+            APP_NAME="${{ steps.target.outputs.app }}"
+            CI_DIR="/tmp/district-ci-${{ github.sha }}"
 
-      - name: Check migrations
-        env:
-          DATABASE_URI: ${{ secrets.DATABASE_URI }}
-          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-        run: pnpm run check:migrations
+            rm -rf "$CI_DIR"
+            mkdir -p "$CI_DIR"
+            tar -xzf /tmp/source.tgz -C "$CI_DIR"
+            rm -f /tmp/source.tgz
+
+            for env_file in .env .env.local .env.production; do
+              if [ -f "$DEPLOY_PATH/$env_file" ]; then
+                set -a
+                # shellcheck disable=SC1090
+                source "$DEPLOY_PATH/$env_file"
+                set +a
+              fi
+            done
+
+            if [ -z "${DATABASE_URI:-}" ] || [ -z "${PAYLOAD_SECRET:-}" ]; then
+              echo "Missing DATABASE_URI or PAYLOAD_SECRET in $DEPLOY_PATH env files."
+              exit 1
+            fi
+
+            cd "$CI_DIR"
+            corepack enable
+            corepack prepare pnpm@10.11.0 --activate
+            pnpm install --frozen-lockfile
+
+            if [ "$APP_NAME" = "district-dev" ]; then
+              pnpm run payload -- migrate
+            fi
+
+            pnpm run check:migrations
+            rm -rf "$CI_DIR"
 
   deploy:
     name: Deploy
