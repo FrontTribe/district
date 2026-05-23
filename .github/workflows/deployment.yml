@@ -5,7 +5,42 @@ on:
     branches: [main, development]
 
 jobs:
+  migrations:
+    name: Verify database migrations
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply migrations (development)
+        if: github.ref_name != 'main'
+        env:
+          DATABASE_URI: ${{ secrets.DATABASE_URI }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+        run: pnpm run payload -- migrate
+
+      - name: Check migrations
+        env:
+          DATABASE_URI: ${{ secrets.DATABASE_URI }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+        run: pnpm run check:migrations
+
   deploy:
+    name: Deploy
+    needs: migrations
     runs-on: ubuntu-latest
 
     steps:

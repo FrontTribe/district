@@ -22,6 +22,7 @@
     "clean:momento": "cross-env MOMENTO_SEED_CLEAN=true NODE_OPTIONS=\"--no-deprecation --loader ./scripts/ignore-scss-loader.mjs\" tsx scripts/seed-momento-landing.ts",
     "seed:hub": "cross-env NODE_OPTIONS=\"--no-deprecation --loader ./scripts/ignore-scss-loader.mjs\" tsx scripts/seed-hub-tenants.ts",
     "seed:boutique": "cross-env NODE_OPTIONS=\"--no-deprecation --loader ./scripts/ignore-scss-loader.mjs\" tsx scripts/seed-boutique-landing.ts",
+    "check:migrations": "node scripts/check-pending-migrations.mjs",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "test": "pnpm run test:int && pnpm run test:e2e",
