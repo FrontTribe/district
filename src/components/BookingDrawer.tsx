@@ -13,6 +13,7 @@ import {
 } from '@/utils/rentlioBooking'
 import { ReservationToast } from './ReservationToast'
 import './BookingDrawer.scss'
+import './BookingDrawer.boutique.scss'
 
 interface RoomData {
   title: string
@@ -29,6 +30,8 @@ interface BookingDrawerProps {
   roomData: RoomData | null
   locale?: string
   salesChannelId?: number
+  /** Editorial cream modal styling for District Boutique landing */
+  visualTheme?: 'default' | 'boutique'
 }
 
 interface BookingFormData {
@@ -66,7 +69,9 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
   roomData,
   locale = 'hr',
   salesChannelId = 45,
+  visualTheme = 'default',
 }) => {
+  const isBoutique = visualTheme === 'boutique'
   // Translation function for frontend
   const t = (key: string, fallback: string = key) => {
     const translations: Record<string, Record<string, string>> = {
@@ -163,6 +168,10 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
         // Messages
         'Please select check-in and check-out dates to see prices':
           'Molimo odaberite datume prijave i odjave da biste vidjeli cijene',
+        'Rentlio unit type is not configured for this room. Link the room in Payload Admin (Rooms block → Rentlio fields).':
+          'Soba nije povezana s Rentlio API-jem. U Payload Adminu otvorite blok Sobe i unesite Rentlio property / unit type ID.',
+        'Failed to load pricing information':
+          'Nije moguće učitati cijene i dostupnost. Provjerite Rentlio API ključ (RENTAL_SECRET) i ID sobe.',
         'Please enter cardholder name.': 'Molimo unesite ime vlasnika kartice.',
 
         // Warnings
@@ -290,6 +299,10 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
         // Messages
         'Please select check-in and check-out dates to see prices':
           'Please select check-in and check-out dates to see prices',
+        'Rentlio unit type is not configured for this room. Link the room in Payload Admin (Rooms block → Rentlio fields).':
+          'This room is not linked to Rentlio. In Payload Admin, open the Rooms block and set Rentlio property / unit type ID.',
+        'Failed to load pricing information':
+          'Could not load pricing and availability. Check RENTAL_SECRET and the room Rentlio unit type ID.',
         'Please enter cardholder name.': 'Please enter cardholder name.',
 
         // Warnings
@@ -411,6 +424,10 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
         // Messages
         'Please select check-in and check-out dates to see prices':
           'Bitte wählen Sie Check-in und Check-out Daten aus, um Preise zu sehen',
+        'Rentlio unit type is not configured for this room. Link the room in Payload Admin (Rooms block → Rentlio fields).':
+          'Zimmer ist nicht mit Rentlio verknüpft. Im Payload Admin im Block Zimmer Rentlio property / unit type ID setzen.',
+        'Failed to load pricing information':
+          'Preise und Verfügbarkeit konnten nicht geladen werden. RENTAL_SECRET und Rentlio unit type ID prüfen.',
         'Please enter cardholder name.': 'Bitte geben Sie den Namen des Karteninhabers ein.',
 
         // Warnings
@@ -609,6 +626,25 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
       hasCheckOut: !!formData.checkOut,
     }
 
+    if (
+      isOpen &&
+      roomData &&
+      !roomData.rentlioUnitTypeId &&
+      formData.checkIn &&
+      formData.checkOut
+    ) {
+      setPricingData(null)
+      setPricingError(
+        t(
+          'Rentlio unit type is not configured for this room. Link the room in Payload Admin (Rooms block → Rentlio fields).',
+        ),
+      )
+      setRestrictions([])
+      setRestrictionsWarning('')
+      setIsLoadingPricing(false)
+      return
+    }
+
     if (isOpen && roomData?.rentlioUnitTypeId && formData.checkIn && formData.checkOut) {
       setIsLoadingPricing(true)
       setPricingError(null)
@@ -642,38 +678,43 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
           }
         })
         .catch((error) => {
-          setPricingError('Failed to load pricing information')
+          const fallback = t('Failed to load pricing information')
+          const message = error instanceof Error ? error.message : fallback
+          setPricingError(message || fallback)
           setRestrictions([])
           setRestrictionsWarning('')
+          setPricingData(null)
 
-          // Fallback to mock data
-          setPricingData({
-            checkIn: '1 prosinac',
-            checkInDay: 'ponedjeljak',
-            checkOut: '3 prosinac',
-            checkOutDay: 'srijeda',
-            accommodationPrice: 240.0,
-            accommodationPricePerNight: 120.0,
-            servicesPrice: 0.0,
-            totalPrice: 240.0,
-            totalPriceHRK: 1808.28,
-            exchangeRate: 7.5345,
-            currencyCode: 'EUR',
-            checkInTime: '15:00 - 21:00',
-            checkOutTime: '6:00 - 11:00',
-            minStay: 1,
-            maxStay: 30,
-            nights: 2,
-            isAvailable: true,
-            closedToArrival: false,
-            closedToDeparture: false,
-          })
+          if (!isBoutique) {
+            // Legacy drawer: keep mock fallback for local demos without Rentlio
+            setPricingData({
+              checkIn: '1 prosinac',
+              checkInDay: 'ponedjeljak',
+              checkOut: '3 prosinac',
+              checkOutDay: 'srijeda',
+              accommodationPrice: 240.0,
+              accommodationPricePerNight: 120.0,
+              servicesPrice: 0.0,
+              totalPrice: 240.0,
+              totalPriceHRK: 1808.28,
+              exchangeRate: 7.5345,
+              currencyCode: 'EUR',
+              checkInTime: '15:00 - 21:00',
+              checkOutTime: '6:00 - 11:00',
+              minStay: 1,
+              maxStay: 30,
+              nights: 2,
+              isAvailable: true,
+              closedToArrival: false,
+              closedToDeparture: false,
+            })
+          }
         })
         .finally(() => {
           setIsLoadingPricing(false)
         })
     }
-  }, [isOpen, roomData, formData.checkIn, formData.checkOut])
+  }, [isOpen, isBoutique, roomData, formData.checkIn, formData.checkOut, locale])
 
   // Create fallback pricing data from selected dates
   const createFallbackPricingData = (checkIn: string, checkOut: string): BookingPricingData => {
@@ -837,6 +878,10 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
 
     // Messages
     pleaseSelectDates: t('Please select check-in and check-out dates to see prices'),
+    rentlioNotConfigured: t(
+      'Rentlio unit type is not configured for this room. Link the room in Payload Admin (Rooms block → Rentlio fields).',
+    ),
+    failedToLoadPricing: t('Failed to load pricing information'),
     enterCardholderName: t('Please enter cardholder name.'),
 
     // Warnings
@@ -1338,8 +1383,14 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
   }
 
   return (
-    <div className="booking-drawer-overlay" onClick={handleOverlayClick}>
-      <div className="booking-drawer">
+    <div
+      className={`booking-drawer-overlay${isBoutique ? ' booking-drawer-overlay--boutique' : ''}`}
+      onClick={handleOverlayClick}
+    >
+      <div
+        className={`booking-drawer${isBoutique ? ' booking-drawer--boutique' : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="booking-drawer-header">
           <h2>{translations.reservation}</h2>
           <button className="close-button" onClick={onClose}>
@@ -1476,6 +1527,10 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
 
               {!formData.checkIn || !formData.checkOut ? (
                 <div className="no-dates-message">{translations.pleaseSelectDates}</div>
+              ) : null}
+
+              {formData.checkIn && formData.checkOut && _pricingError ? (
+                <div className="error-message rentlio-config-error">{_pricingError}</div>
               ) : null}
 
               {/* Capacity Restrictions Display */}

@@ -12,8 +12,9 @@ import { getTenantVisualTheme } from '@/utils/tenantVisualTheme'
 import { getCachedPageBySlug } from '@/utils/getCachedPages'
 import { localeLang } from '@/utils/locale'
 import { generateMetadataFromPage } from '@/utils/generateMetadata'
-import { mergePageLayoutForPublicPage } from '@/utils/mergeReLandingLayoutForPublic'
 import { enrichInquiryFormsInPage } from '@/utils/enrichInquiryFormsInPage'
+import { layoutHasBoutiqueFooter } from '@/utils/boutiqueLayoutFlags'
+import { BoutiqueLandingShell } from '@/components/boutique-landing/BoutiqueLandingShell'
 
 type PageProps = {
   params: Promise<{
@@ -77,10 +78,7 @@ export default async function Page({ params }: PageProps) {
   const isBoutiqueTenantPage = Boolean(currentTenant && tenantVisualTheme === 'boutique')
   const isMomentoTenantPage = Boolean(currentTenant && tenantVisualTheme === 'momento')
 
-  const mergedPage = await enrichInquiryFormsInPage(
-    mergePageLayoutForPublicPage(page, menuGlobal),
-    locale,
-  )
+  const mergedPage = await enrichInquiryFormsInPage(page, locale)
 
   const layout = mergedPage.layout ?? []
   const blockType = (b: { blockType?: string | null }) => String(b.blockType ?? '')
@@ -88,19 +86,19 @@ export default async function Page({ params }: PageProps) {
   const isRealEstateLandingPage =
     layout.length > 0 && layout.every((b) => blockType(b).startsWith('real-estate-landing-'))
 
-  const isLegacyRealEstatePage =
-    layout.length > 0 &&
-    layout.every((b) => {
-      const t = blockType(b)
-      return t.startsWith('real-estate-') && !t.startsWith('real-estate-landing-')
-    })
-
   const hasLandingNav = layout.some((b) => b.blockType === 'real-estate-landing-nav')
 
   const showTenantMenu = Boolean(
     currentTenant && !(isRealEstateLandingPage && hasLandingNav) && !isMomentoTenantPage,
   )
-  const showTenantFooter = Boolean(currentTenant && footerGlobal && !isMomentoTenantPage && !isRealEstateLandingPage)
+  const hasBoutiqueFooterBlock = layoutHasBoutiqueFooter(layout)
+  const showTenantFooter = Boolean(
+    currentTenant &&
+      footerGlobal &&
+      !isMomentoTenantPage &&
+      !isRealEstateLandingPage &&
+      !hasBoutiqueFooterBlock,
+  )
 
   const momentoMenu =
     menuGlobal && isMomentoTenantPage
@@ -173,13 +171,11 @@ export default async function Page({ params }: PageProps) {
         <RealEstateLandingShell>{pageClient}</RealEstateLandingShell>
       ) : isMomentoTenantPage ? (
         <MomentoLandingShell menu={momentoMenu}>{pageClient}</MomentoLandingShell>
-      ) : isLegacyRealEstatePage ? (
-        <main className="real-estate-preview">{pageClient}</main>
       ) : (
         <div
           className={
             isBoutiqueTenantPage
-              ? 'content w-full'
+              ? 'content content--full-bleed'
               : 'content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
           }
         >
@@ -199,7 +195,7 @@ export default async function Page({ params }: PageProps) {
   )
 
   return isBoutiqueTenantPage ? (
-    <div className="boutique-tenant-root">{pageBody}</div>
+    <BoutiqueLandingShell locale={locale}>{pageBody}</BoutiqueLandingShell>
   ) : isMomentoTenantPage ? (
     <div className="momento-tenant-root">{pageBody}</div>
   ) : (

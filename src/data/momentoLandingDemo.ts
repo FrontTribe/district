@@ -49,10 +49,10 @@ export function buildMomentoPayloadLayout(media: MediaIds, locale: MomentoLocale
   const year = new Date().getFullYear()
   const copyright =
     locale === 'en'
-      ? `All rights reserved © ${year} District d.o.o.`
+      ? `District d.o.o. · OIB 56282051463 · all rights reserved © ${year}`
       : locale === 'de'
-        ? `Alle Rechte vorbehalten © ${year} District d.o.o.`
-        : `Sva prava pridržana © ${year} District d.o.o.`
+        ? `District d.o.o. · OIB 56282051463 · alle Rechte vorbehalten © ${year}`
+        : `District d.o.o. · OIB 56282051463 · sva prava pridržana © ${year}`
 
   return [
     {

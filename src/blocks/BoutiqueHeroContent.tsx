@@ -1,10 +1,9 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
-import { gsap } from '@/lib/gsap'
+import React from 'react'
 import { getTranslation } from '@/utils/translations'
 
-export function parseBoutiqueSubheading(raw?: string | null): {
+function parseBoutiqueSubheading(raw?: string | null): {
   eyebrow?: string
   body?: string
 } {
@@ -19,7 +18,7 @@ export function parseBoutiqueSubheading(raw?: string | null): {
 }
 
 /** Wrap segments in *like this* as <em> for hero titles. */
-export function parseBoutiqueHeadingEmphasis(text: string): React.ReactNode[] {
+function parseBoutiqueHeadingEmphasis(text: string): React.ReactNode[] {
   const segments = text.split(/(\*[^*]+\*)/g)
   return segments.map((seg, i) => {
     if (seg.startsWith('*') && seg.endsWith('*') && seg.length >= 2) {
@@ -36,6 +35,18 @@ function headingHasAsteriskMarks(text: string): boolean {
 /**
  * CMS `*italic*` segments, otherwise auto-wrap word "Boutique" for accent styling.
  */
+/** Multi-line headings (e.g. rooms) — preserves line breaks like the redesign prototype. */
+export function renderBoutiqueHeadingWithBreaks(heading: string): React.ReactNode {
+  if (!heading.includes('\n')) return renderBoutiqueHeroHeading(heading)
+
+  return heading.split('\n').map((line, i) => (
+    <React.Fragment key={i}>
+      {i > 0 ? <br /> : null}
+      {line.trim() ? renderBoutiqueHeroHeading(line.trim()) : null}
+    </React.Fragment>
+  ))
+}
+
 export function renderBoutiqueHeroHeading(heading: string): React.ReactNode {
   if (headingHasAsteriskMarks(heading)) {
     return parseBoutiqueHeadingEmphasis(heading)
@@ -76,38 +87,8 @@ export function BoutiqueHeroContent({
 }: BoutiqueHeroContentProps) {
   const { eyebrow, body } = parseBoutiqueSubheading(subheading)
 
-  const rootRef = useRef<HTMLDivElement | null>(null)
-  const eyebrowRef = useRef<HTMLDivElement | null>(null)
-  const bodyRef = useRef<HTMLParagraphElement | null>(null)
-  const ctaRef = useRef<HTMLDivElement | null>(null)
-  const scrollRef = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-      if (eyebrowRef.current) {
-        gsap.set(eyebrowRef.current, { opacity: 0, y: 18 })
-        tl.to(eyebrowRef.current, { opacity: 1, y: 0, duration: 0.75 }, 0)
-      }
-      if (bodyRef.current) {
-        gsap.set(bodyRef.current, { opacity: 0, y: 20 })
-        tl.to(bodyRef.current, { opacity: 1, y: 0, duration: 0.85 }, 0.18)
-      }
-      if (ctaRef.current) {
-        gsap.set(ctaRef.current, { opacity: 0, y: 16 })
-        tl.to(ctaRef.current, { opacity: 1, y: 0, duration: 0.75 }, 0.28)
-      }
-      if (scrollRef.current) {
-        gsap.set(scrollRef.current, { opacity: 0, y: 10 })
-        tl.to(scrollRef.current, { opacity: 0.75, y: 0, duration: 0.7 }, 0.55)
-      }
-    }, rootRef)
-
-    return () => ctx.revert()
-  }, [eyebrow, body, heading])
-
   return (
-    <div ref={rootRef} className="boutique-hero__inner">
+    <div className="boutique-hero__inner">
       <aside className="boutique-hero__meta" aria-label="Location">
         <div>{getTranslation('boutiqueHeroMeta1', locale)}</div>
         <div>{getTranslation('boutiqueHeroMeta2', locale)}</div>
@@ -115,18 +96,20 @@ export function BoutiqueHeroContent({
       </aside>
       <div className="boutique-hero__content">
         {eyebrow ? (
-          <div ref={eyebrowRef} className="boutique-hero__eyebrow">
+          <div className="boutique-hero__eyebrow" data-reveal="fade-up">
             {eyebrow}
           </div>
         ) : null}
-        <h1 className="boutique-hero__title">{renderBoutiqueHeroHeading(heading)}</h1>
+        <h1 className="boutique-hero__title" data-reveal="lines">
+          {renderBoutiqueHeroHeading(heading)}
+        </h1>
         {body ? (
-          <p ref={bodyRef} className="boutique-hero__sub">
+          <p className="boutique-hero__sub" data-reveal="fade-up" data-delay="0.15">
             {body}
           </p>
         ) : null}
-        <div ref={ctaRef} className="boutique-hero__cta-row">
-          <a href="#kontakt" className="boutique-ghost-btn">
+        <div className="boutique-hero__cta-row" data-reveal="fade-up" data-delay="0.25">
+          <a href="#sobe" className="boutique-ghost-btn">
             <span className="boutique-ghost-btn__label">
               {getTranslation('boutiqueReserve', locale)}
             </span>
@@ -139,7 +122,7 @@ export function BoutiqueHeroContent({
           </a>
         </div>
       </div>
-      <div ref={scrollRef} className="boutique-hero__scroll" role="presentation">
+      <div className="boutique-hero__scroll" role="presentation" data-reveal="fade-up" data-delay="0.35">
         <span>{getTranslation('scrollToExplore', locale)}</span>
         <div className="boutique-hero__scroll-line" aria-hidden />
       </div>

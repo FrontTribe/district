@@ -29,15 +29,9 @@ import RealEstateLandingInquiry from '@/blocks/RealEstateLandingInquiry'
 import RealEstateLandingFooter from '@/blocks/RealEstateLandingFooter'
 import RealEstateLandingUnitBrowser from '@/blocks/RealEstateLandingUnitBrowser'
 import RealEstateLandingPastProjects from '@/blocks/RealEstateLandingPastProjects'
-import RealEstateHero from '@/blocks/RealEstateHero'
-import RealEstateAboutUs from '@/blocks/RealEstateAboutUs'
-import RealEstateProjectsWeDid from '@/blocks/RealEstateProjectsWeDid'
-import RealEstateCurrentProjects from '@/blocks/RealEstateCurrentProjects'
-import RealEstateLiveCamera from '@/blocks/RealEstateLiveCamera'
-import RealEstateLookingForJob from '@/blocks/RealEstateLookingForJob'
-import RealEstateContact from '@/blocks/RealEstateContact'
 import { Anchor } from '@/blocks/Anchor'
 import MomentoFooter from '@/blocks/MomentoFooter'
+import BoutiqueFooter from '@/blocks/BoutiqueFooter'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
@@ -175,13 +169,7 @@ const Pages: CollectionConfig = {
         RealEstateLandingPastProjects,
         RealEstateLandingFooter,
         MomentoFooter,
-        RealEstateHero,
-        RealEstateAboutUs,
-        RealEstateProjectsWeDid,
-        RealEstateCurrentProjects,
-        RealEstateLiveCamera,
-        RealEstateLookingForJob,
-        RealEstateContact,
+        BoutiqueFooter,
         Anchor,
       ],
       localized: true,

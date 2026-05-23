@@ -476,9 +476,27 @@ export interface Page {
             blockType: 'three-columns';
           }
         | {
+            chapterNum?: string | null;
+            chapterLabel?: string | null;
             eyebrow?: string | null;
             heading: string;
             body?: string | null;
+            pullQuote?: string | null;
+            pullQuoteCite?: string | null;
+            stats?:
+              | {
+                  value: number;
+                  suffix?: string | null;
+                  label: string;
+                  id?: string | null;
+                }[]
+              | null;
+            collageTags?:
+              | {
+                  tag: string;
+                  id?: string | null;
+                }[]
+              | null;
             cta?: {
               label?: string | null;
               href?: string | null;
@@ -500,12 +518,34 @@ export interface Page {
             blockType: 'botique-intro';
           }
         | {
+            chapterNum?: string | null;
+            chapterLabel?: string | null;
             headingEyebrow?: string | null;
             heading: string;
+            leadText?: string | null;
             leftText?: string | null;
+            channels?:
+              | {
+                  type: 'email' | 'phone' | 'whatsapp' | 'instagram';
+                  label: string;
+                  value: string;
+                  href: string;
+                  id?: string | null;
+                }[]
+              | null;
+            intelRows?:
+              | {
+                  label: string;
+                  value: string;
+                  id?: string | null;
+                }[]
+              | null;
             address?: string | null;
             email?: string | null;
             phone?: string | null;
+            formNote?: string | null;
+            successHeading?: string | null;
+            successMessage?: string | null;
             form: number | Form;
             sectionId?: string | null;
             id?: string | null;
@@ -513,6 +553,8 @@ export interface Page {
             blockType: 'boutique-contact';
           }
         | {
+            chapterNum?: string | null;
+            chapterLabel?: string | null;
             eyebrow?: string | null;
             heading: string;
             subheading?: string | null;
@@ -537,7 +579,10 @@ export interface Page {
                    * Optional. Select a unit type to enable Rentlio bookings for this room. Leave empty if the room is informational only.
                    */
                   rentlioUnitTypeId?: string | null;
+                  roomNumber?: string | null;
                   title: string;
+                  displayPrice?: number | null;
+                  displayPriceSuffix?: string | null;
                   description?: string | null;
                   badges?:
                     | {
@@ -561,7 +606,38 @@ export interface Page {
             blockType: 'rooms';
           }
         | {
+            layoutVariant?: ('editorial' | 'marquee') | null;
+            chapterNum?: string | null;
+            chapterLabel?: string | null;
+            eyebrow?: string | null;
             heading: string;
+            mastheadMedia?: (number | null) | Media;
+            metaRows?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
+            manifestEyebrow?: string | null;
+            manifestHeading?: string | null;
+            manifestItems?:
+              | {
+                  key: string;
+                  value: string;
+                  id?: string | null;
+                }[]
+              | null;
+            stackImages?:
+              | {
+                  media: number | Media;
+                  alt?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            cta?: {
+              label?: string | null;
+              href?: string | null;
+            };
             images?:
               | {
                   media: number | Media;
@@ -571,7 +647,7 @@ export interface Page {
                 }[]
               | null;
             /**
-             * Higher = slower. Animation speeds up temporarily with scroll velocity.
+             * Marquee only. Higher = slower.
              */
             baseDuration?: number | null;
             sectionId?: string | null;
@@ -580,11 +656,15 @@ export interface Page {
             blockType: 'rooftop';
           }
         | {
-            heading: string;
+            heading?: string | null;
             features?:
               | {
+                  romanNumeral?: string | null;
+                  tag?: string | null;
                   title: string;
                   description?: string | null;
+                  media?: (number | null) | Media;
+                  reverseLayout?: boolean | null;
                   id?: string | null;
                 }[]
               | null;
@@ -787,138 +867,7 @@ export interface Page {
         | RealEstateLandingPastProjectsBlock
         | RealEstateLandingPageFooterBlock
         | MomentoFooterBlock
-        | {
-            heading: string;
-            subheading?: string | null;
-            /**
-             * Optional hero background image
-             */
-            backgroundImage?: (number | null) | Media;
-            /**
-             * Optional ID for anchor links (e.g. hero)
-             */
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'real-estate-hero';
-          }
-        | {
-            /**
-             * Small label above the heading
-             */
-            eyebrow?: string | null;
-            heading: string;
-            /**
-             * HTML allowed (e.g. <p>...</p>)
-             */
-            body: string;
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'real-estate-about-us';
-          }
-        | {
-            eyebrow?: string | null;
-            heading: string;
-            subtitle?: string | null;
-            projects?:
-              | {
-                  title: string;
-                  description?: string | null;
-                  image?: (number | null) | Media;
-                  location?: string | null;
-                  year?: string | null;
-                  galleryImages?:
-                    | {
-                        image: number | Media;
-                        id?: string | null;
-                      }[]
-                    | null;
-                  id?: string | null;
-                }[]
-              | null;
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'real-estate-projects-we-did';
-          }
-        | {
-            eyebrow?: string | null;
-            heading: string;
-            subtitle?: string | null;
-            projects?:
-              | {
-                  /**
-                   * Floor plan and units are defined on the Building. Opening this project on the site shows the plan; tap a unit to open its PDF page.
-                   */
-                  building?: (number | null) | Building;
-                  title: string;
-                  /**
-                   * Shown on the project card and in the drawer.
-                   */
-                  description?: string | null;
-                  /**
-                   * Thumbnail on the project card (grid).
-                   */
-                  image?: (number | null) | Media;
-                  status?: string | null;
-                  ctaText?: string | null;
-                  ctaUrl?: string | null;
-                  id?: string | null;
-                }[]
-              | null;
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'real-estate-current-projects';
-          }
-        | {
-            heading: string;
-            subtitle?: string | null;
-            /**
-             * YouTube embed URL, Vimeo, or iframe src. Leave empty for placeholder.
-             */
-            streamUrl?: string | null;
-            /**
-             * Shown when no stream URL is set
-             */
-            fallbackImage?: (number | null) | Media;
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'real-estate-live-camera';
-          }
-        | {
-            badge?: string | null;
-            heading: string;
-            subtitle?: string | null;
-            description: string;
-            features?:
-              | {
-                  text: string;
-                  id?: string | null;
-                }[]
-              | null;
-            buttonText: string;
-            buttonUrl: string;
-            ctaNote?: string | null;
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'real-estate-looking-for-job';
-          }
-        | {
-            eyebrow?: string | null;
-            heading: string;
-            leftText?: string | null;
-            address?: string | null;
-            email?: string | null;
-            phone?: string | null;
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'real-estate-contact';
-          }
+        | BoutiqueFooterBlock
         | {
             /**
              * ID used as the scroll target (e.g. "contact" → links to #contact). Use lowercase letters, numbers, and dashes.
@@ -1765,7 +1714,7 @@ export interface MomentoFooterBlock {
   phone?: string | null;
   socialHeading?: string | null;
   /**
-   * e.g. district.hr or full https://instagram.com/…
+   * e.g. momentobydistrict or full https://instagram.com/…
    */
   instagram?: string | null;
   megaLine?: string | null;
@@ -1774,6 +1723,66 @@ export interface MomentoFooterBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'momento-footer';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BoutiqueFooterBlock".
+ */
+export interface BoutiqueFooterBlock {
+  timeLabel?: string | null;
+  signoffEyebrow?: string | null;
+  signoffHeading?: string | null;
+  coordinatesLat?: string | null;
+  coordinatesLng?: string | null;
+  addressHeading?: string | null;
+  addressHtml?: string | null;
+  addressMapUrl?: string | null;
+  infoRows?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  contactHeading?: string | null;
+  contactLinks?:
+    | {
+        key: string;
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  newsletterHeading?: string | null;
+  newsletterNote?: string | null;
+  mapHeading?: string | null;
+  mapCta?: string | null;
+  distanceRows?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  marqueeItems?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  wordmark?: string | null;
+  copyright?: string | null;
+  legalLinks?:
+    | {
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  madeBy?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'boutique-footer';
 }
 /**
  * Manage navigation menus for tenants and main domain
@@ -2307,9 +2316,27 @@ export interface PagesSelect<T extends boolean = true> {
         'botique-intro'?:
           | T
           | {
+              chapterNum?: T;
+              chapterLabel?: T;
               eyebrow?: T;
               heading?: T;
               body?: T;
+              pullQuote?: T;
+              pullQuoteCite?: T;
+              stats?:
+                | T
+                | {
+                    value?: T;
+                    suffix?: T;
+                    label?: T;
+                    id?: T;
+                  };
+              collageTags?:
+                | T
+                | {
+                    tag?: T;
+                    id?: T;
+                  };
               cta?:
                 | T
                 | {
@@ -2333,12 +2360,34 @@ export interface PagesSelect<T extends boolean = true> {
         'boutique-contact'?:
           | T
           | {
+              chapterNum?: T;
+              chapterLabel?: T;
               headingEyebrow?: T;
               heading?: T;
+              leadText?: T;
               leftText?: T;
+              channels?:
+                | T
+                | {
+                    type?: T;
+                    label?: T;
+                    value?: T;
+                    href?: T;
+                    id?: T;
+                  };
+              intelRows?:
+                | T
+                | {
+                    label?: T;
+                    value?: T;
+                    id?: T;
+                  };
               address?: T;
               email?: T;
               phone?: T;
+              formNote?: T;
+              successHeading?: T;
+              successMessage?: T;
               form?: T;
               sectionId?: T;
               id?: T;
@@ -2347,6 +2396,8 @@ export interface PagesSelect<T extends boolean = true> {
         rooms?:
           | T
           | {
+              chapterNum?: T;
+              chapterLabel?: T;
               eyebrow?: T;
               heading?: T;
               subheading?: T;
@@ -2362,7 +2413,10 @@ export interface PagesSelect<T extends boolean = true> {
                     rentlioPropertyId?: T;
                     rentlioSalesChannelId?: T;
                     rentlioUnitTypeId?: T;
+                    roomNumber?: T;
                     title?: T;
+                    displayPrice?: T;
+                    displayPriceSuffix?: T;
                     description?: T;
                     badges?:
                       | T
@@ -2386,7 +2440,40 @@ export interface PagesSelect<T extends boolean = true> {
         rooftop?:
           | T
           | {
+              layoutVariant?: T;
+              chapterNum?: T;
+              chapterLabel?: T;
+              eyebrow?: T;
               heading?: T;
+              mastheadMedia?: T;
+              metaRows?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              manifestEyebrow?: T;
+              manifestHeading?: T;
+              manifestItems?:
+                | T
+                | {
+                    key?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              stackImages?:
+                | T
+                | {
+                    media?: T;
+                    alt?: T;
+                    id?: T;
+                  };
+              cta?:
+                | T
+                | {
+                    label?: T;
+                    href?: T;
+                  };
               images?:
                 | T
                 | {
@@ -2407,8 +2494,12 @@ export interface PagesSelect<T extends boolean = true> {
               features?:
                 | T
                 | {
+                    romanNumeral?: T;
+                    tag?: T;
                     title?: T;
                     description?: T;
+                    media?: T;
+                    reverseLayout?: T;
                     id?: T;
                   };
               sectionId?: T;
@@ -2549,118 +2640,7 @@ export interface PagesSelect<T extends boolean = true> {
         'real-estate-landing-past-projects'?: T | RealEstateLandingPastProjectsBlockSelect<T>;
         'real-estate-landing-page-footer'?: T | RealEstateLandingPageFooterBlockSelect<T>;
         'momento-footer'?: T | MomentoFooterBlockSelect<T>;
-        'real-estate-hero'?:
-          | T
-          | {
-              heading?: T;
-              subheading?: T;
-              backgroundImage?: T;
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
-        'real-estate-about-us'?:
-          | T
-          | {
-              eyebrow?: T;
-              heading?: T;
-              body?: T;
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
-        'real-estate-projects-we-did'?:
-          | T
-          | {
-              eyebrow?: T;
-              heading?: T;
-              subtitle?: T;
-              projects?:
-                | T
-                | {
-                    title?: T;
-                    description?: T;
-                    image?: T;
-                    location?: T;
-                    year?: T;
-                    galleryImages?:
-                      | T
-                      | {
-                          image?: T;
-                          id?: T;
-                        };
-                    id?: T;
-                  };
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
-        'real-estate-current-projects'?:
-          | T
-          | {
-              eyebrow?: T;
-              heading?: T;
-              subtitle?: T;
-              projects?:
-                | T
-                | {
-                    building?: T;
-                    title?: T;
-                    description?: T;
-                    image?: T;
-                    status?: T;
-                    ctaText?: T;
-                    ctaUrl?: T;
-                    id?: T;
-                  };
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
-        'real-estate-live-camera'?:
-          | T
-          | {
-              heading?: T;
-              subtitle?: T;
-              streamUrl?: T;
-              fallbackImage?: T;
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
-        'real-estate-looking-for-job'?:
-          | T
-          | {
-              badge?: T;
-              heading?: T;
-              subtitle?: T;
-              description?: T;
-              features?:
-                | T
-                | {
-                    text?: T;
-                    id?: T;
-                  };
-              buttonText?: T;
-              buttonUrl?: T;
-              ctaNote?: T;
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
-        'real-estate-contact'?:
-          | T
-          | {
-              eyebrow?: T;
-              heading?: T;
-              leftText?: T;
-              address?: T;
-              email?: T;
-              phone?: T;
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
+        'boutique-footer'?: T | BoutiqueFooterBlockSelect<T>;
         anchor?:
           | T
           | {
@@ -3089,6 +3069,65 @@ export interface MomentoFooterBlockSelect<T extends boolean = true> {
   instagram?: T;
   megaLine?: T;
   copyright?: T;
+  madeBy?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BoutiqueFooterBlock_select".
+ */
+export interface BoutiqueFooterBlockSelect<T extends boolean = true> {
+  timeLabel?: T;
+  signoffEyebrow?: T;
+  signoffHeading?: T;
+  coordinatesLat?: T;
+  coordinatesLng?: T;
+  addressHeading?: T;
+  addressHtml?: T;
+  addressMapUrl?: T;
+  infoRows?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  contactHeading?: T;
+  contactLinks?:
+    | T
+    | {
+        key?: T;
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  newsletterHeading?: T;
+  newsletterNote?: T;
+  mapHeading?: T;
+  mapCta?: T;
+  distanceRows?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  marqueeItems?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  wordmark?: T;
+  copyright?: T;
+  legalLinks?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
   madeBy?: T;
   id?: T;
   blockName?: T;

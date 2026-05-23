@@ -5,6 +5,9 @@
 /* Ensure Marcellus is used throughout */
 html {
   font-family: var(--font-space-marcellus), 'Marcellus', serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: clip;
 }
 
 // Demo Page Styles - 3 Column Grid Layout (transferred from demo/styles.scss)
@@ -19,6 +22,8 @@ body {
   font-size: 18px;
   line-height: 32px;
   margin: 0;
+  padding: 0;
+  overflow-x: clip;
   color: rgb(255, 255, 255);
 
   @media (max-width: 1024px) {
@@ -90,6 +95,15 @@ div {
 .content,
 .text-content {
   font-family: var(--font-space-marcellus), 'Marcellus', serif;
+}
+
+.content.content--full-bleed {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow-x: clip;
 }
 
 // Apply font to any dynamically generated content
@@ -305,30 +319,64 @@ div {
 
 // Boutique tenant — full-page shell (warm sand + brick accent; distinct from District teal)
 .boutique-tenant-root {
-  --boutique-page-bg: #e4d9cb;
-  --boutique-page-bg-2: #d9cbb9;
-  --boutique-ink: #120e0b;
-  --boutique-ink-soft: #3a322c;
-  --boutique-ink-mute: #665a50;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  --boutique-page-bg: #f4efe7;
+  --boutique-page-bg-2: #ede6da;
+  --boutique-page-bg-3: #e4dbcb;
+  --boutique-ink: #1a1714;
+  --boutique-ink-soft: #3a332c;
+  --boutique-ink-mute: #6b6258;
   --boutique-accent: #8b3a3a;
   --boutique-accent-hot: #8b3a3a;
-  --boutique-on-media: #f6efe6;
-  --boutique-line: rgba(18, 14, 11, 0.12);
+  --boutique-on-media: #f4efe7;
+  --boutique-dark-bg: #1a1714;
+  --boutique-dark-bg-2: #221e1a;
+  --boutique-dark-ink: #f4efe7;
+  --boutique-dark-ink-mute: #a89e91;
+  --boutique-dark-line: rgba(244, 239, 231, 0.14);
+  --boutique-line: rgba(26, 23, 20, 0.14);
+  --boutique-line-soft: rgba(26, 23, 20, 0.08);
   --boutique-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --boutique-ease-slow: cubic-bezier(0.16, 1, 0.3, 1);
   /* Ghost CTA hover text */
   --boutique-ghost-cta-hover-ink: #000000;
+  /* Heading serif — same as Momento / RE landing (DM Serif Text) */
+  --serif: var(--font-re-landing-serif), 'DM Serif Text', Georgia, 'Times New Roman', serif;
+  --serif-display: var(--font-re-landing-serif), 'DM Serif Text', Georgia, serif;
 
   background-color: var(--boutique-page-bg);
   color: var(--boutique-ink);
   min-height: 100vh;
 
   :where(h1, h2, h3, h4, h5, h6) {
-    font-family: var(--font-boutique-heading), ui-serif, Georgia, serif;
+    font-family: var(--serif-display);
+    font-weight: 400;
+  }
+
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+
+  .content {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  &.boutique-landing-shell > .header--boutique-tenant {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: auto;
+    max-width: none;
+    z-index: 1000;
   }
 }
 
-// Boutique tenant header — District Boutique Hotel reference (`Boutique Hotel/`)
+// Boutique tenant header — MAREA editorial reference
 .enhanced-language-switcher.enhanced-language-switcher--boutique-inline {
   .language-trigger,
   .language-dropdown {
@@ -640,13 +688,12 @@ div {
 }
 
 .boutique-brandmark__word {
-  font-family: var(--font-boutique-heading), ui-serif, Georgia, serif;
+  font-family: var(--serif);
   font-size: clamp(1.25rem, 2.4vw, 26px);
   font-style: italic;
   font-weight: 400;
   letter-spacing: -0.01em;
   color: inherit;
-  font-variation-settings: 'opsz' 96;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
@@ -738,12 +785,17 @@ div {
 
   position: relative;
   box-sizing: border-box;
+  margin: 0;
   height: 100vh;
+  height: 100dvh;
   min-height: 100vh;
+  min-height: 100dvh;
   max-height: 100vh;
+  max-height: 100dvh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
   color: var(--boutique-on-media, #f6efe6);
 }
 
@@ -754,6 +806,9 @@ div {
   width: 100%;
   height: 100%;
   background: #241612;
+  overflow: hidden;
+  transform: none;
+  will-change: auto;
 }
 
 .boutique-hero__media-img,
@@ -809,6 +864,7 @@ div {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  overflow: visible;
   padding: 0 clamp(20px, 4vw, 48px) clamp(96px, 14vh, 120px);
   box-sizing: border-box;
 }
@@ -838,6 +894,8 @@ div {
   position: relative;
   max-width: 1100px;
   text-align: left;
+  overflow: visible;
+  min-width: 0;
 }
 
 .boutique-hero__eyebrow {
@@ -861,63 +919,56 @@ div {
 }
 
 .boutique-hero__title {
-  font-weight: 300;
+  font-family: var(--serif-display);
+  font-weight: 400;
   font-size: clamp(64px, 11vw, 168px);
-  line-height: 0.92;
+  line-height: 1.05;
   letter-spacing: -0.02em;
   margin: 0 0 28px;
+  padding-top: 0.04em;
   color: var(--boutique-on-media, #f6efe6);
-  font-variation-settings: 'opsz' 96;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   font-feature-settings: 'kern' 1, 'liga' 1;
   font-synthesis: none;
-  opacity: 0;
-  transform: translateY(28px);
-  animation: boutiqueHeroTitleIn 0.95s var(--bh-ease-slow, cubic-bezier(0.16, 1, 0.3, 1)) 0.08s
-    forwards;
+  overflow: visible;
+
+  .split-word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    line-height: 1.08;
+    padding-block: 0.14em 0.32em;
+    margin-block: -0.14em -0.32em;
+    will-change: transform, opacity;
+  }
 
   em {
     font-style: italic;
-    font-weight: 300;
+    font-weight: 400;
     letter-spacing: -0.01em;
     display: inline-block;
     position: relative;
+    overflow: visible;
     color: var(--boutique-accent-hot, #8b3a3a);
+    vertical-align: bottom;
+    text-decoration: underline;
+    text-decoration-color: var(--boutique-accent-hot, #8b3a3a);
+    text-underline-offset: 0.14em;
+    text-decoration-thickness: 1px;
   }
 
-  em::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0.06em;
-    height: 1px;
-    background: var(--boutique-accent-hot, #8b3a3a);
-    transform: scaleX(0);
-    transform-origin: left center;
-    animation: boutiqueHeroUnderline 1.6s 1s var(--bh-ease-slow) forwards;
+  em .split-word {
+    vertical-align: bottom;
+    padding-block: 0.16em 0.36em;
+    margin-block: -0.16em -0.36em;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .boutique-hero__title {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes boutiqueHeroTitleIn {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes boutiqueHeroUnderline {
-  to {
-    transform: scaleX(1);
+  .boutique-hero__title .split-word {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 
@@ -3184,7 +3235,7 @@ div {
 
   .bc-heading {
     margin: 0 0 24px 0;
-    font-family: var(--font-boutique-heading), ui-serif, Georgia, serif;
+    font-family: var(--serif-display);
     font-weight: 400;
     color: #fff;
     line-height: 1.1;
@@ -3820,7 +3871,6 @@ div {
 @import '../../blocks/Location/Location.scss';
 @import '../../blocks/ConceptBarMenu/ConceptBarMenu.scss';
 @import '../../blocks/ThreeColumns/ThreeColumns.scss';
-@import '../../blocks/Rooms/RoomSlider.scss';
 @import '../../blocks/ImageGrid/ImageGrid.scss';
 @import '../../blocks/JobOpportunity/JobOpportunity.scss';
 @import '../../blocks/Text/Text.scss';
@@ -3828,4 +3878,4 @@ div {
 
 /* Component styles imports */
 @import '../../components/ReservationToast.scss';
-@import '../../components/real-estate-page/real-estate-page.scss';
+@import '../../components/boutique-landing/boutique-landing.scss';

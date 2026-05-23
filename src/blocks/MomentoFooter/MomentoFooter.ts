@@ -76,8 +76,8 @@ const MomentoFooter: Block = {
       label: { en: 'Instagram handle or URL', hr: 'Instagram korisničko ime ili URL' },
       admin: {
         description: {
-          en: 'e.g. district.hr or full https://instagram.com/…',
-          hr: 'npr. district.hr ili puni https://instagram.com/…',
+          en: 'e.g. momentobydistrict or full https://instagram.com/…',
+          hr: 'npr. momentobydistrict ili puni https://instagram.com/…',
         },
       },
     },

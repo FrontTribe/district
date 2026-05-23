@@ -7,8 +7,8 @@ import {
   hubAccent,
   hubMono,
   hubSans,
-  boutiqueHeading,
 } from '@/app/(frontend)/fonts'
+import { realEstateLandingSerifFont } from '@/components/real-estate-landing/landingFonts'
 
 const siteUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://district.hr'
 const metadataBase = (() => {
@@ -32,14 +32,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     hubAccent.variable,
     hubMono.variable,
     hubSans.variable,
-    boutiqueHeading.variable,
+    realEstateLandingSerifFont.variable,
   ].join(' ')
 
   return (
     <html lang="hr" className={fontVariables}>
       <body className={marcellus.className}>
         <LenisProvider>
-          <div className="min-h-screen flex flex-col">{children}</div>
+          {children}
         </LenisProvider>
       </body>
     </html>

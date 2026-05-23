@@ -5,26 +5,12 @@ import { districtAdminGroups } from '@/blocks/district-admin-groups'
 /** Admin — svi novi RE landing blokovi (jedna vertikala). */
 export const reLandingAdminGroup = districtAdminGroups.realEstate
 
-/** Zastarjeli RE blokovi — i dalje pod istom vertikalom. */
-export const reDeprecatedAdminGroup = {
-  en: `${districtAdminGroups.realEstate.en} (deprecated)`,
-  hr: `${districtAdminGroups.realEstate.hr} (zastarjelo)`,
-} as const
-
-export const reLandingBlockAdmin = {
-  group: reLandingAdminGroup,
-}
-
 /** Block admin with sidebar description (Payload 3). */
 export function reLandingBlockMeta(description: { en: string; hr: string }) {
   return {
     group: reLandingAdminGroup,
     description,
   }
-}
-
-export const reDeprecatedBlockAdmin = {
-  group: reDeprecatedAdminGroup,
 }
 
 export const reLandingSectionIdField: Field = {
@@ -70,19 +56,6 @@ export const reLandingHeadingPartsField: Field = {
       defaultValue: false,
     },
   ],
-}
-
-/** Optional HTML block shown when filled (overrides or extends plain intro depending on block). */
-export const reLandingIntroHtmlField: Field = {
-  name: 'introHtml',
-  type: 'textarea',
-  label: { en: 'Intro (HTML)', hr: 'Uvod (HTML)' },
-  admin: {
-    description: {
-      en: 'Optional. When set, some sections render this instead of the plain intro field.',
-      hr: 'Opcionalno. Kad je postavljeno, neke sekcije prikazuju ovo umjesto običnog uvoda.',
-    },
-  },
 }
 
 /** Intro under the inquiry heading, before the form (same shape as `introHtml`, inquiry-specific copy in admin). */

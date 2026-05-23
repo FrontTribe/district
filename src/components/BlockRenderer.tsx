@@ -16,13 +16,6 @@ import { JobOpportunityBlock } from '@/blocks/JobOpportunity'
 import { ImageGridBlock } from '@/blocks/ImageGrid'
 import { IntroBlock } from '@/blocks/Intro'
 import { FloorPlanBlock } from '@/blocks/FloorPlan'
-import { RealEstateHeroBlock } from '@/blocks/RealEstateHero'
-import { RealEstateAboutUsBlock } from '@/blocks/RealEstateAboutUs'
-import { RealEstateProjectsWeDidBlock } from '@/blocks/RealEstateProjectsWeDid'
-import { RealEstateCurrentProjectsBlock } from '@/blocks/RealEstateCurrentProjects'
-import { RealEstateLiveCameraBlock } from '@/blocks/RealEstateLiveCamera'
-import { RealEstateLookingForJobBlock } from '@/blocks/RealEstateLookingForJob'
-import { RealEstateContactBlock } from '@/blocks/RealEstateContact'
 import { AnchorBlock } from '@/blocks/Anchor'
 import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
 import { RealEstateLandingNavBlock } from '@/blocks/RealEstateLandingNav'
@@ -38,6 +31,7 @@ import { RealEstateLandingFooterBlock } from '@/blocks/RealEstateLandingFooter'
 import { RealEstateLandingUnitBrowserBlock } from '@/blocks/RealEstateLandingUnitBrowser'
 import { RealEstateLandingPastProjectsBlock } from '@/blocks/RealEstateLandingPastProjects'
 import { MomentoFooterBlock } from '@/blocks/MomentoFooter'
+import { BoutiqueFooterBlock } from '@/blocks/BoutiqueFooter'
 
 const blockComponents = {
   section: SectionBlock,
@@ -56,13 +50,6 @@ const blockComponents = {
   intro: IntroBlock,
   'image-grid': ImageGridBlock,
   'floor-plan': FloorPlanBlock,
-  'real-estate-hero': RealEstateHeroBlock,
-  'real-estate-about-us': RealEstateAboutUsBlock,
-  'real-estate-projects-we-did': RealEstateProjectsWeDidBlock,
-  'real-estate-current-projects': RealEstateCurrentProjectsBlock,
-  'real-estate-live-camera': RealEstateLiveCameraBlock,
-  'real-estate-looking-for-job': RealEstateLookingForJobBlock,
-  'real-estate-contact': RealEstateContactBlock,
   anchor: AnchorBlock,
   'real-estate-landing-nav': RealEstateLandingNavBlock,
   'real-estate-landing-hero': RealEstateLandingHeroBlock,
@@ -77,14 +64,30 @@ const blockComponents = {
   'real-estate-landing-unit-browser': RealEstateLandingUnitBrowserBlock,
   'real-estate-landing-past-projects': RealEstateLandingPastProjectsBlock,
   'momento-footer': MomentoFooterBlock,
+  'boutique-footer': BoutiqueFooterBlock,
 }
 
 type _Block = NonNullable<Page['layout']>[number]
 
 const LANDING_PREFIX = 'real-estate-landing-'
 
-function isFullBleedBlockType(blockType?: string | null) {
-  return !!blockType?.startsWith(LANDING_PREFIX) || blockType === 'momento-footer'
+const BOUTIQUE_FULL_BLEED_BLOCKS = new Set([
+  'hero',
+  'botique-intro',
+  'rooms',
+  'rooftop',
+  'rooftop-features',
+  'boutique-contact',
+  'boutique-footer',
+])
+
+function isFullBleedBlockType(blockType?: string | null, theme: TenantVisualTheme = 'default') {
+  return (
+    !!blockType?.startsWith(LANDING_PREFIX) ||
+    blockType === 'momento-footer' ||
+    blockType === 'boutique-footer' ||
+    (theme === 'boutique' && !!blockType && BOUTIQUE_FULL_BLEED_BLOCKS.has(blockType))
+  )
 }
 
 function isMomentoTheme(theme: TenantVisualTheme) {
@@ -154,7 +157,7 @@ export const BlockRenderer: React.FC<{
       continue
     }
 
-    if (isMomentoTheme(tenantVisualTheme) || isFullBleedBlockType(t)) {
+    if (isMomentoTheme(tenantVisualTheme) || isFullBleedBlockType(t, tenantVisualTheme)) {
       flushProse(`prose-before-${i}`)
       nodes.push(renderSingleBlock(block, i, locale, tenantVisualTheme))
       i++

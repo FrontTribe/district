@@ -307,8 +307,3 @@ export function getMomentoUiCopy(locale: string): MomentoUiCopy {
   const key = locale === 'en' || locale === 'de' ? locale : 'hr'
   return packs[key]
 }
-
-export function normalizeMomentoLocale(locale: string): MomentoLocale {
-  if (locale === 'en' || locale === 'de') return locale
-  return 'hr'
-}

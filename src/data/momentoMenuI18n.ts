@@ -204,14 +204,14 @@ function translateDesc(desc: string, locale: MomentoLocale): string {
   return out
 }
 
-export function translateMenuItemName(name: string, locale: MomentoLocale): string {
+function translateMenuItemName(name: string, locale: MomentoLocale): string {
   if (locale === 'hr') return name
   const exact = ITEM_NAMES[name] ?? OFFER_NAMES[name]
   if (exact) return pick(exact, locale)
   return name
 }
 
-export function translateMenuItemDesc(desc: string | undefined, locale: MomentoLocale): string | undefined {
+function translateMenuItemDesc(desc: string | undefined, locale: MomentoLocale): string | undefined {
   if (!desc?.trim()) return desc
   return translateDesc(desc.trim(), locale)
 }

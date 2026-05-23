@@ -4,7 +4,6 @@ import PageClient from '@/components/PageClient'
 import { RealEstateLandingShell } from '@/components/real-estate-landing'
 import { getCachedPageBySlug } from '@/utils/getCachedPages'
 import { getTenantMenu } from '@/utils/getTenantData'
-import { mergePageLayoutForPublicPage } from '@/utils/mergeReLandingLayoutForPublic'
 import { enrichInquiryFormsInPage } from '@/utils/enrichInquiryFormsInPage'
 import { localeLang } from '@/utils/locale'
 import type { ReLandingLocale } from '@/data/realEstateLandingLocales'
@@ -62,10 +61,7 @@ export default async function PreviewRealEstateLandingPage({ params }: Props) {
 
   const menu = await getTenantMenu(tenantIdStr, locale)
 
-  const mergedPage = await enrichInquiryFormsInPage(
-    mergePageLayoutForPublicPage(page, menu),
-    locale,
-  )
+  const mergedPage = await enrichInquiryFormsInPage(page, locale)
 
   const layout = mergedPage.layout ?? []
   const blockType = (b: { blockType?: string | null }) => String(b.blockType ?? '')

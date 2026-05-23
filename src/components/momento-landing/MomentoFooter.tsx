@@ -36,9 +36,9 @@ export function MomentoFooter({
   socialHeading = 'Pratite nas',
   email = 'support@district.hr',
   phone = '+385 99 554 4337',
-  instagram = 'https://instagram.com/district.hr',
+  instagram = 'https://instagram.com/momentobydistrict',
   megaLine = '— Vaš trenutak, vaš Momento —',
-  copyright = `Sva prava pridržana © ${new Date().getFullYear()} District d.o.o.`,
+  copyright = `District d.o.o. · OIB 56282051463 · sva prava pridržana © ${new Date().getFullYear()}`,
   madeBy,
   locale = 'hr',
 }: Props) {

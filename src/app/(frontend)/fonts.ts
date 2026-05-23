@@ -38,7 +38,7 @@ export const hubSans = Inter({
   variable: '--font-hub-sans',
 })
 
-/** Fraunces — boutique tenant. Koristi `var(--font-boutique-heading)` u CSS-u (varijabla na `<html>`). */
+/** @deprecated Boutique koristi DM Serif Text (`--font-re-landing-serif`) kao Momento/RE. */
 export const boutiqueHeading = Fraunces({
   subsets: ['latin', 'latin-ext'],
   weight: ['300', '400', '500'],

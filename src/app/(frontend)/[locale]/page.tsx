@@ -19,8 +19,9 @@ import { getTenantVisualTheme } from '@/utils/tenantVisualTheme'
 import { getCachedPagesByTenant } from '@/utils/getCachedPages'
 import { generateMetadataFromPages } from '@/utils/generateMetadata'
 import { buildHubSocialLinks } from '@/utils/hubSocialLinks'
-import { mergePageLayoutForPublicPage } from '@/utils/mergeReLandingLayoutForPublic'
 import { enrichInquiryFormsInPage } from '@/utils/enrichInquiryFormsInPage'
+import { layoutHasBoutiqueFooter } from '@/utils/boutiqueLayoutFlags'
+import { BoutiqueLandingShell } from '@/components/boutique-landing/BoutiqueLandingShell'
 
 /** Payload `depth` za početnu — učitava `building` u unit browser bloku (manje praznog SSR-a). */
 const HOME_PAGES_DEPTH = 6
@@ -125,7 +126,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   const pagesForClient = await Promise.all(
     pages.map((p) =>
-      enrichInquiryFormsInPage(mergePageLayoutForPublicPage(p, menuGlobal), locale),
+      enrichInquiryFormsInPage(p, locale),
     ),
   )
 
@@ -135,9 +136,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const isBoutiqueTenantHome = Boolean(currentTenant && tenantVisualTheme === 'boutique')
   const isMomentoTenantHome = Boolean(currentTenant && tenantVisualTheme === 'momento')
   const homeLanding = getRealEstateLandingFlags(pagesForClient[0])
+  const hasBoutiqueFooterBlock = layoutHasBoutiqueFooter(pagesForClient[0]?.layout)
   const mainContentClassName =
     isHubTriptychHome || homeLanding.isRealEstateLandingPage || isBoutiqueTenantHome || isMomentoTenantHome
-      ? 'content w-full'
+      ? 'content content--full-bleed'
       : 'content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
 
   /** Tenant RE landing brings its own nav — hide CMS header to match /[locale]/[slug] */
@@ -252,7 +254,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </div>
 
       {/* Footer — kolekcija Podnožja (RE landing podnožje je blok u layoutu) */}
-      {footerGlobal && !isHubTriptychHome && !homeLanding.isRealEstateLandingPage && !isMomentoTenantHome && (
+      {footerGlobal &&
+        !isHubTriptychHome &&
+        !homeLanding.isRealEstateLandingPage &&
+        !isMomentoTenantHome &&
+        !hasBoutiqueFooterBlock && (
         <Footer
           variant={tenantVisualTheme === 'boutique' ? 'boutique' : 'default'}
           leftContent={footerGlobal.leftContent}
@@ -267,7 +273,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   return (
     <MainPageLoader isMainDomain={!currentTenant} hubTriptychIntro={isHubTriptychHome}>
       {isBoutiqueTenantHome ? (
-        <div className="boutique-tenant-root">{homeInner}</div>
+        <BoutiqueLandingShell locale={locale}>{homeInner}</BoutiqueLandingShell>
       ) : isMomentoTenantHome ? (
         <div className="momento-tenant-root">{homeInner}</div>
       ) : (

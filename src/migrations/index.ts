@@ -4,6 +4,7 @@ import * as migration_20260519_093806_three_columns_hub_fields from './20260519_
 import * as migration_20260519_120000_menu_hub_tagline from './20260519_120000_menu_hub_tagline';
 import * as migration_20260519_140000_buildings_unit_extra_fields from './20260519_140000_buildings_unit_extra_fields';
 import * as migration_20260523_133026 from './20260523_133026';
+import * as migration_20260523_192127_boutique_landing_redesign from './20260523_192127_boutique_landing_redesign';
 
 export const migrations = [
   {
@@ -35,5 +36,10 @@ export const migrations = [
     up: migration_20260523_133026.up,
     down: migration_20260523_133026.down,
     name: '20260523_133026',
+  },
+  {
+    up: migration_20260523_192127_boutique_landing_redesign.up,
+    down: migration_20260523_192127_boutique_landing_redesign.down,
+    name: '20260523_192127_boutique_landing_redesign'
   },
 ];

@@ -303,10 +303,10 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
                 />
               </div>
               <Link
-                href="#kontakt"
+                href="#sobe"
                 className="boutique-header__cta boutique-ghost-btn"
                 onClick={(e) =>
-                  handleMenuClick({ link: '#kontakt', label: '', scrollTarget: 'kontakt' }, e)
+                  handleMenuClick({ link: '#sobe', label: '', scrollTarget: 'sobe' }, e)
                 }
               >
                 <span className="boutique-ghost-btn__label">

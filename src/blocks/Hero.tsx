@@ -140,7 +140,7 @@ export const HeroBlock: React.FC<{
 
     if (!backgroundMedia || backgroundMedia.type === 'none') {
       return (
-        <div className="boutique-hero__media">
+        <div className="boutique-hero__media" data-parallax="0.15">
           <div className="boutique-hero__media-fill boutique-hero__media-fill--placeholder" />
           <div className="boutique-hero__media-film" style={filmStyle} />
         </div>
@@ -154,7 +154,7 @@ export const HeroBlock: React.FC<{
           : backgroundMedia.image.url
 
       return (
-        <div className="boutique-hero__media">
+        <div className="boutique-hero__media" data-parallax="0.15">
           <img className="boutique-hero__media-img" src={imageUrl} alt="" />
           <div className="boutique-hero__media-film" style={filmStyle} />
         </div>
@@ -168,7 +168,7 @@ export const HeroBlock: React.FC<{
           : backgroundMedia.video.url
 
       return (
-        <div className="boutique-hero__media">
+        <div className="boutique-hero__media" data-parallax="0.15">
           <video className="boutique-hero__media-video" autoPlay muted loop playsInline>
             <source src={videoUrl} type="video/mp4" />
           </video>

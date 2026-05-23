@@ -257,7 +257,7 @@ const hrPack: MomentoSeedLocalePack = {
     socialHeading: 'Pratite nas',
     email: 'support@district.hr',
     phone: '+385 99 554 4337',
-    instagram: 'district.hr',
+    instagram: 'momentobydistrict',
     megaLine: '— Vaš trenutak, vaš Momento —',
     madeBy: 'Kreirao Front Tribe',
   },
@@ -330,7 +330,7 @@ const enPack: MomentoSeedLocalePack = {
     socialHeading: 'Follow us',
     email: 'support@district.hr',
     phone: '+385 99 554 4337',
-    instagram: 'district.hr',
+    instagram: 'momentobydistrict',
     megaLine: '— Your moment, your Momento —',
     madeBy: 'Made by Front Tribe',
   },
@@ -404,13 +404,13 @@ const dePack: MomentoSeedLocalePack = {
     socialHeading: 'Folgen Sie uns',
     email: 'support@district.hr',
     phone: '+385 99 554 4337',
-    instagram: 'district.hr',
+    instagram: 'momentobydistrict',
     megaLine: '— Ihr Moment, Ihr Momento —',
     madeBy: 'Erstellt von Front Tribe',
   },
 }
 
-export const momentoSeedPacks: Record<MomentoLocale, MomentoSeedLocalePack> = {
+const momentoSeedPacks: Record<MomentoLocale, MomentoSeedLocalePack> = {
   hr: hrPack,
   en: enPack,
   de: dePack,

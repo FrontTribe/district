@@ -1,6 +1,5 @@
 import React from 'react'
 import Link from 'next/link'
-import { RealEstateLandingPageFooter } from '@/components/real-estate-landing/RealEstateLandingPageFooter'
 import './Footer.scss'
 
 function replaceCopyrightYear(copyright: string): string {
@@ -49,8 +48,7 @@ interface FooterProps {
   leftContent?: FooterLeftContent
   rightContent?: FooterRightContent
   bottomContent?: FooterBottomContent
-  /** District RE landing — jednoredni strip kao u `District Real Estate` exportu (`.real-estate-landing .footer`). */
-  variant?: 'default' | 'boutique' | 'reLanding'
+  variant?: 'default' | 'boutique'
   columns?: FooterColumn[]
   bottomSection?: {
     copyright?: string
@@ -82,48 +80,6 @@ export const Footer: React.FC<FooterProps> = ({
   bottomSection,
 }) => {
   const hasNewStructure = Boolean(leftContent && rightContent && bottomContent)
-  const isReLanding = variant === 'reLanding'
-
-  if (isReLanding && bottomContent) {
-    const brandText =
-      leftContent?.heading?.replace(/<[^>]+>/g, '').trim() || 'district.'
-
-    const addressLines = [rightContent?.address?.street, rightContent?.address?.city].filter(
-      Boolean,
-    ) as string[]
-
-    return (
-      <RealEstateLandingPageFooter
-        columns={[
-          {
-            label: rightContent?.address?.heading ?? 'Sjedište',
-            lines: addressLines.map((text) => ({ text, linkType: 'none' as const })),
-          },
-          ...(rightContent?.contact?.phone
-            ? [
-                {
-                  label: rightContent.contact.heading ?? 'Telefon',
-                  lines: [{ text: rightContent.contact.phone, linkType: 'phone' as const }],
-                },
-              ]
-            : []),
-          ...(rightContent?.contact?.email
-            ? [
-                {
-                  label: 'Pošta',
-                  lines: [{ text: rightContent.contact.email, linkType: 'email' as const }],
-                },
-              ]
-            : []),
-        ].filter((c) => c.lines.length > 0)}
-        brandText={brandText}
-        copyrightLine={replaceCopyrightYear(bottomContent.copyright)}
-        addressLine={
-          leftContent?.subheading?.trim() || addressLines.join(', ')
-        }
-      />
-    )
-  }
 
   if (hasNewStructure) {
     const madeByTrimmed = bottomContent.madeBy?.trim() ?? ''

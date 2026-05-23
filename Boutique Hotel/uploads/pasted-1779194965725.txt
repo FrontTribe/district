@@ -1,2 +1,0 @@
-Fetch this design file, read its readme, and implement the relevant aspects of the design. https://api.anthropic.com/v1/design/h/fbZJGmtCWz-vV-JpdBW7qA?open_file=District+Boutique.html
-Implement: District Boutique.html
