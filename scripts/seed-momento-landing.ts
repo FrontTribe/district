@@ -30,7 +30,7 @@ import { fileURLToPath } from 'node:url'
 import dotenv from 'dotenv'
 import type { Payload, Where } from 'payload'
 
-import { createSeedLog, seedColor, seedPayloadContext, type SeedStep } from './seed-ui'
+import { createSeedLog, seedColor, seedPayloadContext, withTimeout, type SeedStep } from './seed-ui'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const log = createSeedLog('seed:momento')
@@ -59,7 +59,6 @@ const LEGACY_SEED_MEDIA_ALTS: Record<keyof typeof SEED_MEDIA_ALTS, string> = {
 }
 
 const MOMENTO_SEED_MENU_TITLE = 'Momento — navigacija'
-const LEGACY_MOMENTO_SEED_MENU_TITLES = ['Momento — navigacija (seed)']
 
 type MediaKey = keyof typeof SEED_MEDIA_ALTS
 
@@ -228,15 +227,40 @@ async function resolveMediaIds(
   return Object.fromEntries(entries) as Record<MediaKey, number>
 }
 
-function menuDocIsMomentoSeedStub(doc: Record<string, unknown>): boolean {
-  const titleStrings =
-    typeof doc.title === 'string'
-      ? [doc.title]
-      : doc.title && typeof doc.title === 'object'
-        ? Object.values(doc.title as Record<string, string>)
-        : []
-  if (titleStrings.some((s) => s === MOMENTO_SEED_MENU_TITLE)) return true
-  return titleStrings.some((s) => LEGACY_MOMENTO_SEED_MENU_TITLES.includes(s) || s.includes('(seed)'))
+async function findTenantMenuId(
+  payload: Payload,
+  tenantId: number,
+  step: SeedStep,
+): Promise<string | number | undefined> {
+  try {
+    const result = await withTimeout(
+      payload.find({
+        collection: 'menu',
+        where: { tenant: { equals: tenantId } },
+        limit: 20,
+        depth: 0,
+        pagination: false,
+        overrideAccess: true,
+        context: seedPayloadContext,
+        select: {
+          id: true,
+          identifier: true,
+          title: true,
+        },
+      }),
+      20_000,
+      'pretraga izbornika',
+    )
+
+    const match = result.docs.find(
+      (doc) => (doc as { identifier?: string | null }).identifier === 'tenant-menu',
+    )
+    return match?.id
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    step.detail(`Pretraga nije uspjela (${message}) — nastavljam s kreiranjem`)
+    return undefined
+  }
 }
 
 async function ensureTenantMenu(
@@ -252,36 +276,6 @@ async function ensureTenantMenu(
 
   step.detail('Učitavam tekstove navigacije…')
   const { getMomentoLocalePack } = await import('../src/data/momentoSeedDefaults')
-
-  step.detail('Tražim tenant-menu u bazi…')
-  const existing = await payload.find({
-    collection: 'menu',
-    where: {
-      and: [{ tenant: { equals: tenantId } }, { identifier: { equals: 'tenant-menu' } }],
-    } as Where,
-    limit: 1,
-    depth: 0,
-    overrideAccess: true,
-    context: seedPayloadContext,
-  })
-
-  let id: string | number | undefined = existing.docs[0]?.id
-  if (id != null) {
-    step.detail(`Provjeravam postojeći izbornik id=${id}…`)
-    const existingDoc = await payload.findByID({
-      collection: 'menu',
-      id,
-      depth: 0,
-      overrideAccess: true,
-      context: seedPayloadContext,
-    })
-    if (!menuDocIsMomentoSeedStub(existingDoc as Record<string, unknown>)) {
-      step.skip(
-        `Izbornik id=${id} već postoji (ručno uređen). Za seed: MOMENTO_SEED_CLEAN=true ili obriši ručno.`,
-      )
-      return
-    }
-  }
 
   const localized = (loc: (typeof LOCALES)[number]) => {
     const pack = getMomentoLocalePack(loc)
@@ -301,34 +295,45 @@ async function ensureTenantMenu(
     }
   }
 
+  step.detail('Provjeravam postoji li tenant-menu…')
+  let id = await findTenantMenuId(payload, tenantId, step)
+
   if (id == null) {
-    step.detail('Kreiram novi izbornik (hr)…')
-    const created = await payload.create({
-      collection: 'menu',
-      locale: 'hr',
-      overrideAccess: true,
-      context: seedPayloadContext,
-      data: localized('hr'),
-    })
+    step.detail('Nema tenant-menu — kreiram novi…')
+    const created = await withTimeout(
+      payload.create({
+        collection: 'menu',
+        locale: 'hr',
+        overrideAccess: true,
+        context: seedPayloadContext,
+        data: localized('hr'),
+      }),
+      60_000,
+      'kreiranje izbornika',
+    )
     id = created.id
-    step.detail(`Kreiran id=${id}`)
+    step.detail(`Kreiran tenant-menu id=${id}`)
   } else {
-    step.detail(`Ažuriram postojeći seed izbornik id=${id}…`)
+    step.detail(`Pronađen tenant-menu id=${id} — ažuriram seed sadržaj…`)
   }
 
   for (const loc of LOCALES) {
     step.detail(`Sprema lokalizaciju: ${loc}…`)
-    await payload.update({
-      collection: 'menu',
-      id: id!,
-      locale: loc,
-      overrideAccess: true,
-      context: seedPayloadContext,
-      data: localized(loc),
-    })
+    await withTimeout(
+      payload.update({
+        collection: 'menu',
+        id: id!,
+        locale: loc,
+        overrideAccess: true,
+        context: seedPayloadContext,
+        data: localized(loc),
+      }),
+      60_000,
+      `izbornik ${loc}`,
+    )
   }
 
-  step.done(`Izbornik id=${id} (hr, en, de)`)
+  step.done(`tenant-menu id=${id} (hr, en, de)`)
 }
 
 async function cleanMomentoSeedArtifacts(
