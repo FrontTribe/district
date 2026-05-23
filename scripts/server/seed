@@ -30,6 +30,8 @@ case "${1:-}" in
   hub) pnpm run seed:hub ;;
   real-estate) pnpm run seed:real-estate ;;
   clean:real-estate) pnpm run clean:real-estate ;;
+  migrate) pnpm run migrate ;;
+  migrate:status) pnpm run migrate:status ;;
   help | -h | --help | '')
     cat <<'EOF'
 Usage: ./seed <command>
@@ -40,6 +42,8 @@ Usage: ./seed <command>
   hub                  Seed hub tenants
   real-estate          Seed real estate demo
   clean:real-estate    Reset + seed real estate
+  migrate              Run pending DB migrations
+  migrate:status       Show migration status
 EOF
     ;;
   *)

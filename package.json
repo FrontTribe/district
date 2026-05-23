@@ -23,6 +23,8 @@
     "seed:hub": "cross-env NODE_OPTIONS=\"--no-deprecation --loader ./scripts/ignore-scss-loader.mjs\" tsx scripts/seed-hub-tenants.ts",
     "seed:boutique": "cross-env NODE_OPTIONS=\"--no-deprecation --loader ./scripts/ignore-scss-loader.mjs\" tsx scripts/seed-boutique-landing.ts",
     "check:migrations": "node scripts/check-pending-migrations.mjs",
+    "migrate": "cross-env NODE_NO_WARNINGS=1 NODE_OPTIONS=\"--no-deprecation --loader ./scripts/ignore-scss-loader.mjs\" payload migrate",
+    "migrate:status": "cross-env NODE_NO_WARNINGS=1 NODE_OPTIONS=\"--no-deprecation --loader ./scripts/ignore-scss-loader.mjs\" payload migrate:status",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "test": "pnpm run test:int && pnpm run test:e2e",
