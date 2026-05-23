@@ -314,12 +314,12 @@ async function upsertHubPage(
 }
 
 async function main() {
-  const { assertSeedAllowed } = await import('./seed-guard.ts')
+  const { assertSeedAllowed } = await import('./seed-guard')
   assertSeedAllowed('seed:hub')
 
   const [{ getPayload }, { default: payloadConfig }] = await Promise.all([
     import('payload'),
-    import('../src/payload.config.ts'),
+    import('@payload-config'),
   ])
 
   const resolvedConfig = await Promise.resolve(payloadConfig as Promise<typeof payloadConfig> | typeof payloadConfig)

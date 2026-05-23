@@ -12,7 +12,7 @@ type ManifestItem = { key: string; value: string }
 type StackImage = { media: unknown; alt?: string }
 
 function mediaBg(m: unknown): string | undefined {
-  const src = getOptimizedImageUrl(m, { widthHint: 1400 })
+  const src = getOptimizedImageUrl(m as Parameters<typeof getOptimizedImageUrl>[0], { widthHint: 1400 })
   return src ? `url(${src})` : undefined
 }
 
@@ -73,7 +73,9 @@ export const RooftopBlock: React.FC<{
       })
     }
     requestAnimationFrame(createTween)
-    return () => marqueeTween.current?.kill()
+    return () => {
+      marqueeTween.current?.kill()
+    }
   }, [isMarquee, images, baseDuration])
 
   if (isMarquee) {
@@ -84,7 +86,10 @@ export const RooftopBlock: React.FC<{
           <div className="rooftop-marquee">
             <div className="rooftop-track" ref={trackRef}>
               {loopImages.map((item, index) => {
-                const src = getOptimizedImageUrl(item.media, { widthHint: 560, aspect: 'portrait34' })
+                const src = getOptimizedImageUrl(item.media as Parameters<typeof getOptimizedImageUrl>[0], {
+                  widthHint: 560,
+                  aspect: 'portrait34',
+                })
                 return (
                   <figure className="rooftop-card" key={index}>
                     {src && <img src={src} alt={item.alt || ''} loading="lazy" />}

@@ -27,7 +27,7 @@ export const RooftopFeaturesBlock: React.FC<{
       {heading ? <h3 className="sr-only">{heading}</h3> : null}
       <div className="rooftop-features">
       {features.map((f, i) => {
-        const src = getOptimizedImageUrl(f.media, { widthHint: 900 })
+        const src = getOptimizedImageUrl(f.media as Parameters<typeof getOptimizedImageUrl>[0], { widthHint: 900 })
         const reverse = f.reverseLayout ?? i % 2 === 1
         return (
           <article key={f.title} className={`rooftop-feature${reverse ? ' reverse' : ''}`}>

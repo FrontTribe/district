@@ -41,7 +41,7 @@ export function buildInquiryFormFallback(locale: string): FormField[] {
       required: false,
       placeholder: fs.messagePlaceholder,
     },
-  ] as FormField[]
+  ] as unknown as FormField[]
 }
 
 export function inquiryFormFieldsAreUsable(fields: FormField[] | null | undefined): boolean {

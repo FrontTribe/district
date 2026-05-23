@@ -15,10 +15,6 @@ const RealEstateLandingTypology: Block = {
   },
   admin: {
     group: reLandingAdminGroup,
-    description: {
-      en: 'Interactive list of unit types with counts and descriptions.',
-      hr: 'Interaktivni popis tipova stanova s brojem i opisima.',
-    },
   },
   fields: [
     reLandingSectionIdField,

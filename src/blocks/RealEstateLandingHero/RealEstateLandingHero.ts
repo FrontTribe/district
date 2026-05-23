@@ -11,10 +11,6 @@ const RealEstateLandingHero: Block = {
   },
   admin: {
     group: reLandingAdminGroup,
-    description: {
-      en: 'Full-width hero: corners copy, title, media, lead and meta rows.',
-      hr: 'Hero preko širine: kutni tekstovi, naslov, medij, lead i meta redovi.',
-    },
   },
   fields: [
     {

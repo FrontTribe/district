@@ -98,7 +98,8 @@ function setupReveals(root: HTMLElement) {
     })
   })
 
-  gsap.utils.toArray(root.querySelectorAll('[data-reveal="stagger"]')).forEach((el) => {
+  gsap.utils.toArray(root.querySelectorAll('[data-reveal="stagger"]')).forEach((raw) => {
+    const el = raw as Element
     const kids = (el as HTMLElement).children
     gsap.fromTo(
       kids,
@@ -114,7 +115,8 @@ function setupReveals(root: HTMLElement) {
     )
   })
 
-  gsap.utils.toArray(root.querySelectorAll('[data-reveal="curtain"]')).forEach((el) => {
+  gsap.utils.toArray(root.querySelectorAll('[data-reveal="curtain"]')).forEach((raw) => {
+    const el = raw as Element
     gsap.fromTo(
       el,
       { clipPath: 'inset(100% 0% 0% 0%)' },
@@ -138,7 +140,8 @@ function setupReveals(root: HTMLElement) {
     )
   })
 
-  gsap.utils.toArray(root.querySelectorAll('[data-parallax]')).forEach((el) => {
+  gsap.utils.toArray(root.querySelectorAll('[data-parallax]')).forEach((raw) => {
+    const el = raw as Element
     if ((el as HTMLElement).closest('.boutique-hero')) return
     const factor = parseFloat((el as HTMLElement).dataset.parallax || '0.2')
     gsap.fromTo(
@@ -172,7 +175,8 @@ function setupReveals(root: HTMLElement) {
     })
   })
 
-  gsap.utils.toArray(root.querySelectorAll('.boutique-rooms .room-card')).forEach((card) => {
+  gsap.utils.toArray(root.querySelectorAll('.boutique-rooms .room-card')).forEach((raw) => {
+    const card = raw as Element
     gsap.fromTo(
       card,
       { y: 60, opacity: 0 },
@@ -181,7 +185,7 @@ function setupReveals(root: HTMLElement) {
         opacity: 1,
         duration: 1.1,
         ease: 'expo.out',
-        scrollTrigger: boutiqueScrollTrigger(card as Element, 'top 85%'),
+        scrollTrigger: boutiqueScrollTrigger(card, 'top 85%'),
       },
     )
   })

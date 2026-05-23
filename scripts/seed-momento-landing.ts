@@ -374,7 +374,7 @@ async function cleanMomentoSeedArtifacts(payload: Payload, tenantId: number, slu
 }
 
 async function run(): Promise<void> {
-  const { assertSeedAllowed } = await import('./seed-guard.ts')
+  const { assertSeedAllowed } = await import('./seed-guard')
   assertSeedAllowed('seed:momento')
 
   const totalSteps = 6
@@ -393,7 +393,7 @@ async function run(): Promise<void> {
     await import('../src/data/momentoLandingDemo')
   const [{ getPayload }, { default: payloadConfig }] = await Promise.all([
     import('payload'),
-    import('../src/payload.config.ts'),
+    import('@payload-config'),
   ])
 
   step(2, totalSteps, 'Spajam se na bazu…')

@@ -11,10 +11,6 @@ const MomentoFooter: Block = {
   },
   admin: {
     group: districtAdminGroups.momento,
-    description: {
-      en: 'Momento landing footer — logo, links, contact and credits.',
-      hr: 'Podnožje Momento landingske stranice — logo, linkovi, kontakt i credits.',
-    },
   },
   fields: [
     {

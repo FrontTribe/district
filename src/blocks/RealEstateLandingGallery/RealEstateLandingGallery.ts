@@ -15,10 +15,6 @@ const RealEstateLandingGallery: Block = {
   },
   admin: {
     group: reLandingAdminGroup,
-    description: {
-      en: 'Pinned horizontal gallery with progress and counter.',
-      hr: 'Horizontalna galerija s napretkom i brojačem.',
-    },
   },
   fields: [
     reLandingSectionIdField,

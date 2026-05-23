@@ -15,10 +15,6 @@ const RealEstateLandingManifesto: Block = {
   },
   admin: {
     group: reLandingAdminGroup,
-    description: {
-      en: 'Large typographic statement: labels + multi-line segmented copy.',
-      hr: 'Veliki tipografski blok: oznake + višeredni segmentirani tekst.',
-    },
   },
   fields: [
     reLandingSectionIdField,

@@ -11,10 +11,6 @@ const RealEstateLandingMarquee: Block = {
   },
   admin: {
     group: reLandingAdminGroup,
-    description: {
-      en: 'Infinite horizontal ticker built from text fragments.',
-      hr: 'Vodoravni ticker od tekstualnih fragmenata.',
-    },
   },
   fields: [
     {

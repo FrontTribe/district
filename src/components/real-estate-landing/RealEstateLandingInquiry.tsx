@@ -35,8 +35,8 @@ function renderFormField(
   if (!name) return null
 
   const inputId = `re-inq-${name}-${uid}`
-  const label = field.label?.trim() || name
-  const required = Boolean(field.required)
+  const label = ('label' in field ? field.label?.trim() : undefined) || name
+  const required = 'required' in field ? Boolean(field.required) : false
   const value = values[name] ?? ''
   const onFieldChange = (next: string) => onChange(name, next)
 
@@ -49,7 +49,7 @@ function renderFormField(
           name={name}
           rows={3}
           required={required}
-          placeholder={field.placeholder ?? undefined}
+          placeholder={'placeholder' in field ? field.placeholder ?? undefined : undefined}
           value={value}
           onChange={(e) => onFieldChange(e.target.value)}
         />
@@ -58,8 +58,12 @@ function renderFormField(
   }
 
   if (field.blockType === 'select') {
-    const placeholder = field.placeholder?.trim() || '…'
-    const options = (field.options ?? []).filter((opt) => opt.label && opt.value)
+    const selectField = field as {
+      placeholder?: string | null
+      options?: Array<{ label?: string | null; value?: string | null }>
+    }
+    const placeholder = selectField.placeholder?.trim() || '…'
+    const options = (selectField.options ?? []).filter((opt) => opt.label && opt.value)
     return (
       <InquirySelectField
         key={inputId}
@@ -69,7 +73,7 @@ function renderFormField(
         placeholder={placeholder}
         required={required}
         value={value}
-        options={options.map((opt) => ({ label: opt.label, value: opt.value }))}
+        options={options.map((opt) => ({ label: opt.label!, value: opt.value! }))}
         onChange={onFieldChange}
       />
     )
@@ -89,7 +93,7 @@ function renderFormField(
         type={inputType}
         autoComplete={autoComplete}
         required={required}
-        placeholder={field.placeholder ?? undefined}
+        placeholder={'placeholder' in field ? field.placeholder ?? undefined : undefined}
         value={value}
         onChange={(e) => onFieldChange(e.target.value)}
       />

@@ -5,7 +5,7 @@ import React from 'react'
 type SplitProps = {
   children: React.ReactNode
   className?: string
-  tag?: keyof JSX.IntrinsicElements
+  tag?: React.ElementType
 }
 
 export function MomentoSplit({ children, className = '', tag: Tag = 'span' }: SplitProps) {

@@ -5,11 +5,10 @@ import { districtAdminGroups } from '@/blocks/district-admin-groups'
 /** Admin — svi novi RE landing blokovi (jedna vertikala). */
 export const reLandingAdminGroup = districtAdminGroups.realEstate
 
-/** Block admin with sidebar description (Payload 3). */
-export function reLandingBlockMeta(description: { en: string; hr: string }) {
+/** Block admin group for RE landing blocks. */
+export function reLandingBlockMeta(_description?: { en: string; hr: string }) {
   return {
     group: reLandingAdminGroup,
-    description,
   }
 }
 

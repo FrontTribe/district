@@ -1036,7 +1036,7 @@ async function cleanReLandingSeedArtifacts(
 }
 
 async function run(): Promise<void> {
-  const { assertSeedAllowed } = await import('./seed-guard.ts')
+  const { assertSeedAllowed } = await import('./seed-guard')
   assertSeedAllowed('seed:real-estate')
 
   const totalSteps = 8
@@ -1058,7 +1058,7 @@ async function run(): Promise<void> {
   )
   const [{ getPayload }, { default: payloadConfig }] = await Promise.all([
     import('payload'),
-    import('../src/payload.config.ts'),
+    import('@payload-config'),
   ])
   console.info('      → gotovo')
 

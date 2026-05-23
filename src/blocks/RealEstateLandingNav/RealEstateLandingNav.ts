@@ -12,10 +12,6 @@ const RealEstateLandingNav: Block = {
   },
   admin: {
     group: reLandingAdminGroup,
-    description: {
-      en: 'Top navigation: brand HTML, anchor links, optional CTA, language strip.',
-      hr: 'Vrh navigacije: marka HTML, sidrene poveznice, opcionalni CTA, jezična traka.',
-    },
   },
   fields: [
     {

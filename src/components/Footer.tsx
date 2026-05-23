@@ -81,7 +81,7 @@ export const Footer: React.FC<FooterProps> = ({
 }) => {
   const hasNewStructure = Boolean(leftContent && rightContent && bottomContent)
 
-  if (hasNewStructure) {
+  if (hasNewStructure && leftContent && rightContent && bottomContent) {
     const madeByTrimmed = bottomContent.madeBy?.trim() ?? ''
     const hasBottomRight = madeByTrimmed.length > 0
 
