@@ -68,11 +68,11 @@ jobs:
 
             DEPLOY_PATH="${{ steps.target.outputs.path }}"
             APP_NAME="${{ steps.target.outputs.app }}"
-            CI_DIR="/tmp/district-ci-${{ github.sha }}"
+            OPS_PATH="${DEPLOY_PATH}-ops"
 
-            rm -rf "$CI_DIR"
-            mkdir -p "$CI_DIR"
-            tar -xzf /tmp/source.tgz -C "$CI_DIR"
+            rm -rf "$OPS_PATH"
+            mkdir -p "$OPS_PATH"
+            tar -xzf /tmp/source.tgz -C "$OPS_PATH"
             rm -f /tmp/source.tgz
 
             for env_file in .env .env.local .env.production; do
@@ -89,17 +89,17 @@ jobs:
               exit 1
             fi
 
-            cd "$CI_DIR"
+            cd "$OPS_PATH"
             corepack enable
             corepack prepare pnpm@10.11.0 --activate
             pnpm install --frozen-lockfile
+            chmod +x scripts/server/seed
 
             if [ "$APP_NAME" = "district-dev" ]; then
               pnpm run payload -- migrate
             fi
 
             pnpm run check:migrations
-            rm -rf "$CI_DIR"
 
   build:
     name: Build
@@ -268,6 +268,15 @@ jobs:
                 rm -f "/tmp/$(basename $env_file).bak"
               fi
             done
+
+            OPS_PATH="${DEPLOY_PATH}-ops"
+            printf '%s\n' \
+              '#!/usr/bin/env bash' \
+              "export DISTRICT_DEPLOY_PATH=\"$DEPLOY_PATH\"" \
+              "export DISTRICT_OPS_PATH=\"$OPS_PATH\"" \
+              "exec \"$OPS_PATH/scripts/server/seed\" \"\$@\"" \
+              > "$DEPLOY_PATH/seed"
+            chmod +x "$DEPLOY_PATH/seed"
 
             # Standalone builds must be started with Node against the generated entrypoint
             test -f "$DEPLOY_PATH/server.js"
