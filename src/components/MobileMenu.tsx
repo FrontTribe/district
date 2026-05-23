@@ -6,6 +6,8 @@ import { gsap } from '@/lib/gsap'
 import EnhancedLanguageSwitcher from './EnhancedLanguageSwitcher'
 import { HubLogoWordmark } from './HubLogoWordmark'
 import type { HubSocialLink } from '@/utils/hubSocialLinks'
+import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { BoutiqueBrandmark } from '@/components/BoutiqueBrandmark'
 
 interface MenuItem {
   label: string
@@ -29,6 +31,8 @@ interface MobileMenuProps {
   isLanguageChanging: boolean
   isTenantMenu?: boolean
   hubLanding?: boolean
+  tenantVisualTheme?: TenantVisualTheme
+  brandSubtitle?: string | null
   isOpen: boolean
   onClose: () => void
   hubSocialLinks?: HubSocialLink[]
@@ -43,6 +47,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   isLanguageChanging,
   isTenantMenu = false,
   hubLanding = false,
+  tenantVisualTheme = 'default',
+  brandSubtitle,
   isOpen,
   onClose,
   hubSocialLinks,
@@ -122,12 +128,15 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       // Animate menu items if they exist
       if (menuItemsRef.current) {
         const menuItems = menuItemsRef.current
-        tl.current.fromTo(
-          menuItems.querySelectorAll('.mobile-menu-item'),
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
-          '-=0.2',
-        )
+        const itemNodes = menuItems.querySelectorAll('.mobile-menu-item')
+        if (itemNodes.length) {
+          tl.current.fromTo(
+            itemNodes,
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
+            '-=0.2',
+          )
+        }
       }
     } else {
       // Close animation - create a new timeline for closing
@@ -136,12 +145,15 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       // Animate menu items out first
       if (menuItemsRef.current) {
         const menuItems = menuItemsRef.current
-        closeTl.to(menuItems.querySelectorAll('.mobile-menu-item'), {
-          opacity: 0,
-          y: -20,
-          duration: 0.2,
-          ease: 'power2.in',
-        })
+        const itemNodes = menuItems.querySelectorAll('.mobile-menu-item')
+        if (itemNodes.length) {
+          closeTl.to(itemNodes, {
+            opacity: 0,
+            y: -20,
+            duration: 0.2,
+            ease: 'power2.in',
+          })
+        }
       }
 
       // Then slide menu out and fade overlay
@@ -192,7 +204,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
     onClose()
   }
 
-  const handleLogoClick = (e: React.MouseEvent) => {
+  const handleLogoClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
     if (isTenantMenu || hubLanding) {
       e.preventDefault()
       const heroElement = document.querySelector('section[id*="hero"], .hero-block, [id*="hero"]')
@@ -283,6 +295,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
     )
   }
 
+  const isBoutiqueDrawer = isTenantMenu && tenantVisualTheme === 'boutique' && !hubLanding
+
   return (
     <>
       {/* Mobile Menu Overlay */}
@@ -294,35 +308,48 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         {/* Mobile Menu Panel */}
         <div
           ref={menuRef}
-          className={`mobile-menu-panel${hubLanding ? ' mobile-menu-panel--hub' : ''}`}
+          className={`mobile-menu-panel${hubLanding ? ' mobile-menu-panel--hub' : ''}${isBoutiqueDrawer ? ' mobile-menu-panel--boutique' : ''}`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Mobile Menu Header */}
-          <div className={`mobile-menu-header${hubLanding ? ' mobile-menu-header--hub' : ''}`}>
+          <div
+            className={`mobile-menu-header${hubLanding ? ' mobile-menu-header--hub' : ''}${isBoutiqueDrawer ? ' mobile-menu-header--boutique' : ''}`}
+          >
             <div className="mobile-menu-header__top">
               <div className="mobile-menu-header-left">
-                <Link
-                  href={hubLanding ? `/${locale}` : '/'}
-                  onClick={handleLogoClick}
-                  className={`mobile-menu-logo${hubLanding ? ' mobile-menu-logo--hub' : ''}`}
-                >
-                  {hubLanding ? (
-                    <HubLogoWordmark logo={logo} logoText={logoText} />
-                  ) : logo ? (
-                    <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
-                  ) : logoText ? (
-                    <h1>{logoText}</h1>
-                  ) : (
-                    <h1>district.</h1>
-                  )}
-                </Link>
+                {isBoutiqueDrawer ? (
+                  <BoutiqueBrandmark
+                    logo={logo}
+                    logoText={logoText}
+                    brandSubtitle={brandSubtitle}
+                    onClick={handleLogoClick}
+                    className="boutique-brandmark--drawer"
+                  />
+                ) : (
+                  <Link
+                    href={hubLanding ? `/${locale}` : '/'}
+                    onClick={handleLogoClick}
+                    className={`mobile-menu-logo${hubLanding ? ' mobile-menu-logo--hub' : ''}`}
+                  >
+                    {hubLanding ? (
+                      <HubLogoWordmark logo={logo} logoText={logoText} />
+                    ) : logo ? (
+                      <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
+                    ) : logoText ? (
+                      <h1>{logoText}</h1>
+                    ) : (
+                      <h1>district.</h1>
+                    )}
+                  </Link>
+                )}
               </div>
               <div className="mobile-menu-header-right">
                 <EnhancedLanguageSwitcher
                   currentLocale={locale}
                   onLanguageChange={onLanguageChange}
-                  theme={hubLanding ? 'hub' : 'transparent'}
+                  theme={hubLanding ? 'hub' : isBoutiqueDrawer ? 'light' : 'transparent'}
                   disabled={isLanguageChanging}
+                  variant={isBoutiqueDrawer ? 'boutique-inline' : 'dropdown'}
                 />
                 {hubLanding && hubSocialLinks && hubSocialLinks.length > 0 ? (
                   <div className="mobile-menu-hub-socials" aria-label="Social media">
@@ -356,7 +383,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           </div>
 
           {/* Mobile Menu Footer — hidden on hub (socials sit under language in header; page has HubBottombar) */}
-          {!hubLanding ? (
+          {!hubLanding && !isBoutiqueDrawer ? (
             <div className="mobile-menu-footer">
               <div className="mobile-social-links">
                 <a href="#" className="mobile-social-link">

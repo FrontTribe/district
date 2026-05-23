@@ -1,7 +1,9 @@
 import type { Block } from 'payload'
+import { districtAdminGroups } from '@/blocks/district-admin-groups'
 
 const FloorPlan: Block = {
   slug: 'floor-plan',
+  admin: { group: districtAdminGroups.hub },
   labels: {
     singular: 'Floor Plan',
     plural: 'Floor Plans',

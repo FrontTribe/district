@@ -137,11 +137,26 @@ export default buildConfig({
       formOverrides: {
         admin: {
           group: { en: 'Forms', hr: 'Obrasci' },
+          description: {
+            en: 'Reusable form definitions. RE landing contact form: create here, then select in Pages → “RE Landing — Inquiry”.',
+            hr: 'Ponovno upotrebljivi obrasci. RE landing kontakt obrazac: kreiraj ovdje, zatim odaberi u Stranice → „RE landing — upit”.',
+          },
         },
       },
       formSubmissionOverrides: {
         admin: {
           group: { en: 'Forms', hr: 'Obrasci' },
+        },
+      },
+      fields: {
+        text: {
+          fields: [{ name: 'placeholder', type: 'text', label: 'Placeholder', localized: true }],
+        },
+        textarea: {
+          fields: [{ name: 'placeholder', type: 'text', label: 'Placeholder', localized: true }],
+        },
+        select: {
+          fields: [{ name: 'placeholder', type: 'text', label: 'Placeholder', localized: true }],
         },
       },
     }),

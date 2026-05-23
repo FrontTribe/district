@@ -67,8 +67,10 @@ const Buildings: CollectionConfig = {
       label: { en: 'Units', hr: 'Jedinice' },
       admin: {
         description: {
-          en: 'Each row = one unit (e.g. A.1.1, A.1.2). Draw regions on the plan above; set label and PDF page number here.',
-          hr: 'Svaki red = jedna jedinica (npr. A.1.1, A.1.2). Nacrtajte regije na planu iznad; ovdje postavite oznaku i broj stranice u PDF-u.',
+          en:
+            'Each row = one unit (e.g. A.1.1). Draw regions on the plan above. Counts per floor on the site come from this list. Status (Available / Reserved / Sold) is edited here — PDF re-seed keeps Reserved/Sold when the unit label matches.',
+          hr:
+            'Svaki red = jedna jedinica (npr. A.1.1). Nacrtajte regije na planu iznad. Brojevi po katu na stranici dolaze odavde. Status (dostupno / rezervirano / prodano) mijenjate ovdje — ponovni seed PDF-a zadržava „Rezervirano“/„Prodano“ kad se oznaka stana poklapa.',
         },
         components: {
           Field: '@/components/floor-plan/UnitRegionsField#UnitRegionsField',
@@ -97,6 +99,70 @@ const Buildings: CollectionConfig = {
               hr: 'Broj stranice u PDF-u s detaljima jedinica (1 = prva stranica)',
             },
           },
+        },
+        {
+          name: 'dilatacija',
+          type: 'text',
+          label: { en: 'Dilatation (block)', hr: 'Dilatacija' },
+          admin: {
+            description: {
+              en: 'Letter or code (e.g. A, B) for grouping in the unit browser.',
+              hr: 'Oznaka bloka (npr. A, B) za grupiranje u pregledu stanova.',
+            },
+          },
+        },
+        {
+          name: 'floor',
+          type: 'number',
+          label: { en: 'Floor (kat)', hr: 'Kat' },
+          admin: {
+            description: {
+              en: 'Floor number for filtering (e.g. 0 = ground, 1 = first).',
+              hr: 'Broj kata za filtriranje (npr. 0 = prizemlje, 1 = prvi).',
+            },
+          },
+        },
+        {
+          name: 'unitType',
+          type: 'select',
+          label: { en: 'Unit type', hr: 'Tip stana' },
+          options: [
+            { label: 'Garsonijera', value: 'garsonijera' },
+            { label: 'Jednosobni', value: 'jednosobni' },
+            { label: 'Jednoipolsobni', value: 'jednoipolsobni' },
+            { label: 'Dvosobni', value: 'dvosobni' },
+            { label: 'Dvoipolsobni', value: 'dvoipolsobni' },
+            { label: 'Trosobni', value: 'trosobni' },
+            { label: 'Penthouse', value: 'penthouse' },
+            { label: 'Other', value: 'other' },
+          ],
+        },
+        {
+          name: 'netArea',
+          type: 'number',
+          label: { en: 'Net area (m²)', hr: 'Neto površina (m²)' },
+        },
+        {
+          name: 'grossArea',
+          type: 'number',
+          label: { en: 'Gross / billable area (m²)', hr: 'Obračunska površina (m²)' },
+        },
+        {
+          name: 'status',
+          type: 'select',
+          label: { en: 'Status', hr: 'Status' },
+          defaultValue: 'available',
+          admin: {
+            description: {
+              en: 'Shown on the landing unit cards (green / amber / red). Default Available for new units.',
+              hr: 'Vidljivo na karticama stana (dostupno / rezervirano / prodano). Za nove jedinice zadano je „Dostupno“.',
+            },
+          },
+          options: [
+            { label: { en: 'Available', hr: 'Dostupno' }, value: 'available' },
+            { label: { en: 'Reserved', hr: 'Rezervirano' }, value: 'reserved' },
+            { label: { en: 'Sold', hr: 'Prodano' }, value: 'sold' },
+          ],
         },
         {
           name: 'shape',

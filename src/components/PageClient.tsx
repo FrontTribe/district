@@ -3,13 +3,16 @@
 import { Page as PageType } from '@/payload-types'
 import { BlockRenderer } from './BlockRenderer'
 import { useState, useEffect } from 'react'
+import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
 
 export default function PageClient({
   page: initialPage,
   locale = 'hr',
+  tenantVisualTheme = 'default',
 }: {
   page: PageType
   locale?: string
+  tenantVisualTheme?: TenantVisualTheme
 }) {
   const [_hasRendered, setHasRendered] = useState(false)
 
@@ -36,5 +39,11 @@ export default function PageClient({
     )
   }
 
-  return <BlockRenderer blocks={initialPage.layout} locale={locale} />
+  return (
+    <BlockRenderer
+      blocks={initialPage.layout}
+      locale={locale}
+      tenantVisualTheme={tenantVisualTheme}
+    />
+  )
 }

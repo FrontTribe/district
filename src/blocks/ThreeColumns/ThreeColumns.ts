@@ -1,7 +1,9 @@
 import { Block } from 'payload'
+import { districtAdminGroups } from '@/blocks/district-admin-groups'
 
 const ThreeColumns: Block = {
   slug: 'three-columns',
+  admin: { group: districtAdminGroups.hub },
   fields: [
     {
       name: 'columns',

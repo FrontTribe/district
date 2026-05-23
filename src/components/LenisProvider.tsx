@@ -1,20 +1,23 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import Lenis from 'lenis'
-import { gsap, ScrollTrigger } from '@/lib/gsap'
 import { usePathname } from 'next/navigation'
+import { gsap, ScrollTrigger, LENIS_READY_EVENT } from '@/lib/gsap'
 
 type Props = {
   children?: React.ReactNode
 }
 
+const SCROLLER = typeof document !== 'undefined' ? document.documentElement : null
+
 export default function LenisProvider({ children }: Props) {
   const pathname = usePathname()
+  const isFirstPath = useRef(true)
 
   useEffect(() => {
-    // autoRaf: false — we drive Lenis from gsap.ticker to share one frame loop.
-    // Without this, Lenis runs its own RAF AND gets ticked by GSAP → double updates.
+    if (!SCROLLER) return
+
     const lenis = new Lenis({
       autoRaf: false,
       duration: 1.2,
@@ -24,7 +27,7 @@ export default function LenisProvider({ children }: Props) {
       touchMultiplier: 1.2,
     })
 
-    ;(window as any).lenis = lenis
+    ;(window as Window & { lenis?: Lenis }).lenis = lenis
 
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual'
@@ -32,32 +35,55 @@ export default function LenisProvider({ children }: Props) {
 
     lenis.scrollTo(0, { immediate: true })
 
-    // Keep ScrollTrigger in sync with every Lenis scroll event
+    // ScrollTrigger reads window scroll by default; Lenis scrolls virtually — proxy bridges them.
+    ScrollTrigger.scrollerProxy(SCROLLER, {
+      scrollTop(value?: number) {
+        if (arguments.length && value !== undefined) {
+          lenis.scrollTo(value, { immediate: true })
+        }
+        return lenis.scroll
+      },
+      getBoundingClientRect() {
+        return {
+          top: 0,
+          left: 0,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        }
+      },
+    })
+
     lenis.on('scroll', ScrollTrigger.update)
 
-    // Drive Lenis from GSAP's ticker (time is in seconds, lenis.raf expects ms)
+    const onRefresh = () => lenis.resize()
+    ScrollTrigger.addEventListener('refresh', onRefresh)
+
     const onTick = (time: number) => lenis.raf(time * 1000)
     gsap.ticker.add(onTick)
     gsap.ticker.lagSmoothing(0)
 
-    // Recalculate all ScrollTrigger positions now that Lenis is connected.
-    // Child component effects run before parent effects in React, so ScrollTriggers
-    // are already registered at this point — they just need a fresh measurement.
     ScrollTrigger.refresh()
+    window.dispatchEvent(new Event(LENIS_READY_EVENT))
 
     return () => {
+      ScrollTrigger.removeEventListener('refresh', onRefresh)
+      ScrollTrigger.scrollerProxy(SCROLLER, {})
       gsap.ticker.remove(onTick)
       lenis.destroy()
-      delete (window as any).lenis
+      delete (window as Window & { lenis?: Lenis }).lenis
     }
   }, [])
 
   useEffect(() => {
-    const lenis = (window as any).lenis as Lenis | undefined
+    const lenis = (window as Window & { lenis?: Lenis }).lenis
     if (!lenis) return
+    if (isFirstPath.current) {
+      isFirstPath.current = false
+      return
+    }
     lenis.scrollTo(0, { immediate: true })
-    // Refresh triggers after navigation so they recalculate against the new page layout
     ScrollTrigger.refresh()
+    window.dispatchEvent(new Event(LENIS_READY_EVENT))
   }, [pathname])
 
   return <>{children}</>

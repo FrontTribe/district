@@ -3,8 +3,33 @@
 import React, { useEffect, useRef } from 'react'
 import { gsap, ScrollTrigger } from '@/lib/gsap'
 import { JobOpportunityBlockProps } from './types'
+import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { MomentoCareer } from '@/components/momento-landing'
 
-export const JobOpportunityBlock: React.FC<JobOpportunityBlockProps> = ({
+export const JobOpportunityBlock: React.FC<
+  JobOpportunityBlockProps & { tenantVisualTheme?: TenantVisualTheme; locale?: string }
+> = (props) =>
+  props.tenantVisualTheme === 'momento' ? (
+    <MomentoCareer
+      title={props.title}
+      subtitle={props.subtitle}
+      description={props.description}
+      buttonText={props.buttonText}
+      buttonUrl={props.buttonUrl}
+      badgeText={props.badgeText}
+      features={props.features}
+      ctaNote={props.ctaNote}
+      backgroundImage={props.backgroundImage}
+      sectionId={props.sectionId}
+      locale={props.locale}
+    />
+  ) : (
+    <JobOpportunityBlockDefault {...props} />
+  )
+
+const JobOpportunityBlockDefault: React.FC<
+  JobOpportunityBlockProps & { tenantVisualTheme?: TenantVisualTheme; locale?: string }
+> = ({
   title,
   subtitle,
   description,

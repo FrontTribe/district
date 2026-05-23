@@ -17,14 +17,21 @@ import Image from '@/blocks/Image'
 import { Intro } from '@/blocks/Intro'
 import { ImageGrid } from '@/blocks/ImageGrid'
 import { FloorPlan } from '@/blocks/FloorPlan'
-import RealEstateHero from '@/blocks/RealEstateHero'
-import RealEstateAboutUs from '@/blocks/RealEstateAboutUs'
-import RealEstateProjectsWeDid from '@/blocks/RealEstateProjectsWeDid'
-import RealEstateCurrentProjects from '@/blocks/RealEstateCurrentProjects'
-import RealEstateLiveCamera from '@/blocks/RealEstateLiveCamera'
-import RealEstateLookingForJob from '@/blocks/RealEstateLookingForJob'
-import RealEstateContact from '@/blocks/RealEstateContact'
+import RealEstateLandingNav from '@/blocks/RealEstateLandingNav'
+import RealEstateLandingHero from '@/blocks/RealEstateLandingHero'
+import RealEstateLandingMarquee from '@/blocks/RealEstateLandingMarquee'
+import RealEstateLandingManifesto from '@/blocks/RealEstateLandingManifesto'
+import RealEstateLandingTypology from '@/blocks/RealEstateLandingTypology'
+import RealEstateLandingGallery from '@/blocks/RealEstateLandingGallery'
+import RealEstateLandingCurrentProject from '@/blocks/RealEstateLandingCurrentProject'
+import RealEstateLandingPartner from '@/blocks/RealEstateLandingPartner'
+import RealEstateLandingInquiry from '@/blocks/RealEstateLandingInquiry'
+import RealEstateLandingFooter from '@/blocks/RealEstateLandingFooter'
+import RealEstateLandingUnitBrowser from '@/blocks/RealEstateLandingUnitBrowser'
+import RealEstateLandingPastProjects from '@/blocks/RealEstateLandingPastProjects'
 import { Anchor } from '@/blocks/Anchor'
+import MomentoFooter from '@/blocks/MomentoFooter'
+import BoutiqueFooter from '@/blocks/BoutiqueFooter'
 
 const Pages: CollectionConfig = {
   slug: 'pages',
@@ -36,8 +43,10 @@ const Pages: CollectionConfig = {
     useAsTitle: 'title',
     group: { en: 'Site Content', hr: 'Sadržaj stranice' },
     description: {
-      en: 'Manage pages for tenants and main domain',
-      hr: 'Upravljanje stranicama za stanare i glavnu domenu',
+      en:
+        'Pages for tenants and main domain. RE landing contact: “RE Landing — Inquiry” (left copy + Form Builder). RE landing footer: “RE Landing — Footer” block as the last layout item.',
+      hr:
+        'Stranice za stanare i glavnu domenu. RE landing kontakt: „RE landing — upit” (tekst lijevo + Form Builder). RE landing podnožje: blok „RE landing — podnožje” kao zadnji u layoutu.',
     },
   },
   access: {
@@ -147,13 +156,20 @@ const Pages: CollectionConfig = {
         Intro,
         ImageGrid,
         FloorPlan,
-        RealEstateHero,
-        RealEstateAboutUs,
-        RealEstateProjectsWeDid,
-        RealEstateCurrentProjects,
-        RealEstateLiveCamera,
-        RealEstateLookingForJob,
-        RealEstateContact,
+        RealEstateLandingNav,
+        RealEstateLandingHero,
+        RealEstateLandingMarquee,
+        RealEstateLandingManifesto,
+        RealEstateLandingTypology,
+        RealEstateLandingGallery,
+        RealEstateLandingCurrentProject,
+        RealEstateLandingPartner,
+        RealEstateLandingInquiry,
+        RealEstateLandingUnitBrowser,
+        RealEstateLandingPastProjects,
+        RealEstateLandingFooter,
+        MomentoFooter,
+        BoutiqueFooter,
         Anchor,
       ],
       localized: true,

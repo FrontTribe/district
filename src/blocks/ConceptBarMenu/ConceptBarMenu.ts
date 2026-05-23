@@ -1,7 +1,9 @@
 import { Block } from 'payload'
+import { districtAdminGroups } from '@/blocks/district-admin-groups'
 
 const ConceptBarMenu: Block = {
   slug: 'concept-bar-menu',
+  admin: { group: districtAdminGroups.boutique },
   fields: [
     {
       name: 'title',

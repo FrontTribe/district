@@ -1,7 +1,9 @@
 import { Block } from 'payload'
+import { districtAdminGroups } from '@/blocks/district-admin-groups'
 
 const Anchor: Block = {
   slug: 'anchor',
+  admin: { group: districtAdminGroups.hub },
   labels: {
     singular: { en: 'Anchor', hr: 'Sidro' },
     plural: { en: 'Anchors', hr: 'Sidra' },

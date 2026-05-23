@@ -1,26 +1,24 @@
-import { PDFDocument } from 'pdf-lib'
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
-import payloadConfig from '@/payload.config'
+import config from '@payload-config'
+import { resolvePayloadFileUrl } from '@/utils/resolvePayloadFileUrl'
 
-/**
- * Payload may store `url` as a site-relative path (e.g. `/api/documents/file/x.pdf`).
- * Node `fetch()` requires an absolute URL — resolve against this server.
- */
-function resolvePayloadFileUrl(fileUrl: string, req: Request): string {
-  if (/^https?:\/\//i.test(fileUrl)) {
-    return fileUrl
-  }
-  const path = fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`
-  const base =
-    process.env.NEXT_PUBLIC_SERVER_URL?.replace(/\/$/, '') || new URL(req.url).origin
-  return `${base}${path}`
+export const runtime = 'nodejs'
+
+function pdfResponse(body: ArrayBuffer | Uint8Array, extraHeaders?: Record<string, string>) {
+  return new NextResponse(body, {
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'inline',
+      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+      ...extraHeaders,
+    },
+  })
 }
 
 /**
- * Same-origin PDF bytes (avoids CORS when file is on S3).
- * GET /api/pdf-file/:id — full document
- * GET /api/pdf-file/:id?page=N — **single-page** PDF (1-based N), for iframe without scrolling whole file
+ * Jednostranični PDF (isti origin kao stranica).
+ * GET /api/pdf-file/:id?page=N — **obavezno** `page` (1-based); vraća PDF s točno jednom stranicom (nema cijelog elaborata).
  */
 export async function GET(
   req: Request,
@@ -33,21 +31,40 @@ export async function GET(
     }
 
     const pageParam = new URL(req.url).searchParams.get('page')
-    let pageOneBased: number | null = null
-    if (pageParam != null && pageParam !== '') {
-      const n = Number.parseInt(pageParam, 10)
-      if (!Number.isFinite(n) || n < 1) {
-        return NextResponse.json({ error: 'Invalid page' }, { status: 400 })
-      }
-      pageOneBased = n
+    if (pageParam == null || pageParam === '') {
+      return NextResponse.json(
+        { error: 'Missing required query: page (single-page export only)' },
+        { status: 400 },
+      )
+    }
+    const n = Number.parseInt(pageParam, 10)
+    if (!Number.isFinite(n) || n < 1) {
+      return NextResponse.json({ error: 'Invalid page' }, { status: 400 })
+    }
+    const pageOneBased = n
+
+    let payload: Awaited<ReturnType<typeof getPayload>>
+    try {
+      payload = await getPayload({ config })
+    } catch (e) {
+      console.error('[pdf-file] getPayload failed', e)
+      return NextResponse.json({ error: 'CMS unavailable', detail: String(e) }, { status: 503 })
     }
 
-    const payload = await getPayload({ config: payloadConfig })
-    const doc = await (payload as { findByID: (args: { collection: string; id: string; depth: number }) => Promise<unknown> }).findByID({
-      collection: 'documents',
-      id,
-      depth: 0,
-    })
+    const docId = /^\d+$/.test(String(id)) ? Number(id) : id
+
+    let doc: unknown
+    try {
+      doc = await payload.findByID({
+        collection: 'documents',
+        id: docId,
+        depth: 0,
+        overrideAccess: true,
+      })
+    } catch (e) {
+      console.error('[pdf-file] findByID', id, e)
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
 
     if (!doc) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -65,52 +82,57 @@ export async function GET(
       return NextResponse.json({ error: 'No file URL' }, { status: 404 })
     }
 
-    const absoluteUrl = resolvePayloadFileUrl(url, req)
-    const fileRes = await fetch(absoluteUrl)
+    const absoluteUrl = resolvePayloadFileUrl(url, new URL(req.url).origin)
+    const forwardCookie = req.headers.get('cookie')
+    let fileRes: Response
+    try {
+      fileRes = await fetch(absoluteUrl, {
+        redirect: 'follow',
+        ...(forwardCookie ? { headers: { cookie: forwardCookie } } : {}),
+      })
+    } catch (e) {
+      console.error('[pdf-file] fetch failed', absoluteUrl, e)
+      return NextResponse.json({ error: 'Upstream fetch failed' }, { status: 502 })
+    }
     if (!fileRes.ok) {
+      console.error('[pdf-file] upstream not ok', absoluteUrl, fileRes.status)
       return NextResponse.json({ error: 'Upstream fetch failed' }, { status: 502 })
     }
 
     const buf = await fileRes.arrayBuffer()
 
-    if (pageOneBased == null) {
-      return new NextResponse(buf, {
-        headers: {
-          'Content-Type': 'application/pdf',
-          'Cache-Control': 'public, max-age=3600, s-maxage=3600',
-        },
-      })
-    }
-
-    let sourcePdf: PDFDocument
     try {
-      sourcePdf = await PDFDocument.load(buf, { ignoreEncryption: false })
+      const { PDFDocument } = await import('pdf-lib')
+      const sourcePdf = await PDFDocument.load(buf, { ignoreEncryption: true })
+      const pageCount = sourcePdf.getPageCount()
+      if (pageOneBased > pageCount) {
+        return NextResponse.json({ error: 'Page out of range' }, { status: 400 })
+      }
+      const outPdf = await PDFDocument.create()
+      const [copied] = await outPdf.copyPages(sourcePdf, [pageOneBased - 1])
+      outPdf.addPage(copied)
+      const singlePageBytes = await outPdf.save()
+      return pdfResponse(singlePageBytes)
     } catch (e) {
-      console.error('[pdf-file] PDFDocument.load failed', e)
+      console.error('[pdf-file] single-page PDF build failed', e)
       return NextResponse.json(
-        { error: 'Could not read PDF (unsupported or encrypted)' },
+        {
+          error: 'pdf_single_page_failed',
+          message:
+            'Izdvajanje jedne stranice iz PDF-a nije uspjelo. Provjerite elaborat ili kontaktirajte administratora.',
+        },
         { status: 422 },
       )
     }
-
-    const pageCount = sourcePdf.getPageCount()
-    if (pageOneBased > pageCount) {
-      return NextResponse.json({ error: 'Page out of range' }, { status: 400 })
-    }
-
-    const outPdf = await PDFDocument.create()
-    const [copied] = await outPdf.copyPages(sourcePdf, [pageOneBased - 1])
-    outPdf.addPage(copied)
-    const singlePageBytes = await outPdf.save()
-
-    return new NextResponse(singlePageBytes, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Cache-Control': 'public, max-age=3600, s-maxage=3600',
-      },
-    })
   } catch (err) {
     console.error('[pdf-file]', err)
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+    const message = err instanceof Error ? err.message : String(err)
+    return NextResponse.json(
+      {
+        error: 'Server error',
+        detail: process.env.NODE_ENV === 'production' ? undefined : message,
+      },
+      { status: 500 },
+    )
   }
 }

@@ -3,6 +3,8 @@ name: Deploy District Project
 on:
   push:
     branches: [main, development]
+  pull_request:
+    branches: [main, development]
 
 jobs:
   migrations:
@@ -10,59 +12,118 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Apply migrations (development)
-        if: github.ref_name != 'main'
-        env:
-          DATABASE_URI: ${{ secrets.DATABASE_URI }}
-          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-        run: pnpm run payload -- migrate
-
-      - name: Check migrations
-        env:
-          DATABASE_URI: ${{ secrets.DATABASE_URI }}
-          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-        run: pnpm run check:migrations
-
-  deploy:
-    name: Deploy
-    needs: migrations
-    runs-on: ubuntu-latest
-
-    steps:
-      # ── 1. Resolve branch → deploy target ──────────────────────────────────
       - name: Set deploy target
         id: target
         run: |
-          if [ "${{ github.ref_name }}" = "main" ]; then
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BRANCH="${{ github.base_ref }}"
+          else
+            BRANCH="${{ github.ref_name }}"
+          fi
+
+          if [ "$BRANCH" = "main" ]; then
             echo "path=/var/www/district-prod" >> $GITHUB_OUTPUT
             echo "app=district-prod"           >> $GITHUB_OUTPUT
-            echo "port=3000"                   >> $GITHUB_OUTPUT
+            echo "branch=main"                 >> $GITHUB_OUTPUT
           else
             echo "path=/var/www/district-dev"  >> $GITHUB_OUTPUT
             echo "app=district-dev"            >> $GITHUB_OUTPUT
-            echo "port=3001"                   >> $GITHUB_OUTPUT
+            echo "branch=development"          >> $GITHUB_OUTPUT
           fi
 
-      # ── 2. Checkout ─────────────────────────────────────────────────────────
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # ── 3. Setup pnpm + Node (build happens on the fast GH runner, not server)
+      - name: Check migration registry (PR)
+        if: github.event_name == 'pull_request'
+        run: SKIP_DB_CHECK=true node scripts/check-pending-migrations.mjs
+
+      - name: Package source for migration check
+        if: github.event_name == 'push'
+        run: tar --exclude=node_modules --exclude=.next --exclude=.git -czf source.tgz .
+
+      - name: Upload source to server
+        if: github.event_name == 'push'
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT || '22' }}
+          source: source.tgz
+          target: /tmp/
+
+      - name: Verify migrations on server
+        if: github.event_name == 'push'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT || '22' }}
+          timeout: 10m
+          script_stop: true
+          script: |
+            set -euxo pipefail
+
+            DEPLOY_PATH="${{ steps.target.outputs.path }}"
+            APP_NAME="${{ steps.target.outputs.app }}"
+            CI_DIR="/tmp/district-ci-${{ github.sha }}"
+
+            rm -rf "$CI_DIR"
+            mkdir -p "$CI_DIR"
+            tar -xzf /tmp/source.tgz -C "$CI_DIR"
+            rm -f /tmp/source.tgz
+
+            for env_file in .env .env.local .env.production; do
+              if [ -f "$DEPLOY_PATH/$env_file" ]; then
+                set -a
+                # shellcheck disable=SC1090
+                source "$DEPLOY_PATH/$env_file"
+                set +a
+              fi
+            done
+
+            if [ -z "${DATABASE_URI:-}" ] || [ -z "${PAYLOAD_SECRET:-}" ]; then
+              echo "Missing DATABASE_URI or PAYLOAD_SECRET in $DEPLOY_PATH env files."
+              exit 1
+            fi
+
+            cd "$CI_DIR"
+            corepack enable
+            corepack prepare pnpm@10.11.0 --activate
+            pnpm install --frozen-lockfile
+
+            if [ "$APP_NAME" = "district-dev" ]; then
+              pnpm run payload -- migrate
+            fi
+
+            pnpm run check:migrations
+            rm -rf "$CI_DIR"
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set build target
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BRANCH="${{ github.base_ref }}"
+          else
+            BRANCH="${{ github.ref_name }}"
+          fi
+
+          if [ "$BRANCH" = "main" ]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "environment=development" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
@@ -72,16 +133,12 @@ jobs:
           node-version: 20
           cache: pnpm
 
-      # ── 4. Install ──────────────────────────────────────────────────────────
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # ── 5. Write .env.local for build ───────────────────────────────────────
-      #    Only NEXT_PUBLIC_* vars are strictly needed at build time (they get
-      #    baked into the JS bundle). Runtime vars (DB, secrets) stay on server.
       - name: Write build env
         run: |
-          if [ "${{ github.ref_name }}" = "main" ]; then
+          if [ "${{ steps.target.outputs.environment }}" = "production" ]; then
             cat <<'EOF' > .env.local
           NEXT_PUBLIC_ROOT_DOMAIN=${{ secrets.NEXT_PUBLIC_ROOT_DOMAIN }}
           NEXT_PUBLIC_SERVER_URL=${{ secrets.NEXT_PUBLIC_SERVER_URL_PROD }}
@@ -101,24 +158,53 @@ jobs:
           EOF
           fi
 
-      # ── 6. Build on GitHub runner (7 GB RAM, free) ──────────────────────────
       - name: Build
         run: NODE_ENV=production pnpm build
 
-      # ── 7. Assemble standalone artifact ─────────────────────────────────────
-      #    output: standalone bundles its own minimal node_modules.
-      #    Static assets + public must be copied in manually.
       - name: Prepare standalone
+        if: github.event_name == 'push'
         run: |
           cp -r public         .next/standalone/public
           cp -r .next/static   .next/standalone/.next/static
 
-      # ── 8. Package ──────────────────────────────────────────────────────────
       - name: Package artifact
+        if: github.event_name == 'push'
         run: tar -czf deploy.tgz -C .next/standalone .
 
-      # ── 9. Upload to server (SSH key — root password auth is often disabled) ─
       - name: Upload artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-${{ github.sha }}
+          path: deploy.tgz
+          retention-days: 1
+
+  deploy:
+    name: Deploy
+    needs: [migrations, build]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set deploy target
+        id: target
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "path=/var/www/district-prod" >> $GITHUB_OUTPUT
+            echo "app=district-prod"           >> $GITHUB_OUTPUT
+            echo "port=3000"                   >> $GITHUB_OUTPUT
+          else
+            echo "path=/var/www/district-dev"  >> $GITHUB_OUTPUT
+            echo "app=district-dev"            >> $GITHUB_OUTPUT
+            echo "port=3001"                   >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: deploy-${{ github.sha }}
+
+      - name: Upload artifact to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -128,7 +214,6 @@ jobs:
           source: deploy.tgz
           target: /tmp/
 
-      # ── 10. Extract + restart ────────────────────────────────────────────────
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.2.0
         with:

@@ -304,7 +304,7 @@ export interface Document {
   focalY?: number | null;
 }
 /**
- * Manage pages for tenants and main domain
+ * Pages for tenants and main domain. RE landing contact: “RE Landing — Inquiry” (left copy + Form Builder). RE landing footer: “RE Landing — Footer” block as the last layout item.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
@@ -318,6 +318,9 @@ export interface Page {
     | (
         | {
             heading: string;
+            /**
+             * Boutique hero: optional eyebrow, then a line with only ---, then body text. Heading: word *Boutique* is auto-accented; use *like this* for other italics.
+             */
             subheading?: string | null;
             backgroundMedia?: {
               type?: ('none' | 'image' | 'video') | null;
@@ -473,9 +476,27 @@ export interface Page {
             blockType: 'three-columns';
           }
         | {
+            chapterNum?: string | null;
+            chapterLabel?: string | null;
             eyebrow?: string | null;
             heading: string;
             body?: string | null;
+            pullQuote?: string | null;
+            pullQuoteCite?: string | null;
+            stats?:
+              | {
+                  value: number;
+                  suffix?: string | null;
+                  label: string;
+                  id?: string | null;
+                }[]
+              | null;
+            collageTags?:
+              | {
+                  tag: string;
+                  id?: string | null;
+                }[]
+              | null;
             cta?: {
               label?: string | null;
               href?: string | null;
@@ -497,12 +518,34 @@ export interface Page {
             blockType: 'botique-intro';
           }
         | {
+            chapterNum?: string | null;
+            chapterLabel?: string | null;
             headingEyebrow?: string | null;
             heading: string;
+            leadText?: string | null;
             leftText?: string | null;
+            channels?:
+              | {
+                  type: 'email' | 'phone' | 'whatsapp' | 'instagram';
+                  label: string;
+                  value: string;
+                  href: string;
+                  id?: string | null;
+                }[]
+              | null;
+            intelRows?:
+              | {
+                  label: string;
+                  value: string;
+                  id?: string | null;
+                }[]
+              | null;
             address?: string | null;
             email?: string | null;
             phone?: string | null;
+            formNote?: string | null;
+            successHeading?: string | null;
+            successMessage?: string | null;
             form: number | Form;
             sectionId?: string | null;
             id?: string | null;
@@ -510,6 +553,8 @@ export interface Page {
             blockType: 'boutique-contact';
           }
         | {
+            chapterNum?: string | null;
+            chapterLabel?: string | null;
             eyebrow?: string | null;
             heading: string;
             subheading?: string | null;
@@ -534,7 +579,10 @@ export interface Page {
                    * Optional. Select a unit type to enable Rentlio bookings for this room. Leave empty if the room is informational only.
                    */
                   rentlioUnitTypeId?: string | null;
+                  roomNumber?: string | null;
                   title: string;
+                  displayPrice?: number | null;
+                  displayPriceSuffix?: string | null;
                   description?: string | null;
                   badges?:
                     | {
@@ -558,7 +606,38 @@ export interface Page {
             blockType: 'rooms';
           }
         | {
+            layoutVariant?: ('editorial' | 'marquee') | null;
+            chapterNum?: string | null;
+            chapterLabel?: string | null;
+            eyebrow?: string | null;
             heading: string;
+            mastheadMedia?: (number | null) | Media;
+            metaRows?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
+            manifestEyebrow?: string | null;
+            manifestHeading?: string | null;
+            manifestItems?:
+              | {
+                  key: string;
+                  value: string;
+                  id?: string | null;
+                }[]
+              | null;
+            stackImages?:
+              | {
+                  media: number | Media;
+                  alt?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            cta?: {
+              label?: string | null;
+              href?: string | null;
+            };
             images?:
               | {
                   media: number | Media;
@@ -568,7 +647,7 @@ export interface Page {
                 }[]
               | null;
             /**
-             * Higher = slower. Animation speeds up temporarily with scroll velocity.
+             * Marquee only. Higher = slower.
              */
             baseDuration?: number | null;
             sectionId?: string | null;
@@ -577,11 +656,15 @@ export interface Page {
             blockType: 'rooftop';
           }
         | {
-            heading: string;
+            heading?: string | null;
             features?:
               | {
+                  romanNumeral?: string | null;
+                  tag?: string | null;
                   title: string;
                   description?: string | null;
+                  media?: (number | null) | Media;
+                  reverseLayout?: boolean | null;
                   id?: string | null;
                 }[]
               | null;
@@ -733,6 +816,9 @@ export interface Page {
              * URL for the button (if button text is provided)
              */
             buttonUrl?: string | null;
+            /**
+             * Momento landing: 6 slika za galeriju „Prostor” (1–4 interijer/terasa, 5–6 atmosfera/karijera). Ostali tenanti: 4 dovoljno.
+             */
             images?:
               | {
                   image: number | Media;
@@ -768,138 +854,20 @@ export interface Page {
             blockName?: string | null;
             blockType: 'floor-plan';
           }
-        | {
-            heading: string;
-            subheading?: string | null;
-            /**
-             * Optional hero background image
-             */
-            backgroundImage?: (number | null) | Media;
-            /**
-             * Optional ID for anchor links (e.g. hero)
-             */
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'real-estate-hero';
-          }
-        | {
-            /**
-             * Small label above the heading
-             */
-            eyebrow?: string | null;
-            heading: string;
-            /**
-             * HTML allowed (e.g. <p>...</p>)
-             */
-            body: string;
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'real-estate-about-us';
-          }
-        | {
-            eyebrow?: string | null;
-            heading: string;
-            subtitle?: string | null;
-            projects?:
-              | {
-                  title: string;
-                  description?: string | null;
-                  image?: (number | null) | Media;
-                  location?: string | null;
-                  year?: string | null;
-                  galleryImages?:
-                    | {
-                        image: number | Media;
-                        id?: string | null;
-                      }[]
-                    | null;
-                  id?: string | null;
-                }[]
-              | null;
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'real-estate-projects-we-did';
-          }
-        | {
-            eyebrow?: string | null;
-            heading: string;
-            subtitle?: string | null;
-            projects?:
-              | {
-                  /**
-                   * Floor plan and units are defined on the Building. Opening this project on the site shows the plan; tap a unit to open its PDF page.
-                   */
-                  building?: (number | null) | Building;
-                  title: string;
-                  /**
-                   * Shown on the project card and in the drawer.
-                   */
-                  description?: string | null;
-                  /**
-                   * Thumbnail on the project card (grid).
-                   */
-                  image?: (number | null) | Media;
-                  status?: string | null;
-                  ctaText?: string | null;
-                  ctaUrl?: string | null;
-                  id?: string | null;
-                }[]
-              | null;
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'real-estate-current-projects';
-          }
-        | {
-            heading: string;
-            subtitle?: string | null;
-            /**
-             * YouTube embed URL, Vimeo, or iframe src. Leave empty for placeholder.
-             */
-            streamUrl?: string | null;
-            /**
-             * Shown when no stream URL is set
-             */
-            fallbackImage?: (number | null) | Media;
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'real-estate-live-camera';
-          }
-        | {
-            badge?: string | null;
-            heading: string;
-            subtitle?: string | null;
-            description: string;
-            features?:
-              | {
-                  text: string;
-                  id?: string | null;
-                }[]
-              | null;
-            buttonText: string;
-            buttonUrl: string;
-            ctaNote?: string | null;
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'real-estate-looking-for-job';
-          }
-        | {
-            eyebrow?: string | null;
-            heading: string;
-            leftText?: string | null;
-            address?: string | null;
-            email?: string | null;
-            phone?: string | null;
-            sectionId?: string | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'real-estate-contact';
-          }
+        | RealEstateLandingNavBlock
+        | RealEstateLandingHeroBlock
+        | RealEstateLandingMarqueeBlock
+        | RealEstateLandingManifestoBlock
+        | RealEstateLandingTypologyBlock
+        | RealEstateLandingGalleryBlock
+        | RealEstateLandingCurrentProjectBlock
+        | RealEstateLandingPartnerBlock
+        | RealEstateLandingInquiryBlock
+        | RealEstateLandingUnitBrowserBlock
+        | RealEstateLandingPastProjectsBlock
+        | RealEstateLandingPageFooterBlock
+        | MomentoFooterBlock
+        | BoutiqueFooterBlock
         | {
             /**
              * ID used as the scroll target (e.g. "contact" → links to #contact). Use lowercase letters, numbers, and dashes.
@@ -923,6 +891,8 @@ export interface Page {
   createdAt: string;
 }
 /**
+ * Reusable form definitions. RE landing contact form: create here, then select in Pages → “RE Landing — Inquiry”.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "forms".
  */
@@ -990,19 +960,7 @@ export interface Form {
             blockType: 'number';
           }
         | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
             placeholder?: string | null;
-            options?:
-              | {
-                  label: string;
-                  value: string;
-                  id?: string | null;
-                }[]
-              | null;
-            required?: boolean | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'select';
@@ -1017,21 +975,13 @@ export interface Form {
             blockType: 'state';
           }
         | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            required?: boolean | null;
+            placeholder?: string | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'text';
           }
         | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            required?: boolean | null;
+            placeholder?: string | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'textarea';
@@ -1117,7 +1067,7 @@ export interface Building {
    */
   unitDetailsPdf: number | Document;
   /**
-   * Each row = one unit (e.g. A.1.1, A.1.2). Draw regions on the plan above; set label and PDF page number here.
+   * Each row = one unit (e.g. A.1.1). Draw regions on the plan above. Counts per floor on the site come from this list. Status (Available / Reserved / Sold) is edited here — PDF re-seed keeps Reserved/Sold when the unit label matches.
    */
   units?:
     | {
@@ -1129,6 +1079,32 @@ export interface Building {
          * Page number in Unit details PDF (1 = first page)
          */
         detailPageNumber: number;
+        /**
+         * Letter or code (e.g. A, B) for grouping in the unit browser.
+         */
+        dilatacija?: string | null;
+        /**
+         * Floor number for filtering (e.g. 0 = ground, 1 = first).
+         */
+        floor?: number | null;
+        unitType?:
+          | (
+              | 'garsonijera'
+              | 'jednosobni'
+              | 'jednoipolsobni'
+              | 'dvosobni'
+              | 'dvoipolsobni'
+              | 'trosobni'
+              | 'penthouse'
+              | 'other'
+            )
+          | null;
+        netArea?: number | null;
+        grossArea?: number | null;
+        /**
+         * Shown on the landing unit cards (green / amber / red). Default Available for new units.
+         */
+        status?: ('available' | 'reserved' | 'sold') | null;
         /**
          * Polygon: draw by clicking points on the plan, then "Complete unit".
          */
@@ -1153,6 +1129,660 @@ export interface Building {
     | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingNavBlock".
+ */
+export interface RealEstateLandingNavBlock {
+  /**
+   * Small HTML snippet for the logo area.
+   */
+  brandHtml?: string | null;
+  /**
+   * Accessibility label for the brand link (e.g. “District home”).
+   */
+  brandAriaLabel?: string | null;
+  langLine?: string | null;
+  showLangLine?: boolean | null;
+  /**
+   * In-page anchors (#section) or full URLs.
+   */
+  links?:
+    | {
+        label: string;
+        href: string;
+        openInNewTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional call-to-action in the nav bar.
+   */
+  ctaLabel?: string | null;
+  ctaHref?: string | null;
+  ctaOpenInNewTab?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-nav';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingHeroBlock".
+ */
+export interface RealEstateLandingHeroBlock {
+  /**
+   * HTML id for “back to top” / first screen (default: top).
+   */
+  heroSectionId?: string | null;
+  layout?: ('default' | 'split' | 'centered') | null;
+  /**
+   * Small meta lines (e.g. city, coordinates).
+   */
+  topLeftLines?:
+    | {
+        line: string;
+        id?: string | null;
+      }[]
+    | null;
+  topRightLines?:
+    | {
+        line: string;
+        id?: string | null;
+      }[]
+    | null;
+  eyebrow: string;
+  titleLine1: string;
+  /**
+   * Optional second line (e.g. italic name).
+   */
+  titleLine2Html?: string | null;
+  heroImage: number | Media;
+  /**
+   * Accessibility: short description of the image for screen readers.
+   */
+  imageAlt?: string | null;
+  mediaCaption?: string | null;
+  lead: string;
+  showScrollCue?: boolean | null;
+  scrollCueLabel?: string | null;
+  /**
+   * Short label + value pairs under the hero.
+   */
+  metaRows?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingMarqueeBlock".
+ */
+export interface RealEstateLandingMarqueeBlock {
+  /**
+   * Lower = faster scroll.
+   */
+  durationSeconds?: number | null;
+  /**
+   * Single character or short symbol between phrases.
+   */
+  separator?: string | null;
+  /**
+   * Describe the ticker for screen readers.
+   */
+  ariaLabel?: string | null;
+  items?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-marquee';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingManifestoBlock".
+ */
+export interface RealEstateLandingManifestoBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  labelLeft: string;
+  labelNum: string;
+  /**
+   * Optional short paragraph before the big type.
+   */
+  topIntroHtml?: string | null;
+  /**
+   * Each row = sequence of segments (plain / muted / accent).
+   */
+  rows?:
+    | {
+        segments?:
+          | {
+              text: string;
+              style?: ('plain' | 'mute' | 'accent') | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional small print under the statement.
+   */
+  footnoteHtml?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-manifesto';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingTypologyBlock".
+ */
+export interface RealEstateLandingTypologyBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  eyebrow: string;
+  /**
+   * Build the main heading from ordered fragments (plain or italic).
+   */
+  headingParts?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        lineBreak?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  intro: string;
+  /**
+   * Shown after the count in each row (e.g. “units”, “stanova”). Leave empty for default “stanova”.
+   */
+  countSuffixWord?: string | null;
+  /**
+   * Shown below the table when set.
+   */
+  outroHtml?: string | null;
+  items?:
+    | {
+        unitCode: string;
+        name: string;
+        size: string;
+        description: string;
+        count: number;
+        /**
+         * Optional emphasis in the list UI.
+         */
+        highlight?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-typology';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingGalleryBlock".
+ */
+export interface RealEstateLandingGalleryBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  eyebrow: string;
+  /**
+   * Build the main heading from ordered fragments (plain or italic).
+   */
+  headingParts?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        lineBreak?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Fallback text beside the heading. Ignored when “Intro (HTML)” is filled.
+   */
+  intro: string;
+  /**
+   * When set, replaces the plain intro next to the heading.
+   */
+  introHtml?: string | null;
+  slides?:
+    | {
+        image: number | Media;
+        /**
+         * Overrides default alt (slide title) for accessibility.
+         */
+        slideImageAlt?: string | null;
+        name: string;
+        location: string;
+        credit?: string | null;
+        /**
+         * Wraps the slide in a link when set.
+         */
+        linkUrl?: string | null;
+        linkOpenInNewTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-gallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingCurrentProjectBlock".
+ */
+export interface RealEstateLandingCurrentProjectBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  eyebrow: string;
+  /**
+   * Build the main heading from ordered fragments (plain or italic).
+   */
+  headingParts?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        lineBreak?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  bigNumber: string;
+  projectMeta: string;
+  projectNameHtml: string;
+  description: string;
+  image: number | Media;
+  /**
+   * Accessibility: short description of the image for screen readers.
+   */
+  imageAlt?: string | null;
+  ctaLabel: string;
+  ctaHref: string;
+  ctaOpenInNewTab?: boolean | null;
+  /**
+   * Three-ish columns under the image.
+   */
+  stats?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-current-project';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingPartnerBlock".
+ */
+export interface RealEstateLandingPartnerBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  image: number | Media;
+  /**
+   * Accessibility: short description of the image for screen readers.
+   */
+  imageAlt?: string | null;
+  eyebrow: string;
+  /**
+   * Build the main heading from ordered fragments (plain or italic).
+   */
+  headingParts?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        lineBreak?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  paragraphs?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  ctaLabel: string;
+  ctaHref: string;
+  ctaOpenInNewTab?: boolean | null;
+  secondaryCtaLabel?: string | null;
+  secondaryCtaHref?: string | null;
+  secondaryCtaOpenInNewTab?: boolean | null;
+  signatureBold: string;
+  signatureSub: string;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-partner';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingInquiryBlock".
+ */
+export interface RealEstateLandingInquiryBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  /**
+   * Hidden when empty. Redesign uses heading only.
+   */
+  eyebrow?: string | null;
+  /**
+   * Build the main heading from ordered fragments (plain or italic).
+   */
+  headingParts?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        lineBreak?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional. One short paragraph between the headline and the form fields.
+   */
+  introHtml?: string | null;
+  /**
+   * 4 fields recommended: name, contact (email+phone), interest (select), message (textarea).
+   */
+  form: number | Form;
+  submitButtonLabel?: string | null;
+  disabledSubmitHelp?: string | null;
+  successMessage?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-inquiry';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingUnitBrowserBlock".
+ */
+export interface RealEstateLandingUnitBrowserBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  eyebrow: string;
+  /**
+   * Build the main heading from ordered fragments (plain or italic).
+   */
+  headingParts?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        lineBreak?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  introHtml: string;
+  /**
+   * Optional copy next to the intro (e.g. colour dots for sold/reserved).
+   */
+  legendHtml?: string | null;
+  /**
+   * Replaces the default “click unit for PDF” hint when set.
+   */
+  detailPanelNoteHtml?: string | null;
+  /**
+   * Must include unitDetailsPdf and units with floor/dilatacija for filters.
+   */
+  building: number | Building;
+  /**
+   * Optional line above unit title in PDF modal, e.g. project name.
+   */
+  pdfMetaLine?: string | null;
+  /**
+   * Leave empty to use Croatian defaults. Fill for EN/DE or custom wording — all managed in CMS.
+   */
+  browserCopy?: {
+    dilatationLabel?: string | null;
+    floorLabel?: string | null;
+    floorButtonWord?: string | null;
+    stageFloorWord?: string | null;
+    unitsTotalSuffix?: string | null;
+    /**
+     * Before letter, e.g. "· Dilatacija " (space at end).
+     */
+    dilatationStagePrefix?: string | null;
+    statusAvailable?: string | null;
+    statusReserved?: string | null;
+    statusSold?: string | null;
+    loadingInProgress?: string | null;
+    /**
+     * HTTP status inserted at {status}.
+     */
+    loadingErrorTemplate?: string | null;
+    pdfCardBadge?: string | null;
+    adminHint?: string | null;
+    defaultDetailLead?: string | null;
+    /**
+     * Example: Pages {from}–{to}.
+     */
+    pagesRangeTemplate?: string | null;
+    unexpectedResponse?: string | null;
+    networkFailure?: string | null;
+  };
+  pdfModalCopy?: {
+    /**
+     * Use placeholders {dil} and {floor}. Shown when “PDF modal meta line” is empty.
+     */
+    metaTemplate?: string | null;
+    closeLabel?: string | null;
+    modalUnitWord?: string | null;
+    netLabel?: string | null;
+    grossLabel?: string | null;
+    pdfPagePrefix?: string | null;
+    emptyDocumentMessage?: string | null;
+    openInNewTab?: string | null;
+    sendInquiryCta?: string | null;
+    embedTitleTemplate?: string | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-unit-browser';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingPastProjectsBlock".
+ */
+export interface RealEstateLandingPastProjectsBlock {
+  /**
+   * HTML id for in-page links, e.g. kat, kontakt
+   */
+  sectionId?: string | null;
+  layout?: ('rows' | 'grid') | null;
+  eyebrow: string;
+  /**
+   * Build the main heading from ordered fragments (plain or italic).
+   */
+  headingParts?:
+    | {
+        text: string;
+        italic?: boolean | null;
+        lineBreak?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  introHtml: string;
+  projects?:
+    | {
+        name: string;
+        subtitle?: string | null;
+        location: string;
+        year: string;
+        statusLabel: string;
+        statusActive?: boolean | null;
+        /**
+         * Shown in grid cards under the title (optional).
+         */
+        summaryHtml?: string | null;
+        externalUrl?: string | null;
+        externalOpenInNewTab?: boolean | null;
+        previewImage?: (number | null) | Media;
+        previewImageAlt?: string | null;
+        gallery?:
+          | {
+              image: number | Media;
+              caption?: string | null;
+              alt?: string | null;
+              credit?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-past-projects';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingPageFooterBlock".
+ */
+export interface RealEstateLandingPageFooterBlock {
+  /**
+   * Typically 4 cells: Headquarters, Phone, Email, Follow us — each with one or more text lines (optional link).
+   */
+  columns?:
+    | {
+        label: string;
+        lines?:
+          | {
+              text: string;
+              linkType?: ('none' | 'url' | 'email' | 'phone') | null;
+              /**
+               * Full URL, e.g. https://instagram.com/…
+               */
+              href?: string | null;
+              openInNewTab?: boolean | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  brandText: string;
+  /**
+   * Year is auto-updated on the site (e.g. © 2026 — Company).
+   */
+  copyrightLine: string;
+  addressLine: string;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'real-estate-landing-page-footer';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MomentoFooterBlock".
+ */
+export interface MomentoFooterBlock {
+  logoText?: string | null;
+  tagline?: string | null;
+  navLinks?:
+    | {
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  pagesHeading?: string | null;
+  contactHeading?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  socialHeading?: string | null;
+  /**
+   * e.g. momentobydistrict or full https://instagram.com/…
+   */
+  instagram?: string | null;
+  megaLine?: string | null;
+  copyright?: string | null;
+  madeBy?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'momento-footer';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BoutiqueFooterBlock".
+ */
+export interface BoutiqueFooterBlock {
+  timeLabel?: string | null;
+  signoffEyebrow?: string | null;
+  signoffHeading?: string | null;
+  coordinatesLat?: string | null;
+  coordinatesLng?: string | null;
+  addressHeading?: string | null;
+  addressHtml?: string | null;
+  addressMapUrl?: string | null;
+  infoRows?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  contactHeading?: string | null;
+  contactLinks?:
+    | {
+        key: string;
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  newsletterHeading?: string | null;
+  newsletterNote?: string | null;
+  mapHeading?: string | null;
+  mapCta?: string | null;
+  distanceRows?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  marqueeItems?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  wordmark?: string | null;
+  copyright?: string | null;
+  legalLinks?:
+    | {
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  madeBy?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'boutique-footer';
 }
 /**
  * Manage navigation menus for tenants and main domain
@@ -1208,6 +1838,16 @@ export interface Menu {
    */
   hubTagline?: string | null;
   /**
+   * Used on the public site when “RE Landing — Inquiry” has an empty Form action URL (one endpoint per menu). Footer stays on the page layout block only.
+   */
+  reLandingDefaults?: {
+    /**
+     * Formspark, Basin, Getform, or your endpoint. Applied when the Inquiry block’s “Form action URL” is empty.
+     */
+    formActionUrl?: string | null;
+    formMethod?: ('POST' | 'GET') | null;
+  };
+  /**
    * Choose how the menu should be positioned on the page
    */
   positioning?: ('fixed' | 'absolute' | 'relative') | null;
@@ -1215,7 +1855,7 @@ export interface Menu {
   createdAt: string;
 }
 /**
- * Manage footer content for tenants and main domain
+ * Per-tenant marketing footer (multi-column). Used on the public site for tenant pages, including RE landing. Suggested first line in Main heading: your brand, then a line with tenant name · subdomain · Real Estate.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "footer".
@@ -1226,9 +1866,18 @@ export interface Footer {
    * Internal title for this footer (e.g., "Hotel ABC Footer", "Restaurant XYZ Footer")
    */
   title: string;
+  /**
+   * Which organization this footer belongs to. Content (headings, address, links) should match that tenant.
+   */
   tenant?: (number | null) | Tenant;
   leftContent: {
+    /**
+     * RE landing: usually one line with <b>district.</b> (HTML allowed). Boutique/other: brand headline.
+     */
     heading: string;
+    /**
+     * RE landing: second line under the brand, e.g. Tenant name · subdomain · Real Estate (plain text).
+     */
     subheading?: string | null;
   };
   rightContent: {
@@ -1249,6 +1898,9 @@ export interface Footer {
       country: string;
     };
   };
+  /**
+   * RE landing: copyright (left), optional links (next to ©), optional right tail. Matches District footer bar.
+   */
   bottomContent: {
     copyright: string;
     links?:
@@ -1259,7 +1911,10 @@ export interface Footer {
           id?: string | null;
         }[]
       | null;
-    madeBy: string;
+    /**
+     * RE landing: small caps line on the bottom-right (e.g. credits). Leave empty to hide.
+     */
+    madeBy?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -1661,9 +2316,27 @@ export interface PagesSelect<T extends boolean = true> {
         'botique-intro'?:
           | T
           | {
+              chapterNum?: T;
+              chapterLabel?: T;
               eyebrow?: T;
               heading?: T;
               body?: T;
+              pullQuote?: T;
+              pullQuoteCite?: T;
+              stats?:
+                | T
+                | {
+                    value?: T;
+                    suffix?: T;
+                    label?: T;
+                    id?: T;
+                  };
+              collageTags?:
+                | T
+                | {
+                    tag?: T;
+                    id?: T;
+                  };
               cta?:
                 | T
                 | {
@@ -1687,12 +2360,34 @@ export interface PagesSelect<T extends boolean = true> {
         'boutique-contact'?:
           | T
           | {
+              chapterNum?: T;
+              chapterLabel?: T;
               headingEyebrow?: T;
               heading?: T;
+              leadText?: T;
               leftText?: T;
+              channels?:
+                | T
+                | {
+                    type?: T;
+                    label?: T;
+                    value?: T;
+                    href?: T;
+                    id?: T;
+                  };
+              intelRows?:
+                | T
+                | {
+                    label?: T;
+                    value?: T;
+                    id?: T;
+                  };
               address?: T;
               email?: T;
               phone?: T;
+              formNote?: T;
+              successHeading?: T;
+              successMessage?: T;
               form?: T;
               sectionId?: T;
               id?: T;
@@ -1701,6 +2396,8 @@ export interface PagesSelect<T extends boolean = true> {
         rooms?:
           | T
           | {
+              chapterNum?: T;
+              chapterLabel?: T;
               eyebrow?: T;
               heading?: T;
               subheading?: T;
@@ -1716,7 +2413,10 @@ export interface PagesSelect<T extends boolean = true> {
                     rentlioPropertyId?: T;
                     rentlioSalesChannelId?: T;
                     rentlioUnitTypeId?: T;
+                    roomNumber?: T;
                     title?: T;
+                    displayPrice?: T;
+                    displayPriceSuffix?: T;
                     description?: T;
                     badges?:
                       | T
@@ -1740,7 +2440,40 @@ export interface PagesSelect<T extends boolean = true> {
         rooftop?:
           | T
           | {
+              layoutVariant?: T;
+              chapterNum?: T;
+              chapterLabel?: T;
+              eyebrow?: T;
               heading?: T;
+              mastheadMedia?: T;
+              metaRows?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              manifestEyebrow?: T;
+              manifestHeading?: T;
+              manifestItems?:
+                | T
+                | {
+                    key?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              stackImages?:
+                | T
+                | {
+                    media?: T;
+                    alt?: T;
+                    id?: T;
+                  };
+              cta?:
+                | T
+                | {
+                    label?: T;
+                    href?: T;
+                  };
               images?:
                 | T
                 | {
@@ -1761,8 +2494,12 @@ export interface PagesSelect<T extends boolean = true> {
               features?:
                 | T
                 | {
+                    romanNumeral?: T;
+                    tag?: T;
                     title?: T;
                     description?: T;
+                    media?: T;
+                    reverseLayout?: T;
                     id?: T;
                   };
               sectionId?: T;
@@ -1890,118 +2627,20 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        'real-estate-hero'?:
-          | T
-          | {
-              heading?: T;
-              subheading?: T;
-              backgroundImage?: T;
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
-        'real-estate-about-us'?:
-          | T
-          | {
-              eyebrow?: T;
-              heading?: T;
-              body?: T;
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
-        'real-estate-projects-we-did'?:
-          | T
-          | {
-              eyebrow?: T;
-              heading?: T;
-              subtitle?: T;
-              projects?:
-                | T
-                | {
-                    title?: T;
-                    description?: T;
-                    image?: T;
-                    location?: T;
-                    year?: T;
-                    galleryImages?:
-                      | T
-                      | {
-                          image?: T;
-                          id?: T;
-                        };
-                    id?: T;
-                  };
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
-        'real-estate-current-projects'?:
-          | T
-          | {
-              eyebrow?: T;
-              heading?: T;
-              subtitle?: T;
-              projects?:
-                | T
-                | {
-                    building?: T;
-                    title?: T;
-                    description?: T;
-                    image?: T;
-                    status?: T;
-                    ctaText?: T;
-                    ctaUrl?: T;
-                    id?: T;
-                  };
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
-        'real-estate-live-camera'?:
-          | T
-          | {
-              heading?: T;
-              subtitle?: T;
-              streamUrl?: T;
-              fallbackImage?: T;
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
-        'real-estate-looking-for-job'?:
-          | T
-          | {
-              badge?: T;
-              heading?: T;
-              subtitle?: T;
-              description?: T;
-              features?:
-                | T
-                | {
-                    text?: T;
-                    id?: T;
-                  };
-              buttonText?: T;
-              buttonUrl?: T;
-              ctaNote?: T;
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
-        'real-estate-contact'?:
-          | T
-          | {
-              eyebrow?: T;
-              heading?: T;
-              leftText?: T;
-              address?: T;
-              email?: T;
-              phone?: T;
-              sectionId?: T;
-              id?: T;
-              blockName?: T;
-            };
+        'real-estate-landing-nav'?: T | RealEstateLandingNavBlockSelect<T>;
+        'real-estate-landing-hero'?: T | RealEstateLandingHeroBlockSelect<T>;
+        'real-estate-landing-marquee'?: T | RealEstateLandingMarqueeBlockSelect<T>;
+        'real-estate-landing-manifesto'?: T | RealEstateLandingManifestoBlockSelect<T>;
+        'real-estate-landing-typology'?: T | RealEstateLandingTypologyBlockSelect<T>;
+        'real-estate-landing-gallery'?: T | RealEstateLandingGalleryBlockSelect<T>;
+        'real-estate-landing-current-project'?: T | RealEstateLandingCurrentProjectBlockSelect<T>;
+        'real-estate-landing-partner'?: T | RealEstateLandingPartnerBlockSelect<T>;
+        'real-estate-landing-inquiry'?: T | RealEstateLandingInquiryBlockSelect<T>;
+        'real-estate-landing-unit-browser'?: T | RealEstateLandingUnitBrowserBlockSelect<T>;
+        'real-estate-landing-past-projects'?: T | RealEstateLandingPastProjectsBlockSelect<T>;
+        'real-estate-landing-page-footer'?: T | RealEstateLandingPageFooterBlockSelect<T>;
+        'momento-footer'?: T | MomentoFooterBlockSelect<T>;
+        'boutique-footer'?: T | BoutiqueFooterBlockSelect<T>;
         anchor?:
           | T
           | {
@@ -2019,6 +2658,479 @@ export interface PagesSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingNavBlock_select".
+ */
+export interface RealEstateLandingNavBlockSelect<T extends boolean = true> {
+  brandHtml?: T;
+  brandAriaLabel?: T;
+  langLine?: T;
+  showLangLine?: T;
+  links?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        openInNewTab?: T;
+        id?: T;
+      };
+  ctaLabel?: T;
+  ctaHref?: T;
+  ctaOpenInNewTab?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingHeroBlock_select".
+ */
+export interface RealEstateLandingHeroBlockSelect<T extends boolean = true> {
+  heroSectionId?: T;
+  layout?: T;
+  topLeftLines?:
+    | T
+    | {
+        line?: T;
+        id?: T;
+      };
+  topRightLines?:
+    | T
+    | {
+        line?: T;
+        id?: T;
+      };
+  eyebrow?: T;
+  titleLine1?: T;
+  titleLine2Html?: T;
+  heroImage?: T;
+  imageAlt?: T;
+  mediaCaption?: T;
+  lead?: T;
+  showScrollCue?: T;
+  scrollCueLabel?: T;
+  metaRows?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingMarqueeBlock_select".
+ */
+export interface RealEstateLandingMarqueeBlockSelect<T extends boolean = true> {
+  durationSeconds?: T;
+  separator?: T;
+  ariaLabel?: T;
+  items?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingManifestoBlock_select".
+ */
+export interface RealEstateLandingManifestoBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  labelLeft?: T;
+  labelNum?: T;
+  topIntroHtml?: T;
+  rows?:
+    | T
+    | {
+        segments?:
+          | T
+          | {
+              text?: T;
+              style?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  footnoteHtml?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingTypologyBlock_select".
+ */
+export interface RealEstateLandingTypologyBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  eyebrow?: T;
+  headingParts?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        lineBreak?: T;
+        id?: T;
+      };
+  intro?: T;
+  countSuffixWord?: T;
+  outroHtml?: T;
+  items?:
+    | T
+    | {
+        unitCode?: T;
+        name?: T;
+        size?: T;
+        description?: T;
+        count?: T;
+        highlight?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingGalleryBlock_select".
+ */
+export interface RealEstateLandingGalleryBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  eyebrow?: T;
+  headingParts?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        lineBreak?: T;
+        id?: T;
+      };
+  intro?: T;
+  introHtml?: T;
+  slides?:
+    | T
+    | {
+        image?: T;
+        slideImageAlt?: T;
+        name?: T;
+        location?: T;
+        credit?: T;
+        linkUrl?: T;
+        linkOpenInNewTab?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingCurrentProjectBlock_select".
+ */
+export interface RealEstateLandingCurrentProjectBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  eyebrow?: T;
+  headingParts?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        lineBreak?: T;
+        id?: T;
+      };
+  bigNumber?: T;
+  projectMeta?: T;
+  projectNameHtml?: T;
+  description?: T;
+  image?: T;
+  imageAlt?: T;
+  ctaLabel?: T;
+  ctaHref?: T;
+  ctaOpenInNewTab?: T;
+  stats?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingPartnerBlock_select".
+ */
+export interface RealEstateLandingPartnerBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  image?: T;
+  imageAlt?: T;
+  eyebrow?: T;
+  headingParts?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        lineBreak?: T;
+        id?: T;
+      };
+  paragraphs?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  ctaLabel?: T;
+  ctaHref?: T;
+  ctaOpenInNewTab?: T;
+  secondaryCtaLabel?: T;
+  secondaryCtaHref?: T;
+  secondaryCtaOpenInNewTab?: T;
+  signatureBold?: T;
+  signatureSub?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingInquiryBlock_select".
+ */
+export interface RealEstateLandingInquiryBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  eyebrow?: T;
+  headingParts?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        lineBreak?: T;
+        id?: T;
+      };
+  introHtml?: T;
+  form?: T;
+  submitButtonLabel?: T;
+  disabledSubmitHelp?: T;
+  successMessage?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingUnitBrowserBlock_select".
+ */
+export interface RealEstateLandingUnitBrowserBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  eyebrow?: T;
+  headingParts?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        lineBreak?: T;
+        id?: T;
+      };
+  introHtml?: T;
+  legendHtml?: T;
+  detailPanelNoteHtml?: T;
+  building?: T;
+  pdfMetaLine?: T;
+  browserCopy?:
+    | T
+    | {
+        dilatationLabel?: T;
+        floorLabel?: T;
+        floorButtonWord?: T;
+        stageFloorWord?: T;
+        unitsTotalSuffix?: T;
+        dilatationStagePrefix?: T;
+        statusAvailable?: T;
+        statusReserved?: T;
+        statusSold?: T;
+        loadingInProgress?: T;
+        loadingErrorTemplate?: T;
+        pdfCardBadge?: T;
+        adminHint?: T;
+        defaultDetailLead?: T;
+        pagesRangeTemplate?: T;
+        unexpectedResponse?: T;
+        networkFailure?: T;
+      };
+  pdfModalCopy?:
+    | T
+    | {
+        metaTemplate?: T;
+        closeLabel?: T;
+        modalUnitWord?: T;
+        netLabel?: T;
+        grossLabel?: T;
+        pdfPagePrefix?: T;
+        emptyDocumentMessage?: T;
+        openInNewTab?: T;
+        sendInquiryCta?: T;
+        embedTitleTemplate?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingPastProjectsBlock_select".
+ */
+export interface RealEstateLandingPastProjectsBlockSelect<T extends boolean = true> {
+  sectionId?: T;
+  layout?: T;
+  eyebrow?: T;
+  headingParts?:
+    | T
+    | {
+        text?: T;
+        italic?: T;
+        lineBreak?: T;
+        id?: T;
+      };
+  introHtml?: T;
+  projects?:
+    | T
+    | {
+        name?: T;
+        subtitle?: T;
+        location?: T;
+        year?: T;
+        statusLabel?: T;
+        statusActive?: T;
+        summaryHtml?: T;
+        externalUrl?: T;
+        externalOpenInNewTab?: T;
+        previewImage?: T;
+        previewImageAlt?: T;
+        gallery?:
+          | T
+          | {
+              image?: T;
+              caption?: T;
+              alt?: T;
+              credit?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RealEstateLandingPageFooterBlock_select".
+ */
+export interface RealEstateLandingPageFooterBlockSelect<T extends boolean = true> {
+  columns?:
+    | T
+    | {
+        label?: T;
+        lines?:
+          | T
+          | {
+              text?: T;
+              linkType?: T;
+              href?: T;
+              openInNewTab?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  brandText?: T;
+  copyrightLine?: T;
+  addressLine?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MomentoFooterBlock_select".
+ */
+export interface MomentoFooterBlockSelect<T extends boolean = true> {
+  logoText?: T;
+  tagline?: T;
+  navLinks?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  pagesHeading?: T;
+  contactHeading?: T;
+  email?: T;
+  phone?: T;
+  socialHeading?: T;
+  instagram?: T;
+  megaLine?: T;
+  copyright?: T;
+  madeBy?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BoutiqueFooterBlock_select".
+ */
+export interface BoutiqueFooterBlockSelect<T extends boolean = true> {
+  timeLabel?: T;
+  signoffEyebrow?: T;
+  signoffHeading?: T;
+  coordinatesLat?: T;
+  coordinatesLng?: T;
+  addressHeading?: T;
+  addressHtml?: T;
+  addressMapUrl?: T;
+  infoRows?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  contactHeading?: T;
+  contactLinks?:
+    | T
+    | {
+        key?: T;
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  newsletterHeading?: T;
+  newsletterNote?: T;
+  mapHeading?: T;
+  mapCta?: T;
+  distanceRows?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  marqueeItems?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  wordmark?: T;
+  copyright?: T;
+  legalLinks?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  madeBy?: T;
+  id?: T;
+  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2049,6 +3161,12 @@ export interface MenuSelect<T extends boolean = true> {
   logo?: T;
   logoText?: T;
   hubTagline?: T;
+  reLandingDefaults?:
+    | T
+    | {
+        formActionUrl?: T;
+        formMethod?: T;
+      };
   positioning?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2117,6 +3235,12 @@ export interface BuildingsSelect<T extends boolean = true> {
     | {
         label?: T;
         detailPageNumber?: T;
+        dilatacija?: T;
+        floor?: T;
+        unitType?: T;
+        netArea?: T;
+        grossArea?: T;
+        status?: T;
         shape?:
           | T
           | {
@@ -2194,19 +3318,7 @@ export interface FormsSelect<T extends boolean = true> {
         select?:
           | T
           | {
-              name?: T;
-              label?: T;
-              width?: T;
-              defaultValue?: T;
               placeholder?: T;
-              options?:
-                | T
-                | {
-                    label?: T;
-                    value?: T;
-                    id?: T;
-                  };
-              required?: T;
               id?: T;
               blockName?: T;
             };
@@ -2223,22 +3335,14 @@ export interface FormsSelect<T extends boolean = true> {
         text?:
           | T
           | {
-              name?: T;
-              label?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
+              placeholder?: T;
               id?: T;
               blockName?: T;
             };
         textarea?:
           | T
           | {
-              name?: T;
-              label?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
+              placeholder?: T;
               id?: T;
               blockName?: T;
             };
