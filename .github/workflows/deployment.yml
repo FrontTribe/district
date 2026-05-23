@@ -40,7 +40,7 @@ jobs:
 
       - name: Package source for migration check
         if: github.event_name == 'push'
-        run: tar --exclude=node_modules --exclude=.next --exclude=.git -czf source.tgz .
+        run: git archive --format=tar.gz -o source.tgz HEAD
 
       - name: Upload source to server
         if: github.event_name == 'push'
