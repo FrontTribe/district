@@ -6,7 +6,7 @@ import * as migration_20260519_140000_buildings_unit_extra_fields from './202605
 import * as migration_20260523_133026 from './20260523_133026';
 import * as migration_20260523_192127_boutique_landing_redesign from './20260523_192127_boutique_landing_redesign';
 import * as migration_20260523_213417 from './20260523_213417';
-import * as migration_20260523_233854_remove_menu_re_landing_defaults from './20260523_233854_remove_menu_re_landing_defaults';
+import * as migration_20260523_234706_sync_menu_schema from './20260523_234706_sync_menu_schema';
 
 export const migrations = [
   {
@@ -50,8 +50,8 @@ export const migrations = [
     name: '20260523_213417',
   },
   {
-    up: migration_20260523_233854_remove_menu_re_landing_defaults.up,
-    down: migration_20260523_233854_remove_menu_re_landing_defaults.down,
-    name: '20260523_233854_remove_menu_re_landing_defaults'
+    up: migration_20260523_234706_sync_menu_schema.up,
+    down: migration_20260523_234706_sync_menu_schema.down,
+    name: '20260523_234706_sync_menu_schema',
   },
 ];
