@@ -3,6 +3,7 @@
 import React, { useLayoutEffect, useRef } from 'react'
 import { gsap, ScrollTrigger } from '@/lib/gsap'
 import { SplitWords } from './shared/SplitWords'
+import { animateWordsEntrance } from './shared/revealWords'
 
 export type RealEstateLandingHeroProps = {
   layout?: 'default' | 'split' | 'centered'
@@ -38,47 +39,99 @@ export function RealEstateLandingHero({
   scrollCueLabel = 'Scroll to explore',
 }: RealEstateLandingHeroProps) {
   const heroRef = useRef<HTMLElement>(null)
+  const innerRef = useRef<HTMLDivElement>(null)
+  const leadRef = useRef<HTMLParagraphElement>(null)
   const mediaRef = useRef<HTMLDivElement>(null)
-  const titleRef = useRef<HTMLHeadingElement>(null)
   const cueRef = useRef<HTMLDivElement>(null)
 
   const layoutClass = layout === 'split' ? 'hero--split' : layout === 'centered' ? 'hero--centered' : ''
 
   useLayoutEffect(() => {
-    if (typeof window === 'undefined' || !gsap) return
+    if (typeof window === 'undefined' || !gsap || !heroRef.current) return
+
     const ctx = gsap.context(() => {
-      const words = titleRef.current?.querySelectorAll('.word > i')
-      if (words?.length) {
-        gsap.fromTo(words, { yPercent: 102 }, { yPercent: 0, duration: 1.3, ease: 'expo.out', stagger: 0.08, delay: 0.2 })
-      }
+      const root = heroRef.current!
+      const topSpans = root.querySelectorAll('.hero__top span')
+      const cap = root.querySelector('.hero__media .cap')
+      const metaRowsEl = root.querySelectorAll('.hero__meta > div')
+      const scrollCue = root.querySelector('.scroll-cue')
+      const scrollLine = cueRef.current?.querySelector('.scroll-cue__line')
+      const mediaImg = mediaRef.current?.querySelector('img')
+
+      gsap.set(topSpans, { y: 14, opacity: 0 })
+      const bottomFadeEls = [...metaRowsEl]
+      if (scrollCue) bottomFadeEls.unshift(scrollCue)
+      gsap.set(bottomFadeEls, { y: 18, opacity: 0 })
+      if (cap) gsap.set(cap, { y: 10, opacity: 0 })
+
+      const tl = gsap.timeline({ defaults: { ease: 'expo.out' } })
+
+      tl.to(topSpans, { y: 0, opacity: 1, duration: 0.85, stagger: 0.05 }, 0.05)
+
+      const titleWords = innerRef.current
+        ? animateWordsEntrance(innerRef.current, { stagger: 0.07, duration: 1.25 })
+        : null
+      if (titleWords) tl.add(titleWords, 0.12)
+
+      const leadWords = leadRef.current
+        ? animateWordsEntrance(leadRef.current, { stagger: 0.035, duration: 0.95 })
+        : null
+      if (leadWords) tl.add(leadWords, 0.55)
+
       if (mediaRef.current) {
-        gsap.fromTo(mediaRef.current, { clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0% 0 0 0)', duration: 1.6, ease: 'expo.out', delay: 0.4 })
-        const img = mediaRef.current.querySelector('img')
-        if (img) gsap.fromTo(img, { scale: 1.3 }, { scale: 1.05, duration: 2.2, ease: 'expo.out', delay: 0.4 })
+        tl.fromTo(
+          mediaRef.current,
+          { clipPath: 'inset(100% 0 0 0)' },
+          { clipPath: 'inset(0% 0 0 0)', duration: 1.5, ease: 'expo.out' },
+          0.38,
+        )
       }
-      gsap.from('.hero__top > *, .hero__bottom > *', { y: 16, opacity: 0, duration: 1, ease: 'power3.out', stagger: 0.08, delay: 1 })
-      const line = cueRef.current?.querySelector('.scroll-cue__line')
-      if (line && showScrollCue) {
-        gsap.to(line, { scaleY: 0, transformOrigin: 'top', duration: 1.6, ease: 'power2.inOut', yoyo: true, repeat: -1 })
+      if (mediaImg) {
+        tl.fromTo(mediaImg, { scale: 1.28 }, { scale: 1.05, duration: 2, ease: 'expo.out' }, 0.38)
       }
-      if (ScrollTrigger && mediaRef.current?.querySelector('img')) {
-        gsap.to(mediaRef.current.querySelector('img'), {
+      if (cap) {
+        tl.to(cap, { y: 0, opacity: 1, duration: 0.75 }, 0.95)
+      }
+
+      if (metaRowsEl.length) {
+        tl.to(metaRowsEl, { y: 0, opacity: 1, duration: 0.85, stagger: 0.07, ease: 'power3.out' }, 0.9)
+      }
+      if (scrollCue && showScrollCue) {
+        tl.to(scrollCue, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, 0.96)
+      }
+
+      if (scrollLine && showScrollCue) {
+        gsap.to(scrollLine, {
+          scaleY: 0,
+          transformOrigin: 'top',
+          duration: 1.6,
+          ease: 'power2.inOut',
+          yoyo: true,
+          repeat: -1,
+          delay: 1.4,
+        })
+      }
+
+      if (ScrollTrigger && mediaImg) {
+        gsap.to(mediaImg, {
           yPercent: 12,
           ease: 'none',
-          scrollTrigger: { trigger: heroRef.current, start: 'top top', end: 'bottom top', scrub: true },
+          scrollTrigger: { trigger: root, start: 'top top', end: 'bottom top', scrub: true },
         })
-        if (titleRef.current) {
-          gsap.to(titleRef.current, {
+        const titleEl = root.querySelector('.hero__title')
+        if (titleEl) {
+          gsap.to(titleEl, {
             yPercent: -20,
             opacity: 0.4,
             ease: 'none',
-            scrollTrigger: { trigger: heroRef.current, start: 'top top', end: 'bottom top', scrub: true },
+            scrollTrigger: { trigger: root, start: 'top top', end: 'bottom top', scrub: true },
           })
         }
       }
     }, heroRef)
+
     return () => ctx.revert()
-  }, [layout, showScrollCue])
+  }, [layout, showScrollCue, titleLine1, titleLine2Html, eyebrow, lead, mediaCaption])
 
   return (
     <section ref={heroRef} id={heroSectionId} className={`hero ${layoutClass}`.trim()}>
@@ -95,17 +148,17 @@ export function RealEstateLandingHero({
         </div>
       </div>
 
-      <div className="hero__inner">
+      <div ref={innerRef} className="hero__inner">
         <div className="hero__eyebrow">
           <SplitWords text={eyebrow} />
         </div>
-        <h1 ref={titleRef} className="hero__title">
+        <h1 className="hero__title">
           <span className="row">
             <SplitWords text={titleLine1} />
           </span>
           {titleLine2Html.trim() ? (
             <span className="row tr">
-              <span className="it" dangerouslySetInnerHTML={{ __html: titleLine2Html }} />
+              <SplitWords text={titleLine2Html.trim()} className="it" />
             </span>
           ) : null}
         </h1>
@@ -117,7 +170,9 @@ export function RealEstateLandingHero({
       </div>
 
       <div className="hero__bottom">
-        <p className="hero__lead">{lead}</p>
+        <p ref={leadRef} className="hero__lead">
+          <SplitWords text={lead} />
+        </p>
         {showScrollCue ? (
           <div ref={cueRef} className="scroll-cue" role="presentation">
             <span>{scrollCueLabel}</span>

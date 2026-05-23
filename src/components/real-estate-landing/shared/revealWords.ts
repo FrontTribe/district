@@ -2,6 +2,27 @@
 
 import { gsap } from '@/lib/gsap'
 
+type WordAnimOpts = {
+  stagger?: number
+  duration?: number
+  delay?: number
+}
+
+/** Entrance reveal for `.word > i` nodes (hero load, no scroll trigger). */
+export function animateWordsEntrance(scope: Element | null, opts: WordAnimOpts = {}) {
+  if (typeof window === 'undefined' || !scope || !gsap) return null
+  const words = scope.querySelectorAll('.word > i')
+  if (!words.length) return null
+  gsap.set(words, { yPercent: 102 })
+  return gsap.to(words, {
+    yPercent: 0,
+    duration: opts.duration ?? 1.2,
+    ease: 'expo.out',
+    stagger: opts.stagger ?? 0.06,
+    delay: opts.delay ?? 0,
+  })
+}
+
 export function revealWordsIn(
   scope: Element | null,
   opts: {
