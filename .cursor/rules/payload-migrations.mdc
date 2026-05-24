@@ -1,0 +1,49 @@
+---
+description: Payload CMS database migrations — always generate, never hand-write
+globs: src/migrations/**
+alwaysApply: false
+---
+
+# Payload migrations
+
+Never create or edit migration SQL by hand in `src/migrations/*.ts`.
+
+## Always generate
+
+```bash
+pnpm run migrate:create <migration_name>
+```
+
+Payload compares the **latest migration JSON snapshot** to the current schema in `payload.config.ts` and writes both `.ts` and `.json`.
+
+## Workflow
+
+1. Change collections/blocks/fields in code first.
+2. Run `pnpm run migrate:create <descriptive_name>`.
+3. Review generated `.ts` and `.json` before committing.
+4. Register in `src/migrations/index.ts` is updated automatically by Payload.
+
+## Do not
+
+- Write raw `ALTER TABLE` / `CREATE TABLE` SQL manually in migration files.
+- Edit generated `.json` snapshot files except when intentionally regenerating a drift fix (see below).
+- Use `PAYLOAD_DB_PUSH=true` in production.
+
+## Server / snapshot drift
+
+`migrate:create` diffs **JSON snapshot vs config**, not live DB vs config.
+
+If production DB lags because an old snapshot already matches config, use the project helper:
+
+```bash
+pnpm run generate:form-blocks-migration
+```
+
+That script temporarily restores legacy `forms_blocks_*` parent tables in a throwaway snapshot, runs `migrate:create`, then removes the temp file.
+
+## Apply on server
+
+```bash
+./seed migrate
+./seed migrate:status
+```
