@@ -34,16 +34,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Check migration registry (PR)
-        if: github.event_name == 'pull_request'
-        run: SKIP_DB_CHECK=true node scripts/check-pending-migrations.mjs
-
       - name: Package source for migration check
-        if: github.event_name == 'push'
         run: git archive --format=tar.gz -o source.tgz HEAD
 
       - name: Upload source to server
-        if: github.event_name == 'push'
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -54,7 +48,6 @@ jobs:
           target: /tmp/
 
       - name: Verify migrations on server
-        if: github.event_name == 'push'
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -95,7 +88,8 @@ jobs:
             pnpm install --frozen-lockfile
             chmod +x scripts/server/seed
 
-            if [ "$APP_NAME" = "district-dev" ]; then
+            # Apply pending migrations only on push to development — never during PR checks.
+            if [ "${{ github.event_name }}" = "push" ] && [ "$APP_NAME" = "district-dev" ]; then
               pnpm run payload -- migrate
             fi
 

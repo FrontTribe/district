@@ -5,7 +5,7 @@
  * Usage:
  *   DATABASE_URI=... PAYLOAD_SECRET=... node scripts/check-pending-migrations.mjs
  *
- * Optional:
+ * Optional (local/CI escape hatch only — do not use in GitHub Actions):
  *   SKIP_DB_CHECK=true  — only validate migration files vs src/migrations/index.ts
  */
 import { spawnSync } from 'child_process'
