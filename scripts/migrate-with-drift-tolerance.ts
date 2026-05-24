@@ -26,15 +26,40 @@ async function getMigrationDb(
   return adapter.drizzle
 }
 
+function collectErrorParts(err: unknown): { messages: string[]; codes: string[] } {
+  const messages: string[] = []
+  const codes: string[] = []
+  const seen = new Set<unknown>()
+  let current: unknown = err
+
+  while (current && typeof current === 'object' && !seen.has(current)) {
+    seen.add(current)
+
+    if ('message' in current && current.message != null) {
+      messages.push(String(current.message))
+    }
+    if ('code' in current && current.code != null) {
+      codes.push(String(current.code))
+    }
+
+    current = 'cause' in current ? (current as { cause?: unknown }).cause : undefined
+  }
+
+  if (typeof err === 'string') messages.push(err)
+
+  return { messages, codes }
+}
+
 function isAlreadyAppliedError(err: unknown): boolean {
-  const message = err instanceof Error ? err.message : String(err)
-  const code =
-    err && typeof err === 'object' && 'code' in err ? String((err as { code?: string }).code) : ''
+  const { messages, codes } = collectErrorParts(err)
+  const haystack = messages.join('\n')
+
+  const duplicateCodes = new Set(['42P07', '42701', '42710', '23505'])
 
   return (
-    code === '42P07' ||
-    /already exists/i.test(message) ||
-    /duplicate (column|key|object|table)/i.test(message)
+    codes.some((code) => duplicateCodes.has(code)) ||
+    /already exists/i.test(haystack) ||
+    /duplicate (column|key|object|table|relation)/i.test(haystack)
   )
 }
 
@@ -60,11 +85,12 @@ async function main() {
     .filter((batch) => Number.isFinite(batch) && batch > 0)
     .reduce((max, batch) => Math.max(max, batch), 0)
 
+  const runBatch = latestBatch + 1
+
   for (const migration of migrations) {
     if (applied.has(migration.name)) continue
 
-    latestBatch += 1
-    const batch = latestBatch
+    const batch = runBatch
     const req = await createLocalReq({}, payload)
 
     payload.logger.info({ msg: `Migrating: ${migration.name}` })
@@ -100,6 +126,7 @@ async function main() {
         collection: 'payload-migrations',
         data: { name: migration.name, batch },
       })
+      applied.add(migration.name)
     }
   }
 
