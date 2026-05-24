@@ -19,20 +19,23 @@ function normalizeLocalPreviewOrigin(url: string): string {
 
 /**
  * Public frontend origin for Payload admin live preview (iframe target).
+ *
+ * Always uses the configured CMS/public URL (same origin as admin). Tenant context
+ * is passed via `previewTenant` on the draft redirect — not via tenant subdomains.
+ * Subdomain URLs (momento.district.hr) break preview on dev/staging and localhost.
  */
-export function getLivePreviewFrontendUrl(tenantSubdomain?: string | null): string {
+export function getLivePreviewFrontendUrl(_tenantSubdomain?: string | null): string {
   const serverUrl = getConfiguredServerUrl()
 
-  // Same origin as admin — avoids *.test DNS + mixed content when editing on localhost.
-  if (process.env.NODE_ENV === 'development' && serverUrl) {
+  if (serverUrl) {
     return normalizeLocalPreviewOrigin(serverUrl)
   }
 
-  if (tenantSubdomain) {
-    return generateTenantUrl(tenantSubdomain)
+  if (_tenantSubdomain) {
+    return generateTenantUrl(_tenantSubdomain)
   }
 
-  return serverUrl ? normalizeLocalPreviewOrigin(serverUrl) : 'http://localhost:3000'
+  return 'http://localhost:3000'
 }
 
 /** Path on the frontend for a pages collection document. */

@@ -69,7 +69,7 @@ function setupScrollSplits(root: HTMLElement) {
         duration: 1.1,
         ease: EASE,
         stagger: 0.06,
-        immediateRender: true,
+        immediateRender: false,
         scrollTrigger: scrollOnce({ trigger, start: 'top 88%' }),
       },
     )
@@ -92,7 +92,7 @@ function setupScrollReveals(root: HTMLElement) {
         duration: 1.2,
         ease: EASE,
         delay,
-        immediateRender: true,
+        immediateRender: false,
         scrollTrigger: scrollOnce({ trigger, start: 'top 90%' }),
       },
     )
@@ -111,7 +111,7 @@ function setupScrollClipReveals(root: HTMLElement) {
         scale: 1,
         duration: 1.6,
         ease: EASE,
-        immediateRender: true,
+        immediateRender: false,
         scrollTrigger: scrollOnce({ trigger, start: 'top 88%' }),
       },
     )
@@ -122,27 +122,30 @@ function setupGalleryTiles(root: HTMLElement) {
   const tiles = gsap.utils.toArray<HTMLElement>('.g-tile', root)
   if (!tiles.length) return
 
-  gsap.set(tiles, {
-    opacity: 0,
-    y: 50,
-    scale: 1.06,
-    clipPath: 'inset(8% 8% 8% 8%)',
-  })
-
   ScrollTrigger.batch(tiles, {
     start: 'top 88%',
     once: true,
     onEnter: (batch) => {
-      gsap.to(batch, {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        clipPath: 'inset(0% 0% 0% 0%)',
-        duration: 1.4,
-        ease: EASE,
-        stagger: 0.08,
-        overwrite: 'auto',
-      })
+      gsap.fromTo(
+        batch,
+        {
+          opacity: 0,
+          y: 50,
+          scale: 1.06,
+          clipPath: 'inset(8% 8% 8% 8%)',
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          clipPath: 'inset(0% 0% 0% 0%)',
+          duration: 1.4,
+          ease: EASE,
+          stagger: 0.08,
+          overwrite: 'auto',
+          immediateRender: false,
+        },
+      )
     },
   })
 }
@@ -151,20 +154,23 @@ function setupOfferCards(root: HTMLElement) {
   const cards = gsap.utils.toArray<HTMLElement>('.offer-card', root)
   if (!cards.length) return
 
-  gsap.set(cards, { opacity: 0, y: 60 })
-
   ScrollTrigger.batch(cards, {
     start: 'top 85%',
     once: true,
     onEnter: (batch) => {
-      gsap.to(batch, {
-        opacity: 1,
-        y: 0,
-        duration: 1.0,
-        ease: EASE,
-        stagger: 0.07,
-        overwrite: 'auto',
-      })
+      gsap.fromTo(
+        batch,
+        { opacity: 0, y: 60 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1.0,
+          ease: EASE,
+          stagger: 0.07,
+          overwrite: 'auto',
+          immediateRender: false,
+        },
+      )
     },
   })
 }

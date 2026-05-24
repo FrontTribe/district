@@ -23,7 +23,12 @@ export function useMomentoAnimations(
       refresh()
     }
 
+    // Payload live preview iframe may mount before layout height is final.
+    requestAnimationFrame(refresh)
+    const refreshTimer = window.setTimeout(refresh, 250)
+
     return () => {
+      window.clearTimeout(refreshTimer)
       window.removeEventListener(LENIS_READY_EVENT, refresh)
       cleanup()
     }
