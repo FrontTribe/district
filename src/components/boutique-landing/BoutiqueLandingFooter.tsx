@@ -9,6 +9,28 @@ type InfoRow = { label: string; value: string }
 type ContactLink = { key: string; label: string; href: string }
 type LegalLink = { label: string; href: string }
 
+const FRONT_TRIBE_URL = 'https://fronttribe.com'
+
+function renderMadeByCredits(madeBy: string) {
+  if (madeBy.includes('Front Tribe')) {
+    const prefix = madeBy.split('Front Tribe')[0]?.trim()
+    return (
+      <>
+        <span className="footer-legal-key">{prefix || 'Kreirao'}</span>
+        <a href={FRONT_TRIBE_URL} target="_blank" rel="noopener noreferrer">
+          Front Tribe
+        </a>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <span className="footer-legal-key">Kreirao</span>
+      <span>{madeBy.replace(/^Kreirao\s*/i, '')}</span>
+    </>
+  )
+}
 export type BoutiqueLandingFooterProps = {
   timeLabel?: string | null
   signoffEyebrow?: string | null
@@ -49,7 +71,6 @@ export function BoutiqueLandingFooter({
   marqueeItems,
   wordmark = 'district.',
   copyright,
-  legalLinks,
   madeBy,
 }: BoutiqueLandingFooterProps) {
   const time = useOsijekTime()
@@ -192,21 +213,7 @@ export function BoutiqueLandingFooter({
             </>
           )}
         </div>
-        <div className="footer-legal-col footer-legal-mid">
-          {legalLinks?.map((link) => (
-            <a key={link.label} href={link.href}>
-              {link.label}
-            </a>
-          ))}
-        </div>
-        <div className="footer-legal-col">
-          {madeBy ? (
-            <>
-              <span className="footer-legal-key">Kreirao</span>
-              <span>{madeBy.replace(/^Kreirao\s*/i, '')}</span>
-            </>
-          ) : null}
-        </div>
+        <div className="footer-legal-col">{madeBy ? renderMadeByCredits(madeBy) : null}</div>
       </div>
     </footer>
   )

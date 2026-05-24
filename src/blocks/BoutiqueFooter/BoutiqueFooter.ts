@@ -69,7 +69,7 @@ const BoutiqueFooter: Block = {
         { name: 'href', type: 'text', required: true },
       ],
     },
-    { name: 'madeBy', type: 'text', label: { en: 'Credits', hr: 'Credits' }, defaultValue: 'Kreirao Front Tribe · redesign concept' },
+    { name: 'madeBy', type: 'text', label: { en: 'Credits', hr: 'Credits' }, defaultValue: 'Kreirao Front Tribe' },
   ],
 }
 

@@ -298,13 +298,8 @@ const HR: BoutiqueSeedLocalePack = {
     ],
     marqueeItems: ['Boutique', 'Osijek', 'Krov & Jacuzzi', 'Drava', 'Opus Arena', 'MMXXVI'],
     copyright: '© District d.o.o. · OIB 56282051463 · sva prava pridržana',
-    legalLinks: [
-      { label: 'Privatnost', href: '#' },
-      { label: 'Uvjeti', href: '#' },
-      { label: 'Politika otkaza', href: '#' },
-      { label: 'Impressum', href: '#' },
-    ],
-    madeBy: 'Kreirao Front Tribe · redesign concept',
+    legalLinks: [],
+    madeBy: 'Kreirao Front Tribe',
   },
   formSeed: {
     nameFieldLabel: 'Ime i prezime',
@@ -508,13 +503,8 @@ const EN: BoutiqueSeedLocalePack = {
     ],
     marqueeItems: ['Boutique', 'Osijek', 'Rooftop & Jacuzzi', 'Drava', 'Opus Arena', 'MMXXVI'],
     copyright: '© District d.o.o. · OIB 56282051463 · all rights reserved',
-    legalLinks: [
-      { label: 'Privacy', href: '#' },
-      { label: 'Terms', href: '#' },
-      { label: 'Cancellation policy', href: '#' },
-      { label: 'Imprint', href: '#' },
-    ],
-    madeBy: 'Created by Front Tribe · redesign concept',
+    legalLinks: [],
+    madeBy: 'Created by Front Tribe',
   },
   formSeed: {
     nameFieldLabel: 'Full name',
@@ -734,13 +724,8 @@ const DE: BoutiqueSeedLocalePack = {
     ],
     marqueeItems: ['Boutique', 'Osijek', 'Dach & Jacuzzi', 'Drau', 'Opus Arena', 'MMXXVI'],
     copyright: '© District d.o.o. · OIB 56282051463 · alle Rechte vorbehalten',
-    legalLinks: [
-      { label: 'Datenschutz', href: '#' },
-      { label: 'AGB', href: '#' },
-      { label: 'Stornobedingungen', href: '#' },
-      { label: 'Impressum', href: '#' },
-    ],
-    madeBy: 'Erstellt von Front Tribe · Redesign-Konzept',
+    legalLinks: [],
+    madeBy: 'Erstellt von Front Tribe',
   },
   formSeed: {
     nameFieldLabel: 'Vor- und Nachname',
