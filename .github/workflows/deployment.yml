@@ -89,13 +89,16 @@ jobs:
             pnpm install --frozen-lockfile
             chmod +x scripts/server/seed
 
-            # PR: verify only (dev DB). Push: apply pending migrations, then verify.
-            if [ "$APPLY_MIGRATIONS" = "true" ]; then
-              echo "Applying pending migrations on $APP_NAME…"
-              pnpm run payload -- migrate
-            else
-              echo "PR check — skipping migrate (read-only verify on $APP_NAME)."
-            fi
+            # appleboy script_stop treats a failed `[ ]` in if/else as fatal — use case instead.
+            case "$APPLY_MIGRATIONS" in
+              true)
+                echo "Applying pending migrations on $APP_NAME..."
+                pnpm run payload -- migrate
+                ;;
+              *)
+                echo "PR check — skipping migrate (read-only verify on $APP_NAME)."
+                ;;
+            esac
 
             pnpm run check:migrations
 
