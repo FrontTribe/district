@@ -25,6 +25,7 @@ import Documents from './collections/documents'
 import Buildings from './collections/buildings'
 import { loadRentlioOptions } from './utils/rentlio'
 import { migrations } from './migrations'
+import { getTenantVisualTheme } from './utils/tenantVisualTheme'
 import {
   getLivePreviewFrontendUrl,
   getLivePreviewPagePath,
@@ -69,6 +70,11 @@ export default buildConfig({
           user.tenant?.subdomain
         ) {
           tenantSubdomain = user.tenant.subdomain
+        }
+
+        const slug = typeof data.slug === 'string' ? data.slug.trim().toLowerCase() : ''
+        if (!tenantSubdomain && slug && getTenantVisualTheme(slug) !== 'default') {
+          tenantSubdomain = slug
         }
 
         const frontendURL = getLivePreviewFrontendUrl(tenantSubdomain)

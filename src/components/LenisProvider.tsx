@@ -35,7 +35,6 @@ export default function LenisProvider({ children }: Props) {
 
     lenis.scrollTo(0, { immediate: true })
 
-    // ScrollTrigger reads window scroll by default; Lenis scrolls virtually — proxy bridges them.
     ScrollTrigger.scrollerProxy(SCROLLER, {
       scrollTop(value?: number) {
         if (arguments.length && value !== undefined) {

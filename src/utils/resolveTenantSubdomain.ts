@@ -1,15 +1,16 @@
 import type { Page, Tenant } from '@/payload-types'
+import { getTenantVisualTheme } from '@/utils/tenantVisualTheme'
 
-/** Host header subdomain, preview query param, or tenant from the page document. */
+/**
+ * Resolve tenant subdomain for the current page.
+ * Page/preview context wins over host header so localhost (always "district")
+ * and main-domain URLs still render tenant pages correctly.
+ */
 export function resolveTenantSubdomain(
   headerSubdomain: string | null | undefined,
-  page?: Pick<Page, 'tenant'> | null,
+  page?: Pick<Page, 'tenant' | 'slug'> | null,
   previewTenant?: string | null,
 ): string | null {
-  if (headerSubdomain?.trim()) {
-    return headerSubdomain.trim()
-  }
-
   if (previewTenant?.trim()) {
     return previewTenant.trim()
   }
@@ -17,6 +18,15 @@ export function resolveTenantSubdomain(
   const tenant = page?.tenant
   if (tenant && typeof tenant === 'object' && tenant.subdomain?.trim()) {
     return tenant.subdomain.trim()
+  }
+
+  const slug = typeof page?.slug === 'string' ? page.slug.trim().toLowerCase() : ''
+  if (slug && getTenantVisualTheme(slug) !== 'default') {
+    return slug
+  }
+
+  if (headerSubdomain?.trim()) {
+    return headerSubdomain.trim()
   }
 
   return null

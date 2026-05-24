@@ -5,18 +5,27 @@ export function getPayloadServerURL(): string {
     process.env.NEXT_PUBLIC_SERVER_URL?.trim()
 
   if (fromEnv) {
-    return fromEnv.replace(/\/$/, '')
+    return normalizeDevServerUrl(fromEnv)
   }
 
   return 'http://localhost:3000'
 }
 
+function normalizeDevServerUrl(url: string): string {
+  const trimmed = url.replace(/\/$/, '')
+  if (process.env.NODE_ENV === 'development' && process.env.LIVE_PREVIEW_HTTPS !== 'true') {
+    return trimmed.replace(/^https:\/\//i, 'http://')
+  }
+  return trimmed
+}
+
 /**
- * In the browser, postMessage origin must match the open admin tab (not env drift http/https).
+ * Origin used for Payload live-preview postMessage.
+ * Must match the admin tab origin exactly.
  */
 export function resolvePayloadServerURL(): string {
   if (typeof window !== 'undefined') {
-    return window.location.origin
+    return normalizeDevServerUrl(window.location.origin)
   }
   return getPayloadServerURL()
 }

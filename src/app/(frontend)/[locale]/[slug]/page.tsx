@@ -1,8 +1,10 @@
-import { LivePreviewPage } from '@/components/LivePreviewPage'
+import PageClient from '@/components/PageClient'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import type { Tenant } from '@/payload-types'
+import { RealEstateLandingShell } from '@/components/real-estate-landing'
+import { MomentoLandingShell } from '@/components/momento-landing'
 import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
 import { resolveTenantSubdomain, resolveTenantId } from '@/utils/resolveTenantSubdomain'
@@ -13,6 +15,7 @@ import { localeLang } from '@/utils/locale'
 import { generateMetadataFromPage } from '@/utils/generateMetadata'
 import { enrichInquiryFormsInPage } from '@/utils/enrichInquiryFormsInPage'
 import { layoutHasBoutiqueFooter } from '@/utils/boutiqueLayoutFlags'
+import { buildMomentoShellMenu } from '@/utils/buildMomentoShellMenu'
 import { BoutiqueLandingShell } from '@/components/boutique-landing/BoutiqueLandingShell'
 
 type PageProps = {
@@ -27,12 +30,8 @@ type PageProps = {
 
 type AllowedLocale = 'en' | 'hr' | 'de' | undefined
 
-/** Dubina za ugniježđene blokove (npr. `building` → `unitDetailsPdf` u unit browseru). */
 const fetchPage = (slug: string, locale: AllowedLocale) => getCachedPageBySlug(slug, locale, 6)
 
-/**
- * Generate metadata for the page
- */
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug, locale } = await params
   const page = await fetchPage(slug, locale as AllowedLocale)
@@ -44,7 +43,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
   }
 
-  // Get base URL from environment or construct it
   const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
   return generateMetadataFromPage(page, locale, baseUrl)
@@ -64,11 +62,9 @@ export default async function Page({ params, searchParams }: PageProps) {
     return notFound()
   }
 
-  // Get tenant data for menu and footer
-  const requestHeaders: Headers = await headers()
-  const headersList = requestHeaders
+  const requestHeaders = await headers()
   const subdomain = resolveTenantSubdomain(
-    headersList.get('x-tenant-subdomain'),
+    requestHeaders.get('x-tenant-subdomain'),
     page,
     previewTenant,
   )
@@ -76,15 +72,17 @@ export default async function Page({ params, searchParams }: PageProps) {
   let currentTenant: Tenant | null = null
   if (subdomain) {
     currentTenant = await getTenantBySubdomain(subdomain)
-  } else if (page.tenant && typeof page.tenant === 'object') {
+  }
+  if (!currentTenant && page.tenant && typeof page.tenant === 'object') {
     currentTenant = page.tenant
   }
 
   const tenantId = resolveTenantId(page, currentTenant)
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
   const tenantVisualTheme = getTenantVisualTheme(subdomain)
-  const isBoutiqueTenantPage = Boolean(currentTenant && tenantVisualTheme === 'boutique')
-  const isMomentoTenantPage = Boolean(currentTenant && tenantVisualTheme === 'momento')
+  const isMomentoTheme = tenantVisualTheme === 'momento'
+  const isBoutiqueTenantPage = tenantVisualTheme === 'boutique' && Boolean(subdomain || currentTenant)
+  const isMomentoTenantPage = isMomentoTheme && Boolean(subdomain || currentTenant)
 
   const mergedPage = await enrichInquiryFormsInPage(page, locale)
 
@@ -108,35 +106,19 @@ export default async function Page({ params, searchParams }: PageProps) {
       !hasBoutiqueFooterBlock,
   )
 
-  const momentoMenu =
-    menuGlobal && isMomentoTenantPage
-      ? {
-          logoText: menuGlobal.logoText ?? 'Momento.',
-          locale,
-          menuItems:
-            menuGlobal.menuItems?.map((item) => ({
-              label: item.label,
-              link: item.link,
-              scrollTarget: item.scrollTarget || undefined,
-              external: item.external || false,
-            })) ?? [],
-        }
-      : undefined
+  const momentoMenu = isMomentoTheme ? buildMomentoShellMenu(menuGlobal, locale) : undefined
 
-  const pageContent = (
-    <LivePreviewPage
+  const pageClient = (
+    <PageClient
       page={mergedPage}
       locale={locale}
-      tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
-      momentoMenu={momentoMenu}
-      isRealEstateLandingPage={isRealEstateLandingPage}
-      isBoutiqueTenantPage={isBoutiqueTenantPage}
+      previewTenant={previewTenant}
+      tenantVisualTheme={tenantVisualTheme}
     />
   )
 
   const pageBody = (
     <>
-      {/* Menu Wrapper - only show for tenant pages */}
       {showTenantMenu && (
         <MenuWrapper
           tenantVisualTheme={tenantVisualTheme}
@@ -178,7 +160,21 @@ export default async function Page({ params, searchParams }: PageProps) {
         />
       )}
 
-      {pageContent}
+      {isRealEstateLandingPage ? (
+        <RealEstateLandingShell>{pageClient}</RealEstateLandingShell>
+      ) : isMomentoTenantPage ? (
+        <MomentoLandingShell menu={momentoMenu}>{pageClient}</MomentoLandingShell>
+      ) : (
+        <div
+          className={
+            isBoutiqueTenantPage
+              ? 'content content--full-bleed'
+              : 'content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
+          }
+        >
+          {pageClient}
+        </div>
+      )}
 
       {showTenantFooter && footerGlobal && !isRealEstateLandingPage ? (
         <Footer

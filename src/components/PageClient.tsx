@@ -14,41 +14,37 @@ export default function PageClient({
   page: initialPage,
   locale = 'hr',
   tenantVisualTheme = 'default',
+  previewTenant,
 }: {
   page: PageType
   locale?: string
   tenantVisualTheme?: TenantVisualTheme
+  previewTenant?: string
 }) {
-  const { data: page } = useLivePreview({
+  const { data: livePage } = useLivePreview({
     initialData: initialPage,
     serverURL: resolvePayloadServerURL(),
     depth: LIVE_PREVIEW_DEPTH,
   })
 
-  const liveSubdomain = resolveTenantSubdomain(null, page)
-  const resolvedTheme = liveSubdomain
-    ? getTenantVisualTheme(liveSubdomain)
-    : tenantVisualTheme
-
-  if (!page) {
-    return null
+  const page: PageType = {
+    ...initialPage,
+    ...livePage,
+    layout: livePage?.layout?.length ? livePage.layout : initialPage.layout,
   }
 
-  if (!page.layout || page.layout.length === 0) {
+  const subdomain = resolveTenantSubdomain(null, page, previewTenant)
+  const resolvedTheme = subdomain ? getTenantVisualTheme(subdomain) : tenantVisualTheme
+
+  if (!page.layout?.length) {
     return (
       <div className="prose mx-auto max-w-4xl p-4 lg:p-8">
-        <div className="text-center text-gray-500">
-          <p>No content available for this page</p>
-        </div>
+        <p className="text-center text-gray-500">No content available for this page</p>
       </div>
     )
   }
 
   return (
-    <BlockRenderer
-      blocks={page.layout}
-      locale={locale}
-      tenantVisualTheme={resolvedTheme}
-    />
+    <BlockRenderer blocks={page.layout} locale={locale} tenantVisualTheme={resolvedTheme} />
   )
 }

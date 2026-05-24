@@ -28,7 +28,7 @@ function setupHero(root: HTMLElement) {
         ease: EASE,
         stagger: 0.1,
         delay: 0.15,
-        immediateRender: true,
+        immediateRender: false,
       },
     )
   }
@@ -47,7 +47,7 @@ function setupHero(root: HTMLElement) {
         ease: EASE,
         stagger: 0.08,
         delay: 0.45,
-        immediateRender: true,
+        immediateRender: false,
       },
     )
   }
@@ -193,22 +193,6 @@ function setupParallax(root: HTMLElement) {
         },
       )
     })
-
-  const hero = root.querySelector('.hero')
-  const heroImg = root.querySelector('.hero-img')
-  if (hero && heroImg) {
-    gsap.to(heroImg, {
-      yPercent: 20,
-      scale: 1.08,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: hero,
-        start: 'top top',
-        end: 'bottom top',
-        scrub: 0.6,
-      },
-    })
-  }
 }
 
 /** Register all Momento landing animations inside a scoped GSAP context. */
