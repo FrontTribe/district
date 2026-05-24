@@ -1753,8 +1753,6 @@ export interface BoutiqueFooterBlock {
         id?: string | null;
       }[]
     | null;
-  newsletterHeading?: string | null;
-  newsletterNote?: string | null;
   mapHeading?: string | null;
   mapCta?: string | null;
   distanceRows?:
@@ -3092,8 +3090,6 @@ export interface BoutiqueFooterBlockSelect<T extends boolean = true> {
         href?: T;
         id?: T;
       };
-  newsletterHeading?: T;
-  newsletterNote?: T;
   mapHeading?: T;
   mapCta?: T;
   distanceRows?:

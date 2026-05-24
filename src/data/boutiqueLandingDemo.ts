@@ -100,7 +100,7 @@ export function buildBoutiquePayloadLayout(
             image: mediaPick(media, key as BoutiqueDemoMediaKey),
           })),
           rentlioPropertyId: preserved?.rentlioPropertyId ?? undefined,
-          rentlioSalesChannelId: preserved?.rentlioSalesChannelId ?? '45',
+          rentlioSalesChannelId: preserved?.rentlioSalesChannelId ?? undefined,
           rentlioUnitTypeId: preserved?.rentlioUnitTypeId ?? undefined,
         }
       }),
@@ -159,8 +159,6 @@ export function buildBoutiquePayloadLayout(
       infoRows: pack.footer.infoRows,
       contactHeading: pack.footer.contactHeading,
       contactLinks: pack.footer.contactLinks,
-      newsletterHeading: pack.footer.newsletterHeading,
-      newsletterNote: pack.footer.newsletterNote,
       mapHeading: pack.footer.mapHeading,
       mapCta: pack.footer.mapCta,
       distanceRows: pack.footer.distanceRows,

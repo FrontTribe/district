@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { X, Mail, Phone, CreditCard } from 'lucide-react'
+import { X, Mail, Phone, CreditCard, ChevronDown, Check } from 'lucide-react'
 import flatpickr from 'flatpickr'
 import { Croatian } from 'flatpickr/dist/l10n/hr.js'
 import {
@@ -22,6 +22,132 @@ interface RoomData {
   rentlioPropertyId?: string
   image?: any
   badges?: Array<{ text?: string }>
+}
+
+function BoutiqueSelect({
+  id,
+  value,
+  onChange,
+  options,
+  placeholder,
+  required,
+}: {
+  id: string
+  value: string
+  onChange: (value: string) => void
+  options: Array<{ value: string; label: string }>
+  placeholder: string
+  required?: boolean
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const selectedOption = options.find((option) => option.value === value)
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!wrapperRef.current?.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOpen(false)
+    }
+
+    document.addEventListener('mousedown', handlePointerDown)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen])
+
+  return (
+    <div ref={wrapperRef} className={`boutique-select${isOpen ? ' is-open' : ''}`}>
+      <button
+        type="button"
+        id={id}
+        className="boutique-select__trigger"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((open) => !open)}
+      >
+        <span
+          className={
+            selectedOption ? 'boutique-select__value' : 'boutique-select__placeholder'
+          }
+        >
+          {selectedOption?.label ?? placeholder}
+        </span>
+        <ChevronDown size={18} className="boutique-select__chevron" aria-hidden />
+      </button>
+      {isOpen ? (
+        <ul className="boutique-select__menu" role="listbox" aria-labelledby={id}>
+          {options.map((option) => (
+            <li
+              key={option.value}
+              role="option"
+              aria-selected={value === option.value}
+              className={`boutique-select__option${value === option.value ? ' is-selected' : ''}`}
+              onClick={() => {
+                onChange(option.value)
+                setIsOpen(false)
+              }}
+            >
+              {option.label}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <select
+        className="boutique-select__native"
+        tabIndex={-1}
+        aria-hidden
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        required={required}
+      >
+        <option value="">{placeholder}</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
+function BoutiqueCheckbox({
+  id,
+  checked,
+  onChange,
+  required,
+  children,
+}: {
+  id: string
+  checked: boolean
+  onChange: (checked: boolean) => void
+  required?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <label className="boutique-checkbox" htmlFor={id}>
+      <input
+        type="checkbox"
+        id={id}
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        required={required}
+      />
+      <span className="boutique-checkbox__control" aria-hidden="true">
+        <Check size={12} strokeWidth={2.5} />
+      </span>
+      <span className="boutique-checkbox__text">{children}</span>
+    </label>
+  )
 }
 
 interface BookingDrawerProps {
@@ -72,6 +198,25 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
   visualTheme = 'default',
 }) => {
   const isBoutique = visualTheme === 'boutique'
+  const drawerAnimMs = isBoutique ? 720 : 440
+
+  const [isMounted, setIsMounted] = useState(false)
+  const [isActive, setIsActive] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsMounted(true)
+      const raf = requestAnimationFrame(() => {
+        requestAnimationFrame(() => setIsActive(true))
+      })
+      return () => cancelAnimationFrame(raf)
+    }
+
+    setIsActive(false)
+    const timer = window.setTimeout(() => setIsMounted(false), drawerAnimMs)
+    return () => clearTimeout(timer)
+  }, [isOpen, drawerAnimMs])
+
   // Translation function for frontend
   const t = (key: string, fallback: string = key) => {
     const translations: Record<string, Record<string, string>> = {
@@ -509,9 +654,9 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
 
   const rentlioApiKey = process.env.NEXT_PUBLIC_RENTLIO_API_KEY || ''
 
-  // Prevent body scroll when drawer is open using Lenis-compatible method
+  // Prevent body scroll while drawer is mounted (incl. exit animation)
   useEffect(() => {
-    if (isOpen) {
+    if (isMounted) {
       // Store the current scroll position
       const scrollY = window.scrollY
 
@@ -565,14 +710,21 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
         lenisInstance.start()
       }
     }
-  }, [isOpen])
+  }, [isMounted])
 
-  // Initialize Flatpickr range picker
+  // Initialize Flatpickr range picker once drawer is in the DOM
   useEffect(() => {
-    if (isOpen && checkInRef.current) {
-      // Initialize range picker on check-in input
-      if (!checkInPickerRef.current) {
-        checkInPickerRef.current = flatpickr(checkInRef.current, {
+    if (!isMounted || !checkInRef.current) {
+      return () => {
+        if (checkInPickerRef.current) {
+          checkInPickerRef.current.destroy()
+          checkInPickerRef.current = null
+        }
+      }
+    }
+
+    if (!checkInPickerRef.current) {
+      checkInPickerRef.current = flatpickr(checkInRef.current, {
           locale: Croatian,
           mode: 'range',
           dateFormat: 'd.m.Y',
@@ -604,7 +756,6 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
             }
           },
         })
-      }
     }
 
     return () => {
@@ -613,7 +764,7 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
         checkInPickerRef.current = null
       }
     }
-  }, [isOpen])
+  }, [isMounted])
 
   // Fetch pricing data when dates change
   useEffect(() => {
@@ -1374,7 +1525,7 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
       .slice(0, 5)
   }
 
-  if (!isOpen) return null
+  if (!isMounted) return null
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -1382,13 +1533,25 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
     }
   }
 
+  const overlayClassName = [
+    'booking-drawer-overlay',
+    isBoutique && 'booking-drawer-overlay--boutique',
+    isActive && 'is-active',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  const drawerClassName = [
+    'booking-drawer',
+    isBoutique && 'booking-drawer--boutique',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
-    <div
-      className={`booking-drawer-overlay${isBoutique ? ' booking-drawer-overlay--boutique' : ''}`}
-      onClick={handleOverlayClick}
-    >
+    <div className={overlayClassName} onClick={handleOverlayClick}>
       <div
-        className={`booking-drawer${isBoutique ? ' booking-drawer--boutique' : ''}`}
+        className={drawerClassName}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="booking-drawer-header">
@@ -1429,7 +1592,7 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
               {formData.checkIn && formData.checkOut && currentPricingData && (
                 <div className="selected-dates-display">
                   <div className="selected-dates-header">
-                    <h4>{translations.selectedDates}</h4>
+                    {!isBoutique && <h4>{translations.selectedDates}</h4>}
                     <div className="availability-status">
                       {currentPricingData.isAvailable ? (
                         <span className="available">
@@ -1444,20 +1607,6 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
                   </div>
 
                   <div className="selected-dates-content">
-                    <div className="date-range">
-                      <div className="date-item">
-                        <div className="date-label">{translations.checkIn}</div>
-                        <div className="date-value">{currentPricingData.checkIn}</div>
-                        <div className="date-day">{currentPricingData.checkInDay}</div>
-                      </div>
-                      <div className="date-arrow">{translations.arrow}</div>
-                      <div className="date-item">
-                        <div className="date-label">{translations.checkOut}</div>
-                        <div className="date-value">{currentPricingData.checkOut}</div>
-                        <div className="date-day">{currentPricingData.checkOutDay}</div>
-                      </div>
-                    </div>
-
                     {currentPricingData.isAvailable && (
                       <div className="pricing-summary">
                         <div className="price-item">
@@ -1472,13 +1621,6 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
                           <span className="total-value">
                             {translations.euro}
                             {currentPricingData.totalPrice.toFixed(2).replace('.', ',')}
-                          </span>
-                        </div>
-                        <div className="price-hrk">
-                          <span className="hrk-label">
-                            {translations.approximately}{' '}
-                            {currentPricingData.totalPriceHRK.toFixed(2).replace('.', ',')}{' '}
-                            {translations.hrk}
                           </span>
                         </div>
                       </div>
@@ -1636,20 +1778,11 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
                         {translations.eur}
                       </div>
                     </div>
-                    <div className="total-hrk">
-                      {currentPricingData.totalPriceHRK.toFixed(2).replace('.', ',')}{' '}
-                      {translations.hrk}
-                    </div>
                   </div>
 
                   <div className="tax-info">
                     <div>{translations.vatIncluded}</div>
                     <div>{translations.vatServicesIncluded}</div>
-                    <div>
-                      {translations.exchangeRate} {translations.eurToHrk}{' '}
-                      {currentPricingData.exchangeRate.toFixed(5).replace('.', ',')}{' '}
-                      {translations.hrk}
-                    </div>
                   </div>
                 </>
               )}
@@ -1712,36 +1845,58 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
 
               <div className="form-group">
                 <label htmlFor="country">{translations.country}</label>
-                <select
-                  id="country"
-                  value={formData.country}
-                  onChange={(e) => handleInputChange('country', e.target.value)}
-                  required
-                >
-                  <option value="">{translations.selectCountry}</option>
-                  {countries.map((country) => (
-                    <option key={country} value={country}>
-                      {country}
-                    </option>
-                  ))}
-                </select>
+                {isBoutique ? (
+                  <BoutiqueSelect
+                    id="country"
+                    value={formData.country}
+                    onChange={(value) => handleInputChange('country', value)}
+                    placeholder={translations.selectCountry}
+                    required
+                    options={countries.map((country) => ({ value: country, label: country }))}
+                  />
+                ) : (
+                  <select
+                    id="country"
+                    value={formData.country}
+                    onChange={(e) => handleInputChange('country', e.target.value)}
+                    required
+                  >
+                    <option value="">{translations.selectCountry}</option>
+                    {countries.map((country) => (
+                      <option key={country} value={country}>
+                        {country}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div className="form-group">
                 <label htmlFor="arrivalTime">{translations.arrivalTime}</label>
-                <select
-                  id="arrivalTime"
-                  value={formData.arrivalTime}
-                  onChange={(e) => handleInputChange('arrivalTime', e.target.value)}
-                  required
-                >
-                  <option value="">{translations.selectOption}</option>
-                  {arrivalTimes.map((time) => (
-                    <option key={time} value={time}>
-                      {time}
-                    </option>
-                  ))}
-                </select>
+                {isBoutique ? (
+                  <BoutiqueSelect
+                    id="arrivalTime"
+                    value={formData.arrivalTime}
+                    onChange={(value) => handleInputChange('arrivalTime', value)}
+                    placeholder={translations.selectOption}
+                    required
+                    options={arrivalTimes.map((time) => ({ value: time, label: time }))}
+                  />
+                ) : (
+                  <select
+                    id="arrivalTime"
+                    value={formData.arrivalTime}
+                    onChange={(e) => handleInputChange('arrivalTime', e.target.value)}
+                    required
+                  >
+                    <option value="">{translations.selectOption}</option>
+                    {arrivalTimes.map((time) => (
+                      <option key={time} value={time}>
+                        {time}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div className="form-group">
@@ -1935,15 +2090,27 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
               <div className="payment-section">
                 <h4>{translations.reservationConfirmation}</h4>
 
-                <div className="checkbox-group">
-                  <input
-                    type="checkbox"
+                {isBoutique ? (
+                  <BoutiqueCheckbox
                     id="cardholderSame"
                     checked={formData.cardholderSameAsBooker}
-                    onChange={(e) => handleInputChange('cardholderSameAsBooker', e.target.checked)}
-                  />
-                  <label htmlFor="cardholderSame">{translations.cardholderSame}</label>
-                </div>
+                    onChange={(checked) => handleInputChange('cardholderSameAsBooker', checked)}
+                  >
+                    {translations.cardholderSame}
+                  </BoutiqueCheckbox>
+                ) : (
+                  <div className="checkbox-group">
+                    <input
+                      type="checkbox"
+                      id="cardholderSame"
+                      checked={formData.cardholderSameAsBooker}
+                      onChange={(e) =>
+                        handleInputChange('cardholderSameAsBooker', e.target.checked)
+                      }
+                    />
+                    <label htmlFor="cardholderSame">{translations.cardholderSame}</label>
+                  </div>
+                )}
 
                 {!formData.cardholderSameAsBooker && (
                   <div className="form-group">
@@ -2009,15 +2176,13 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
                   {isSubmitting ? translations.reserving : translations.reserve}
                 </button>
 
-                <div className="checkbox-group">
-                  <input
-                    type="checkbox"
+                {isBoutique ? (
+                  <BoutiqueCheckbox
                     id="acceptTerms"
                     checked={formData.acceptTerms}
-                    onChange={(e) => handleInputChange('acceptTerms', e.target.checked)}
+                    onChange={(checked) => handleInputChange('acceptTerms', checked)}
                     required
-                  />
-                  <label htmlFor="acceptTerms">
+                  >
                     {translations.acceptTerms}{' '}
                     <a href="#" className="link">
                       {translations.termsOfUse}
@@ -2026,8 +2191,28 @@ const BookingDrawer: React.FC<BookingDrawerProps> = ({
                     <a href="#" className="link">
                       {translations.privacyPolicy}
                     </a>
-                  </label>
-                </div>
+                  </BoutiqueCheckbox>
+                ) : (
+                  <div className="checkbox-group">
+                    <input
+                      type="checkbox"
+                      id="acceptTerms"
+                      checked={formData.acceptTerms}
+                      onChange={(e) => handleInputChange('acceptTerms', e.target.checked)}
+                      required
+                    />
+                    <label htmlFor="acceptTerms">
+                      {translations.acceptTerms}{' '}
+                      <a href="#" className="link">
+                        {translations.termsOfUse}
+                      </a>{' '}
+                      {translations.and}{' '}
+                      <a href="#" className="link">
+                        {translations.privacyPolicy}
+                      </a>
+                    </label>
+                  </div>
+                )}
 
                 <p className="disclaimer">{translations.cardNotCharged}</p>
               </div>

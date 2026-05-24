@@ -16,8 +16,6 @@ type Props = {
   infoRows?: { label: string; value: string }[] | null
   contactHeading?: string | null
   contactLinks?: { key: string; label: string; href: string }[] | null
-  newsletterHeading?: string | null
-  newsletterNote?: string | null
   mapHeading?: string | null
   mapCta?: string | null
   distanceRows?: { label: string; value: string }[] | null

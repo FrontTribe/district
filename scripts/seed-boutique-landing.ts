@@ -6,8 +6,9 @@
  *
  * Env: BOUTIQUE_SEED_TENANT_SUBDOMAIN (default boutique), BOUTIQUE_SEED_PAGE_SLUG,
  *      BOUTIQUE_SEED_SKIP_MEDIA, BOUTIQUE_SEED_CLEAN, ALLOW_SEED
+ *      BOUTIQUE_SEED_RENTLIO=true — optional dev demo Rentlio IDs (off by default; link rooms in Admin)
  *      BOUTIQUE_SEED_RENTLIO_PROPERTY_ID, BOUTIQUE_SEED_RENTLIO_SALES_CHANNEL_ID,
- *      BOUTIQUE_SEED_RENTLIO_UNIT_TYPE_IDS (comma-separated, per room order)
+ *      BOUTIQUE_SEED_RENTLIO_UNIT_TYPE_IDS (only when BOUTIQUE_SEED_RENTLIO=true)
  */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -38,12 +39,16 @@ const LOCALES = ['hr', 'en', 'de'] as const
 const BOUTIQUE_SEED_MENU_TITLE = 'Boutique — navigacija'
 const BOUTIQUE_ROOM_COUNT = 4
 
-/** Dev/demo Rentlio IDs when CMS rooms have none (matches /api/rentlio/options demo account). */
+/** Keep CMS Rentlio links when re-seeding. Demo IDs only when BOUTIQUE_SEED_RENTLIO=true. */
 function resolveRentlioPreserveForSeed(
   preserved: RentlioRoomPreserve,
   roomCount = BOUTIQUE_ROOM_COUNT,
 ): RentlioRoomPreserve {
-  if (preserved.some((r) => r.rentlioUnitTypeId)) {
+  if (preserved.some((r) => r.rentlioPropertyId || r.rentlioUnitTypeId)) {
+    return preserved
+  }
+
+  if (process.env.BOUTIQUE_SEED_RENTLIO !== 'true') {
     return preserved
   }
 
@@ -135,6 +140,7 @@ async function getOrCreateMedia(
 
 async function resolveMediaIds(payload: Payload, tenantId: number) {
   if (process.env.BOUTIQUE_SEED_SKIP_MEDIA === 'true') {
+    console.info('  → Mediji: preskočeno (BOUTIQUE_SEED_SKIP_MEDIA=true)')
     const first = await payload.find({
       collection: 'media',
       where: { tenant: { equals: tenantId } },
@@ -149,10 +155,13 @@ async function resolveMediaIds(payload: Payload, tenantId: number) {
     return ids
   }
 
+  console.info(`  → Mediji: ${Object.keys(boutiqueDemoImageUrls).length} slika (S3 upload može potrajati)…`)
   const ids = {} as Record<BoutiqueDemoMediaKey, number>
   for (const [key, url] of Object.entries(boutiqueDemoImageUrls) as [BoutiqueDemoMediaKey, string][]) {
+    console.info(`      → ${key}…`)
     ids[key] = await getOrCreateMedia(payload, key, url, tenantId)
   }
+  console.info('  → Mediji: gotovo')
   return ids
 }
 
@@ -354,25 +363,19 @@ async function main() {
         existingPage.docs[0]?.layout as Parameters<typeof extractRentlioPreserveFromLayout>[0],
       ),
     )
-    if (rentlioPreserve.some((r) => r.rentlioUnitTypeId)) {
-      const fromCms = extractRentlioPreserveFromLayout(
-        existingPage.docs[0]?.layout as Parameters<typeof extractRentlioPreserveFromLayout>[0],
-      ).some((r) => r.rentlioUnitTypeId)
-      if (fromCms) {
-        console.info('  → Zadržavam postojeće Rentlio ID-eve za sobe.')
-      } else {
-        console.info(
-          `  → Postavljam dev Rentlio ID-eve za sobe (property ${rentlioPreserve[0]?.rentlioPropertyId}, channel ${rentlioPreserve[0]?.rentlioSalesChannelId}).`,
-        )
-      }
+    if (rentlioPreserve.some((r) => r.rentlioPropertyId || r.rentlioUnitTypeId)) {
+      console.info('  → Zadržavam postojeće Rentlio veze iz CMS-a.')
     } else {
-      console.warn(
-        '  → Nema Rentlio unit type ID-eva. Postavite BOUTIQUE_SEED_RENTLIO_* u .env.local ili povežite sobe u Adminu.',
+      console.info(
+        '  → Sobe bez Rentlio veza — povežite property/channel/unit type ručno u Adminu (Products dropdown).',
       )
     }
 
     const mediaIds = await resolveMediaIds(payload, tenant.id)
+    console.info('  → Obrazac (Form Builder)…')
     const formId = await ensureContactForm(payload)
+    console.info(`  → Obrazac id=${formId}`)
+    console.info('  → Izbornik…')
     await ensureMenu(payload, tenant.id)
 
     const layouts = Object.fromEntries(

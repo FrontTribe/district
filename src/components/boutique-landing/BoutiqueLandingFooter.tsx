@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { renderBoutiqueHeroHeading } from '@/blocks/BoutiqueHeroContent'
 import { BoutiqueFooterMap } from './BoutiqueFooterMap'
 import { useOsijekTime } from './useOsijekTime'
@@ -21,8 +21,6 @@ export type BoutiqueLandingFooterProps = {
   infoRows?: InfoRow[] | null
   contactHeading?: string | null
   contactLinks?: ContactLink[] | null
-  newsletterHeading?: string | null
-  newsletterNote?: string | null
   mapHeading?: string | null
   mapCta?: string
   distanceRows?: InfoRow[] | null
@@ -45,8 +43,6 @@ export function BoutiqueLandingFooter({
   infoRows,
   contactHeading = 'Razgovor',
   contactLinks,
-  newsletterHeading,
-  newsletterNote,
   mapHeading = 'Karta',
   mapCta = 'Otvori u Mapama',
   distanceRows,
@@ -57,8 +53,6 @@ export function BoutiqueLandingFooter({
   madeBy,
 }: BoutiqueLandingFooterProps) {
   const time = useOsijekTime()
-  const [newsletterEmail, setNewsletterEmail] = useState('')
-  const [newsletterSent, setNewsletterSent] = useState(false)
   const year = new Date().getFullYear()
 
   const marquee = marqueeItems?.length
@@ -71,11 +65,6 @@ export function BoutiqueLandingFooter({
         { text: 'Opus Arena' },
         { text: 'MMXXVI' },
       ]
-
-  const handleNewsletter = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (newsletterEmail.trim()) setNewsletterSent(true)
-  }
 
   const wordmarkBase = (wordmark ?? 'district.').replace(/\.$/, '')
 
@@ -145,27 +134,6 @@ export function BoutiqueLandingFooter({
               ))}
             </ul>
           ) : null}
-          <form className="newsletter" onSubmit={handleNewsletter}>
-            {newsletterHeading ? <label className="newsletter-label">{newsletterHeading}</label> : null}
-            {newsletterSent ? (
-              <div className="newsletter-thanks">
-                Hvala. {newsletterNote ? <span>{newsletterNote}</span> : <span>Prvi broj stiže uskoro.</span>}
-              </div>
-            ) : (
-              <div className="newsletter-row">
-                <input
-                  type="email"
-                  required
-                  value={newsletterEmail}
-                  onChange={(e) => setNewsletterEmail(e.target.value)}
-                  placeholder="vaš@email.hr"
-                />
-                <button type="submit">
-                  Pretplata <span className="arrow">→</span>
-                </button>
-              </div>
-            )}
-          </form>
         </div>
 
         <div className="footer-card footer-card-map" data-reveal="fade-up" data-delay="0.16">

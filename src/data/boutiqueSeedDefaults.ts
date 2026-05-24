@@ -78,8 +78,6 @@ export type BoutiqueSeedLocalePack = {
     infoRows: { label: string; value: string }[]
     contactHeading: string
     contactLinks: { key: string; label: string; href: string }[]
-    newsletterHeading: string
-    newsletterNote: string
     mapHeading: string
     mapCta: string
     distanceRows: { label: string; value: string }[]
@@ -146,10 +144,9 @@ const HR: BoutiqueSeedLocalePack = {
   rooms: {
     chapterNum: 'ii.',
     chapterLabel: 'Naše sobe i apartman',
-    heading:
-      'Odaberite prostor udobnosti i profinjenog dizajna — Premium, Deluxe, Suite Deluxe, Suite Deluxe s hidromasažnom kadom ili Apartman',
+    heading: 'Naše sobe.\n*Premium · Deluxe · Suite · Jacuzzi Superior.*',
     subheading:
-      'Sve jedinice dizajnirane su za miran, ugodan boravak: vrhunski ležajevi, klimatizacija i privatne kupaonice, uz besplatan Wi-Fi i privatni parking. Za duže boravke tu su opcije s dodatnim prostorom i kuhinjom, a ljeti možete uživati i u sezonskom vanjskom bazenu i dva jacuzzia. Idealno za parove, poslovne goste i obitelji u srcu Osijeka.',
+      'Odaberite prostor udobnosti i profinjenog dizajna. Sve jedinice dizajnirane su za miran, ugodan boravak: vrhunski ležajevi, klimatizacija i privatne kupaonice, uz besplatan Wi-Fi i privatni parking. Za duže boravke tu su opcije s dodatnim prostorom i kuhinjom, a ljeti možete uživati i u sezonskom vanjskom bazenu i dva jacuzzia. Idealno za parove, poslovne goste i obitelji u srcu Osijeka.',
     sectionId: 'sobe',
     items: [
       {
@@ -200,8 +197,7 @@ const HR: BoutiqueSeedLocalePack = {
     heading: 'Krov s pogledom — *privatni Rooftop* za naše goste',
     metaRows: ['45.5550° N · 18.6955° E', 'Otvoreno svibanj — rujan', 'Najbolje · zalazak'],
     manifestEyebrow: 'Manifest',
-    manifestHeading:
-      'Opuštanje na krovu uz bazen i jacuzzi, zalazak sunca nad Osijekom i privatni najam za proslave, after-work druženja ili mini evente.',
+    manifestHeading: 'Što vas čeka *gore*.',
     manifestItems: [
       { key: 'Bazen', value: 'sezonski, vanjski' },
       { key: 'Jacuzzia', value: 'dva, pod otvorenim nebom' },
@@ -294,15 +290,11 @@ const HR: BoutiqueSeedLocalePack = {
       },
       { key: '/district.boutique.osijek', label: 'Facebook', href: '#' },
     ],
-    newsletterHeading: 'Bilten · jednom mjesečno',
-    newsletterNote: 'Bez spama — samo novosti iz Boutiquea.',
     mapHeading: 'Karta',
     mapCta: 'Otvori u Mapama',
     distanceRows: [
       { label: 'Opus Arena', value: '3 min' },
       { label: 'Tvrđa', value: '8 min' },
-      { label: 'Promenada', value: '2 min' },
-      { label: 'Aerodrom Osijek', value: '20 min' },
     ],
     marqueeItems: ['Boutique', 'Osijek', 'Krov & Jacuzzi', 'Drava', 'Opus Arena', 'MMXXVI'],
     copyright: '© District d.o.o. · OIB 56282051463 · sva prava pridržana',
@@ -378,10 +370,9 @@ const EN: BoutiqueSeedLocalePack = {
   rooms: {
     ...HR.rooms,
     chapterLabel: 'Our rooms and apartment',
-    heading:
-      'Choose a space of comfort and refined design — Premium, Deluxe, Deluxe Suite, Deluxe Suite with Jacuzzi or Apartment',
+    heading: 'Our rooms.\n*Premium · Deluxe · Suite · Jacuzzi Superior.*',
     subheading:
-      'All units are designed for a peaceful, comfortable stay: premium beds, air conditioning and private bathrooms, along with free Wi-Fi and private parking. For longer stays, there are options with additional space and a kitchen, and in the summer you can enjoy the seasonal outdoor pool and two jacuzzis. Ideal for couples, business guests and families in the heart of Osijek.',
+      'Choose a space of comfort and refined design. All units are designed for a peaceful, comfortable stay: premium beds, air conditioning and private bathrooms, along with free Wi-Fi and private parking. For longer stays, there are options with additional space and a kitchen, and in the summer you can enjoy the seasonal outdoor pool and two jacuzzis. Ideal for couples, business guests and families in the heart of Osijek.',
     items: [
       {
         roomNumber: '01',
@@ -429,8 +420,7 @@ const EN: BoutiqueSeedLocalePack = {
     ...HR.rooftop,
     chapterLabel: 'Chapter · Rooftop',
     heading: 'Rooftop with a view — *private Rooftop* for our guests',
-    manifestHeading:
-      'Relaxing on the roof by the pool and jacuzzi, sunset over Osijek and private rental for celebrations, after-work gatherings or mini events.',
+    manifestHeading: 'What awaits you *above*.',
     features: [
       {
         romanNumeral: 'I.',
@@ -510,15 +500,11 @@ const EN: BoutiqueSeedLocalePack = {
       },
       { key: '/district.boutique.osijek', label: 'Facebook', href: '#' },
     ],
-    newsletterHeading: 'Newsletter · once a month',
-    newsletterNote: 'No spam — only Boutique news.',
     mapHeading: 'Map',
     mapCta: 'Open in Maps',
     distanceRows: [
       { label: 'Opus Arena', value: '3 min' },
       { label: 'Tvrđa', value: '8 min' },
-      { label: 'Promenada', value: '2 min' },
-      { label: 'Osijek Airport', value: '20 min' },
     ],
     marqueeItems: ['Boutique', 'Osijek', 'Rooftop & Jacuzzi', 'Drava', 'Opus Arena', 'MMXXVI'],
     copyright: '© District d.o.o. · OIB 56282051463 · all rights reserved',
@@ -594,10 +580,9 @@ const DE: BoutiqueSeedLocalePack = {
   rooms: {
     chapterNum: 'ii.',
     chapterLabel: 'Unsere Zimmer und Apartment',
-    heading:
-      'Wählen Sie einen Raum voller Komfort und feinen Designs — Premium, Deluxe, Deluxe Suite, Deluxe Suite mit Hydromassage-Badewanne oder Apartment',
+    heading: 'Unsere Zimmer.\n*Premium · Deluxe · Suite · Jacuzzi Superior.*',
     subheading:
-      'Alle Einheiten sind für einen ruhigen, angenehmen Aufenthalt konzipiert: Premium-Betten, Klimaanlage und private Badezimmer, dazu kostenloses WLAN und Privatparkplatz. Für längere Aufenthalte gibt es Optionen mit zusätzlichem Platz und Küche, im Sommer genießen Sie den saisonalen Außenpool und zwei Jacuzzis. Ideal für Paare, Geschäftsreisende und Familien im Herzen von Osijek.',
+      'Wählen Sie einen Raum voller Komfort und feinen Designs. Alle Einheiten sind für einen ruhigen, angenehmen Aufenthalt konzipiert: Premium-Betten, Klimaanlage und private Badezimmer, dazu kostenloses WLAN und Privatparkplatz. Für längere Aufenthalte gibt es Optionen mit zusätzlichem Platz und Küche, im Sommer genießen Sie den saisonalen Außenpool und zwei Jacuzzis. Ideal für Paare, Geschäftsreisende und Familien im Herzen von Osijek.',
     sectionId: 'sobe',
     items: [
       {
@@ -648,8 +633,7 @@ const DE: BoutiqueSeedLocalePack = {
     heading: 'Dachterrasse mit Blick — *private Rooftop* für unsere Gäste',
     metaRows: ['45.5550° N · 18.6955° E', 'Geöffnet Mai — September', 'Am besten · Sonnenuntergang'],
     manifestEyebrow: 'Manifest',
-    manifestHeading:
-      'Entspannung auf dem Dach mit Pool und Jacuzzi, Sonnenuntergang über Osijek und private Miete für Feiern, After-Work-Treffen oder Mini-Events.',
+    manifestHeading: 'Was Sie *oben* erwartet.',
     manifestItems: [
       { key: 'Pool', value: 'saisonal, außen' },
       { key: 'Jacuzzis', value: 'zwei, unter freiem Himmel' },
@@ -742,15 +726,11 @@ const DE: BoutiqueSeedLocalePack = {
       },
       { key: '/district.boutique.osijek', label: 'Facebook', href: '#' },
     ],
-    newsletterHeading: 'Newsletter · einmal monatlich',
-    newsletterNote: 'Kein Spam — nur Boutique-Neuigkeiten.',
     mapHeading: 'Karte',
     mapCta: 'In Karten öffnen',
     distanceRows: [
       { label: 'Opus Arena', value: '3 Min.' },
       { label: 'Tvrđa', value: '8 Min.' },
-      { label: 'Promenada', value: '2 Min.' },
-      { label: 'Flughafen Osijek', value: '20 Min.' },
     ],
     marqueeItems: ['Boutique', 'Osijek', 'Dach & Jacuzzi', 'Drau', 'Opus Arena', 'MMXXVI'],
     copyright: '© District d.o.o. · OIB 56282051463 · alle Rechte vorbehalten',

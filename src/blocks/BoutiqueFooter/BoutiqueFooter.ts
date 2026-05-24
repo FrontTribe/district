@@ -41,8 +41,6 @@ const BoutiqueFooter: Block = {
         { name: 'href', type: 'text', required: true },
       ],
     },
-    { name: 'newsletterHeading', type: 'text', label: { en: 'Newsletter heading', hr: 'Newsletter naslov' }, localized: true },
-    { name: 'newsletterNote', type: 'text', label: { en: 'Newsletter note', hr: 'Newsletter napomena' }, localized: true },
     { name: 'mapHeading', type: 'text', label: { en: 'Map card heading', hr: 'Naslov kartice karte' }, defaultValue: 'Karta' },
     { name: 'mapCta', type: 'text', label: { en: 'Map CTA', hr: 'Map CTA' }, localized: true },
     {
