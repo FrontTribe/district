@@ -767,10 +767,6 @@ div {
   }
 }
 
-.mobile-menu-header--boutique {
-  border-bottom-color: var(--boutique-line, rgba(18, 14, 11, 0.12));
-}
-
 /* Full-width block stack (no prose container) — boutique tenant */
 .boutique-page-blocks {
   width: 100%;
@@ -3879,4 +3875,5 @@ div {
 
 /* Component styles imports */
 @import '../../components/ReservationToast.scss';
+@import '../../components/mobile-nav/tenant-mobile-menu.scss';
 @import '../../components/boutique-landing/boutique-landing.scss';

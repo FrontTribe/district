@@ -1,7 +1,9 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import { RealEstateMobileMenu } from './RealEstateMobileMenu'
+import { NavToggle } from '@/components/mobile-nav/NavToggle'
 
 export type RealEstateLandingNavLink = { label: string; href: string; openInNewTab?: boolean }
 
@@ -50,6 +52,7 @@ export function RealEstateLandingNav({
 }: RealEstateLandingNavProps) {
   const pathname = usePathname() || '/'
   const ref = useRef<HTMLElement>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const currentLocale = useMemo((): LandingLocale => {
     const first = pathname.split('/').filter(Boolean)[0]
@@ -70,42 +73,78 @@ export function RealEstateLandingNav({
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [pathname])
+
+  const resolveLocaleHref = (target: LandingLocale) => hrefForLocale(pathname, target)
+
   return (
-    <nav className="nav" ref={ref}>
-      <a href="#top" className="nav__brand" aria-label={brandAriaLabel || undefined} dangerouslySetInnerHTML={{ __html: brandHtml }} />
-      <div className="nav__menu">
-        {links.map((l) => (
-          <a key={l.href + l.label} href={l.href} {...(l.openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
-            {l.label}
-          </a>
-        ))}
-      </div>
-      <div className="nav__cta">
-        {ctaHref && ctaLabel ? (
-          <a
-            href={ctaHref}
-            className="nav__cta-btn mono"
-            {...(ctaOpenInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-          >
-            {ctaLabel}
-          </a>
-        ) : null}
-        <span className="nav__lang-switch mono" aria-label="Language">
-          {LANDING_LOCALES.map((lc, i) => (
-            <React.Fragment key={lc}>
-              {i > 0 ? <span className="nav__lang-sep"> · </span> : null}
-              <a
-                href={hrefForLocale(pathname, lc)}
-                className={lc === currentLocale ? 'is-active' : undefined}
-                aria-current={lc === currentLocale ? 'page' : undefined}
-              >
-                {lc.toUpperCase()}
-              </a>
-            </React.Fragment>
+    <>
+      <nav className={`nav${menuOpen ? ' nav--menu-open' : ''}`} ref={ref}>
+        <a
+          href="#top"
+          className="nav__brand"
+          aria-label={brandAriaLabel || undefined}
+          dangerouslySetInnerHTML={{ __html: brandHtml }}
+          onClick={() => setMenuOpen(false)}
+        />
+        <div className="nav__menu">
+          {links.map((l) => (
+            <a
+              key={l.href + l.label}
+              href={l.href}
+              {...(l.openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+            >
+              {l.label}
+            </a>
           ))}
-        </span>
-        <span className="nav__dot" />
-      </div>
-    </nav>
+        </div>
+        <div className="nav__actions">
+          <div className="nav__cta">
+            {ctaHref && ctaLabel ? (
+              <a
+                href={ctaHref}
+                className="nav__cta-btn mono"
+                {...(ctaOpenInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              >
+                {ctaLabel}
+              </a>
+            ) : null}
+            <span className="nav__lang-switch mono" aria-label="Language">
+              {LANDING_LOCALES.map((lc, i) => (
+                <React.Fragment key={lc}>
+                  {i > 0 ? <span className="nav__lang-sep"> · </span> : null}
+                  <a
+                    href={resolveLocaleHref(lc)}
+                    className={lc === currentLocale ? 'is-active' : undefined}
+                    aria-current={lc === currentLocale ? 'page' : undefined}
+                  >
+                    {lc.toUpperCase()}
+                  </a>
+                </React.Fragment>
+              ))}
+            </span>
+            <span className="nav__dot" />
+          </div>
+          <NavToggle
+            isOpen={menuOpen}
+            onToggle={() => setMenuOpen((open) => !open)}
+            controlsId="re-mobile-menu"
+          />
+        </div>
+      </nav>
+
+      <RealEstateMobileMenu
+        isOpen={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        links={links}
+        ctaLabel={ctaLabel}
+        ctaHref={ctaHref}
+        ctaOpenInNewTab={ctaOpenInNewTab}
+        currentLocale={currentLocale}
+        hrefForLocale={resolveLocaleHref}
+      />
+    </>
   )
 }

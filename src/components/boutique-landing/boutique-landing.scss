@@ -238,6 +238,9 @@
   gap: 80px;
   align-items: end;
   margin-bottom: 88px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 .section-head h2 {
   font-family: var(--serif-display);
@@ -246,6 +249,8 @@
   line-height: 1.02;
   letter-spacing: -0.015em;
   max-width: 12ch;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .section-head h2 em {
   font-style: italic;
@@ -257,6 +262,8 @@
   color: var(--boutique-ink-soft);
   max-width: 52ch;
   padding-bottom: 6px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .section-head .head-text .section-chapter-label,
 .section-head .head-text .chapter-label {
@@ -265,15 +272,21 @@
 
 .boutique-rooms {
   padding: 160px 48px;
-  max-width: 1440px;
+  max-width: min(1440px, 100%);
   margin: 0 auto;
   background: transparent;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: clip;
 }
 
 .rooms-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 32px;
+  width: 100%;
+  min-width: 0;
 }
 
 /* 4-column rooms — MAREA redesign */
@@ -285,25 +298,17 @@
 .rooms-grid-4 .room-info h3 {
   font-size: 26px;
 }
-@media (max-width: 1280px) {
-  .rooms-grid-4 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 600px) {
-  .rooms-grid-4 {
-    grid-template-columns: 1fr;
-  }
-}
 
 .room-card {
   position: relative;
   cursor: pointer;
+  min-width: 0;
 }
 .room-image {
   aspect-ratio: 4/5;
   overflow: hidden;
   position: relative;
+  width: 100%;
 }
 .room-image .placeholder {
   width: 100%; height: 100%;
@@ -422,6 +427,137 @@
 }
 .room-meta span { display: inline-flex; align-items: center; gap: 8px; }
 .room-meta .dot { width: 3px; height: 3px; background: var(--boutique-ink-mute); border-radius: 50%; }
+
+/* Boutique rooms — responsive (after base rules; match .rooms-grid.rooms-grid-4 specificity) */
+@media (max-width: 1280px) {
+  .boutique-rooms .rooms-grid.rooms-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .boutique-rooms.section {
+    padding:
+      100px
+      max(20px, env(safe-area-inset-right, 0px))
+      100px
+      max(20px, env(safe-area-inset-left, 0px));
+  }
+
+  .boutique-rooms .section-head {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    align-items: start;
+    margin-bottom: 56px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  .boutique-rooms .section-head h2 {
+    width: 100%;
+    max-width: 100%;
+    font-size: clamp(32px, 9vw, 48px);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .boutique-rooms .section-head h2 em {
+    font-size: clamp(24px, 7vw, 36px);
+    line-height: 1.12;
+  }
+
+  .boutique-rooms .section-head h2 .split-word {
+    overflow-wrap: anywhere;
+    max-width: 100%;
+  }
+
+  .boutique-rooms .section-head .head-text {
+    width: 100%;
+    max-width: 100%;
+    padding-bottom: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .boutique-rooms .section-head .head-text span {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .boutique-rooms .rooms-grid.rooms-grid-4 {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .boutique-rooms .room-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .boutique-rooms .room-image {
+    max-width: 100%;
+  }
+
+  .boutique-rooms .room-desc,
+  .boutique-rooms .room-meta {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .boutique-rooms .room-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .boutique-rooms .room-info h3 {
+    font-size: 24px;
+  }
+
+  .boutique-rooms .room-price {
+    white-space: normal;
+  }
+
+  .boutique-rooms .room-desc {
+    max-width: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .boutique-rooms.section {
+    padding-top: 80px;
+    padding-bottom: 80px;
+  }
+
+  .boutique-rooms .section-head {
+    gap: 24px;
+    margin-bottom: 48px;
+  }
+
+  .boutique-rooms .section-head h2 {
+    font-size: clamp(36px, 10vw, 52px);
+  }
+
+  .boutique-rooms .section-head .head-text {
+    font-size: 15px;
+  }
+
+  .boutique-rooms .rooms-grid.rooms-grid-4 {
+    gap: 40px;
+  }
+
+  .boutique-rooms .rooms-grid.rooms-grid-4 .room-info h3 {
+    font-size: 22px;
+  }
+}
 
 /* Rooftop */
 .rooftop {
@@ -1516,6 +1652,11 @@ section.rooftop + section.rooftop.rooftop--features {
   ) {
     overflow: visible;
     line-height: 1.05;
+  }
+
+  .boutique-rooms .section-head h2 {
+    overflow-x: clip;
+    max-width: 100%;
   }
 
   .rooftop-feat-num {

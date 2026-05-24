@@ -5,12 +5,13 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import EnhancedLanguageSwitcher from './EnhancedLanguageSwitcher'
 import { MobileMenu } from './MobileMenu'
-import { HamburgerButton } from './HamburgerButton'
+import { NavToggle } from '@/components/mobile-nav/NavToggle'
 import { HubLogoWordmark } from './HubLogoWordmark'
 import type { HubSocialLink } from '@/utils/hubSocialLinks'
 import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
 import { BoutiqueBrandmark } from '@/components/BoutiqueBrandmark'
 import { getTranslation } from '@/utils/translations'
+import { scrollToSectionById } from '@/utils/scrollToSection'
 
 interface MenuItem {
   label: string
@@ -148,6 +149,10 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
     }
   }, [menuItems, sectionSpyEnabled, activeSectionId])
 
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [pathname])
+
   const handleLanguageChange = async (newLocale: string) => {
     if (newLocale === locale) return // Don't switch if it's the same language
 
@@ -173,13 +178,7 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
   const handleMenuClick = (item: MenuItem, e: React.MouseEvent) => {
     if (item.scrollTarget && !item.external) {
       e.preventDefault()
-      const targetElement = document.getElementById(item.scrollTarget)
-      if (targetElement) {
-        targetElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        })
-      }
+      scrollToSectionById(item.scrollTarget, { offset: -30, duration: 1.2 })
     }
   }
 
@@ -209,12 +208,19 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
+  const mobileMenuId = isBoutiqueTenant
+    ? 'boutique-mobile-menu'
+    : hubLanding
+      ? 'hub-mobile-menu'
+      : 'district-mobile-menu'
+
   const headerClass = [
     isTenantMenu ? 'header header--tenant' : 'header',
     hubLanding ? 'header--hub-landing' : '',
     hubLanding && hubHeaderScrolled ? 'header--hub-landing--scrolled' : '',
     isBoutiqueTenant ? 'header--boutique-tenant' : '',
     isBoutiqueTenant && boutiqueHeaderScrolled ? 'header--boutique-tenant--scrolled' : '',
+    isMobileMenuOpen ? 'header--menu-open' : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -249,17 +255,21 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
     return <h1>district.</h1>
   }
 
+  const renderMobileToggle = () =>
+    hideHamburger ? null : (
+      <NavToggle
+        isOpen={isMobileMenuOpen}
+        onToggle={toggleMobileMenu}
+        controlsId={mobileMenuId}
+      />
+    )
+
   return (
     <header className={headerClass}>
       <div className={contentClass}>
         {isBoutiqueTenant ? (
           <>
             <div className="boutique-tenant__left">
-              <div className="boutique-tenant__hamburger">
-                {!hideHamburger && (
-                  <HamburgerButton isOpen={isMobileMenuOpen} onToggle={toggleMobileMenu} />
-                )}
-              </div>
               {menuItems.length > 0 && (
                 <nav className="boutique-tenant__nav" aria-label="Primary">
                   <ul className="boutique-tenant__list">
@@ -316,6 +326,7 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
                   →
                 </span>
               </Link>
+              {renderMobileToggle()}
             </div>
           </>
         ) : isTenantMenu ? (
@@ -323,9 +334,6 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
           <>
             <div className="tenant-menu-left">
               <div className="mobile-header-left">
-                {!hideHamburger && (
-                  <HamburgerButton isOpen={isMobileMenuOpen} onToggle={toggleMobileMenu} />
-                )}
                 <div className="logo">
                   <Link href="/" onClick={handleLogoClick}>
                     {logo ? (
@@ -373,15 +381,13 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
                   disabled={isLanguageChanging}
                 />
               </div>
+              {renderMobileToggle()}
             </div>
           </>
         ) : hubLanding ? (
           <>
             <div className="hub-topbar__left">
               <div className="mobile-header-left">
-                {!hideHamburger && (
-                  <HamburgerButton isOpen={isMobileMenuOpen} onToggle={toggleMobileMenu} />
-                )}
                 <div className="logo">
                   <Link
                     href={`/${locale}`}
@@ -429,15 +435,13 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
                   variant={langVariant}
                 />
               </div>
+              {renderMobileToggle()}
             </div>
           </>
         ) : (
           // Main menu layout - original
           <>
             <div className="mobile-header-left">
-              {!hideHamburger && (
-                <HamburgerButton isOpen={isMobileMenuOpen} onToggle={toggleMobileMenu} />
-              )}
               <div className="logo">
                 <Link href="/" onClick={handleLogoClick}>
                   {logo ? (
@@ -450,13 +454,16 @@ export const MenuWrapper: React.FC<MenuWrapperProps> = ({
                 </Link>
               </div>
             </div>
-            <div className="language-switcher-wrapper">
-              <EnhancedLanguageSwitcher
-                currentLocale={locale}
-                onLanguageChange={handleLanguageChange}
-                theme="transparent"
-                disabled={isLanguageChanging}
-              />
+            <div className="header-mobile-actions">
+              <div className="language-switcher-wrapper">
+                <EnhancedLanguageSwitcher
+                  currentLocale={locale}
+                  onLanguageChange={handleLanguageChange}
+                  theme="transparent"
+                  disabled={isLanguageChanging}
+                />
+              </div>
+              {renderMobileToggle()}
             </div>
           </>
         )}

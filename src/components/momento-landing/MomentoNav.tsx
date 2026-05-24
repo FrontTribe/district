@@ -6,6 +6,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { localeLang } from '@/utils/locale'
 import { getMomentoUiCopy } from '@/data/momentoUiCopy'
 import { MomentoMobileMenu } from './MomentoMobileMenu'
+import { NavToggle } from '@/components/mobile-nav/NavToggle'
+import { scrollToSectionById } from '@/utils/scrollToSection'
 
 export type MomentoNavItem = {
   label: string
@@ -21,14 +23,8 @@ type Props = {
   visitCtaHref?: string
 }
 
-function scrollToSection(scrollTarget: string) {
-  const el = document.getElementById(scrollTarget)
-  const lenis = (window as unknown as { lenis?: { scrollTo: (t: Element, o: object) => void } }).lenis
-  if (el && lenis) {
-    lenis.scrollTo(el, { offset: -30, duration: 1.4 })
-    return true
-  }
-  return false
+function scrollToSection(scrollTarget: string, afterMenuClose = false) {
+  return scrollToSectionById(scrollTarget, { offset: -30, duration: 1.4, afterMenuClose })
 }
 
 export function MomentoNav({ logoText = 'Momento', menuItems, locale, visitCtaHref = '#lokacija' }: Props) {
@@ -51,8 +47,8 @@ export function MomentoNav({ logoText = 'Momento', menuItems, locale, visitCtaHr
 
   const brand = logoText.replace(/\.$/, '')
 
-  const onNavClick = (item: MomentoNavItem, e: React.MouseEvent) => {
-    if (item.scrollTarget && scrollToSection(item.scrollTarget)) {
+  const onNavClick = (item: MomentoNavItem, e: React.MouseEvent, afterMenuClose = false) => {
+    if (item.scrollTarget && scrollToSection(item.scrollTarget, afterMenuClose)) {
       e.preventDefault()
     }
   }
@@ -119,17 +115,13 @@ export function MomentoNav({ logoText = 'Momento', menuItems, locale, visitCtaHr
             >
               {ui.nav.visitCta} <span className="arr">↗</span>
             </Link>
-            <button
-              type="button"
-              className="nav-toggle"
-              aria-label={menuOpen ? ui.nav.menuClose : ui.nav.menuOpen}
-              aria-expanded={menuOpen}
-              aria-controls="momento-mobile-menu"
-              onClick={() => setMenuOpen((open) => !open)}
-            >
-              <span className="nav-toggle__line" />
-              <span className="nav-toggle__line" />
-            </button>
+            <NavToggle
+              isOpen={menuOpen}
+              onToggle={() => setMenuOpen((open) => !open)}
+              controlsId="momento-mobile-menu"
+              openLabel={ui.nav.menuOpen}
+              closeLabel={ui.nav.menuClose}
+            />
           </div>
         </div>
       </header>
@@ -140,7 +132,6 @@ export function MomentoNav({ logoText = 'Momento', menuItems, locale, visitCtaHr
         menuItems={menuItems}
         locale={locale}
         visitCtaHref={visitCtaHref}
-        onItemClick={onNavClick}
         onLocaleSwitch={switchLocale}
       />
     </>
