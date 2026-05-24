@@ -2,9 +2,9 @@
 /**
  * Non-interactive migrate for CI/server deploys.
  *
- * Payload prompts when payload_migrations contains dev-mode rows (batch = -1).
- * Piping stdin through pnpm/cross-env does not reach that prompt — Payload exits 0
- * with initial=false and applies nothing. Clear dev markers first, then migrate.
+ * 1. Remove dev/push markers (batch = -1) so Payload migrate is not interactive.
+ * 2. Run drift-tolerant migrations — prod DBs updated via push may already contain
+ *    tables from pending migrations; those are baselined instead of failing CI.
  */
 import { spawnSync } from 'node:child_process'
 import { createRequire } from 'node:module'
@@ -12,6 +12,8 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+
+const nodeOptions = '--no-deprecation --loader ./scripts/ignore-scss-loader.mjs'
 
 function loadPg() {
   const req = createRequire(resolve(root, 'package.json'))
@@ -43,13 +45,17 @@ async function clearDevModeMarkers() {
   }
 }
 
-function runMigrate() {
+function runDriftTolerantMigrate() {
   const result = spawnSync(
     'pnpm',
-    ['run', 'migrate'],
+    ['exec', 'tsx', 'scripts/migrate-with-drift-tolerance.ts'],
     {
       cwd: root,
-      env: process.env,
+      env: {
+        ...process.env,
+        NODE_NO_WARNINGS: '1',
+        NODE_OPTIONS: nodeOptions,
+      },
       stdio: 'inherit',
     },
   )
@@ -60,4 +66,4 @@ function runMigrate() {
 }
 
 await clearDevModeMarkers()
-runMigrate()
+runDriftTolerantMigrate()

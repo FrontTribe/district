@@ -56,4 +56,4 @@ If `payload migrate` hangs or asks *"It looks like you've run Payload in dev mod
 DELETE FROM payload_migrations WHERE batch = -1;
 ```
 
-GitHub Actions uses `pnpm run migrate:ci` (auto-confirms) so deploys do not block on the interactive prompt. Do not run local `pnpm dev` with `PAYLOAD_DB_PUSH=true` against prod/staging DB.
+GitHub Actions uses `pnpm run migrate:ci`, which clears dev markers and runs drift-tolerant migrations (skips objects that already exist from push, then records the migration as applied). Do not run local `pnpm dev` with `PAYLOAD_DB_PUSH=true` against prod/staging DB.
