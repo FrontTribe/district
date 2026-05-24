@@ -87,21 +87,13 @@ jobs:
             pnpm install --frozen-lockfile
             chmod +x scripts/server/seed
 
-            # appleboy script_stop treats a failed `[ ]` in if/else as fatal — use case instead.
-            case "$APPLY_MIGRATIONS" in
-              true)
-                echo "Applying pending migrations on $APP_NAME..."
-                pnpm run payload -- migrate
-                ;;
-              *)
-                echo "Skipping migrate."
-                ;;
-            esac
+            # appleboy/drone-ssh can split on ';' — avoid case/;; and if/else tests.
+            [ "$APPLY_MIGRATIONS" = "true" ] && echo "Applying pending migrations on $APP_NAME..." || :
+            [ "$APPLY_MIGRATIONS" = "true" ] && pnpm run payload -- migrate || :
 
             pnpm run check:migrations
 
-            rm -rf "$OPS_PATH" || true
-            find "$(dirname "$DEPLOY_PATH")" -maxdepth 1 -name "$(basename "$DEPLOY_PATH")-ops-ci-*" -mtime +2 -exec rm -rf {} + 2>/dev/null || true
+            rm -rf "$OPS_PATH" || :
 
   build:
     name: Build
