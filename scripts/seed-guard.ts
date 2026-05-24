@@ -16,6 +16,9 @@ function databaseUriLooksDev(uri: string): boolean {
 }
 
 export function assertSeedAllowed(scriptName: string): void {
+  // Skip interactive Drizzle schema push during CLI seeds (avoids long/hanging init on shared DBs).
+  process.env.PAYLOAD_MIGRATING = 'true'
+
   if (process.env.ALLOW_SEED === 'true') {
     console.info(`[${scriptName}] ALLOW_SEED=true — seed allowed on this database.`)
     return

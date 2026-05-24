@@ -28,7 +28,7 @@ import {
   type BoutiqueDemoMediaKey,
   type RentlioRoomPreserve,
 } from '../src/data/boutiqueLandingDemo'
-import { createSeedLog, seedColor, seedPayloadContext, withTimeout, type SeedStep } from './seed-ui'
+import { createSeedLog, seedColor, seedPayloadContext, withTimeout, withTimeoutHeartbeat, logDbPoolStats, type SeedStep } from './seed-ui'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const log = createSeedLog('seed:boutique')
@@ -380,7 +380,8 @@ async function ensureContactForm(payload: Payload, step: SeedStep): Promise<numb
 
   if (id == null) {
     step.detail('Kreiram obrazac (hr)…')
-    const created = await withTimeout(
+    logDbPoolStats(payload, 'prije create forms')
+    const created = await withTimeoutHeartbeat(
       payload.create({
         collection: 'forms',
         locale: 'hr',
@@ -390,6 +391,7 @@ async function ensureContactForm(payload: Payload, step: SeedStep): Promise<numb
       }),
       FORM_OP_TIMEOUT_MS,
       'kreiranje obrasca (hr)',
+      step.detail,
     )
     id = created.id
     step.detail(`Kreiran obrazac id=${id}`)
@@ -421,7 +423,7 @@ async function run(): Promise<void> {
   const { assertSeedAllowed } = await import('./seed-guard')
   assertSeedAllowed('seed:boutique')
 
-  const totalSteps = 6
+  const totalSteps = 7
   const slug = (process.env.BOUTIQUE_SEED_PAGE_SLUG || 'boutique').trim()
   const tenantHint = (process.env.BOUTIQUE_SEED_TENANT_SUBDOMAIN || 'boutique').trim()
 
@@ -443,7 +445,7 @@ async function run(): Promise<void> {
   s2.done('povezano')
 
   try {
-    const s3 = log.step(3, totalSteps, 'Tenant + mediji + Rentlio')
+    const s3 = log.step(3, totalSteps, 'Tenant + Rentlio')
     const tenant = await resolveTenant(payload, s3)
 
     const existingPage = await payload.find({
@@ -469,23 +471,25 @@ async function run(): Promise<void> {
         'Sobe bez Rentlio veza — povežite property/channel/unit type ručno u Adminu (Products dropdown)',
       )
     }
+    s3.done('tenant')
 
-    const mediaIds = await resolveMediaIds(payload, tenant.id, s3)
-    s3.detail(
+    const s4 = log.step(4, totalSteps, 'Obrazac (Form Builder)')
+    const formId = await ensureContactForm(payload, s4)
+
+    const s5 = log.step(5, totalSteps, 'Demo mediji')
+    const mediaIds = await resolveMediaIds(payload, tenant.id, s5)
+    s5.detail(
       `media: ${Object.entries(mediaIds)
         .slice(0, 4)
         .map(([k, v]) => `${k}=${v}`)
         .join(', ')}…`,
     )
-    s3.done('tenant + mediji')
+    s5.done(`${Object.keys(mediaIds).length} slika`)
 
-    const s4 = log.step(4, totalSteps, 'Obrazac (Form Builder)')
-    const formId = await ensureContactForm(payload, s4)
+    const s6 = log.step(6, totalSteps, 'Izbornik')
+    await ensureMenu(payload, tenant.id, s6)
 
-    const s5 = log.step(5, totalSteps, 'Izbornik')
-    await ensureMenu(payload, tenant.id, s5)
-
-    const s6 = log.step(6, totalSteps, 'Stranica pages')
+    const s7 = log.step(7, totalSteps, 'Stranica pages')
     const layouts = Object.fromEntries(
       LOCALES.map((loc) => [
         loc,
@@ -493,11 +497,11 @@ async function run(): Promise<void> {
       ]),
     ) as Record<(typeof LOCALES)[number], ReturnType<typeof buildBoutiquePayloadLayout>>
 
-    s6.detail(`${layouts.hr.length} blokova × 3 jezika`)
+    s7.detail(`${layouts.hr.length} blokova × 3 jezika`)
     let pageId = existingPage.docs[0]?.id
 
     if (!pageId) {
-      s6.detail('Kreiram novu stranicu (hr)…')
+      s7.detail('Kreiram novu stranicu (hr)…')
       const created = await withTimeout(
         payload.create({
           collection: 'pages',
@@ -516,13 +520,13 @@ async function run(): Promise<void> {
         'kreiranje stranice',
       )
       pageId = created.id
-      s6.detail(`Nova stranica id=${pageId}`)
+      s7.detail(`Nova stranica id=${pageId}`)
     } else {
-      s6.detail(`Postojeća stranica id=${pageId} — ažuriram lokalizacije`)
+      s7.detail(`Postojeća stranica id=${pageId} — ažuriram lokalizacije`)
     }
 
     for (const loc of LOCALES) {
-      s6.detail(`Lokalizacija: ${loc}…`)
+      s7.detail(`Lokalizacija: ${loc}…`)
       await withTimeout(
         payload.update({
           collection: 'pages',
@@ -542,7 +546,7 @@ async function run(): Promise<void> {
       )
     }
 
-    s6.done(`stranica id=${pageId} (/${slug})`)
+    s7.done(`stranica id=${pageId} (/${slug})`)
 
     log.success(
       `Boutique landing spremljen — Admin → Pages → „${boutiquePageTitle('hr')}”. Footer: blok \`boutique-footer\`.`,

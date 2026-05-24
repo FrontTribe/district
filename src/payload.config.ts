@@ -113,6 +113,9 @@ export default buildConfig({
     push: allowSchemaPush,
     pool: {
       connectionString: process.env.DATABASE_URI,
+      max: 10,
+      connectionTimeoutMillis: 15_000,
+      idleTimeoutMillis: 30_000,
     },
     migrationDir: path.resolve(dirname, 'migrations'),
     // Keep runtime boot non-interactive; only run migrations on boot if explicitly requested.

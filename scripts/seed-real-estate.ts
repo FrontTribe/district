@@ -46,37 +46,30 @@ import sharp from 'sharp'
 
 import { resolvePayloadFileUrl } from '../src/utils/resolvePayloadFileUrl'
 import { getReLandingLocalePack } from '../src/data/realEstateLandingLocales'
+import { createSeedLog, seedColor, seedPayloadContext, withTimeout, withTimeoutHeartbeat, logDbPoolStats, type SeedStep } from './seed-ui'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-function banner(title: string) {
-  const line = '━'.repeat(56)
-  console.info(`\n${line}\n  seed:real-estate  │  ${title}\n${line}`)
-}
-
-function step(n: number, total: number, label: string) {
-  console.info(`\n  [${String(n).padStart(2)}/${total}] ${label}`)
-}
-
-/** Zatvara pg pool iz Payload postgres adaptera — inače Node često ostane „visiti”. */
-async function shutdownDbPool(payload: Payload): Promise<void> {
-  try {
-    const pool = (payload as unknown as { db?: { pool?: { end: (cb?: (err?: Error) => void) => Promise<void> } } })
-      .db?.pool
-    if (pool && typeof pool.end === 'function') {
-      await pool.end()
-      console.info('\n  (DB pool zatvoren)')
-    }
-  } catch (e) {
-    console.warn('\n  Upozorenje: zatvaranje DB poola nije uspjelo (nije kritično).', e)
-  }
-}
+const log = createSeedLog('seed:real-estate')
+const FORM_OP_TIMEOUT_MS = 120_000
 
 /** Must run before any import of `payload.config` — that module reads `process.env` at load time. */
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
 
 const LOCALES = ['hr', 'en', 'de'] as const
+
+/** Zatvara pg pool iz Payload postgres adaptera — inače Node često ostane „visiti”. */
+async function shutdownDbPool(payload: Payload): Promise<void> {
+  try {
+    const pool = (payload as unknown as { db?: { pool?: { end: () => Promise<void> } } }).db?.pool
+    if (pool && typeof pool.end === 'function') {
+      await pool.end()
+      console.info(`    ${seedColor.dim('·')} DB pool zatvoren`)
+    }
+  } catch {
+    console.info(`    ${seedColor.warn('!')} Zatvaranje DB poola preskočeno`)
+  }
+}
 
 const SEED_MEDIA_ALTS = {
   hero: 'KVART ŽIGICA — hero',
@@ -144,6 +137,7 @@ async function getOrCreateSeedMedia(
       limit: 1,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     const existing = found.docs[0]
     if (existing?.id) {
@@ -152,6 +146,7 @@ async function getOrCreateSeedMedia(
           collection: 'media',
           id: existing.id,
           overrideAccess: true,
+      context: seedPayloadContext,
           data: { alt },
         })
       }
@@ -165,6 +160,7 @@ async function getOrCreateSeedMedia(
   const created = await payload.create({
     collection: 'media',
     overrideAccess: true,
+    context: seedPayloadContext,
     data: {
       alt,
       tenant: tenantId,
@@ -209,6 +205,7 @@ async function resolveTenantForSeed(payload: Payload): Promise<ResolvedTenantFor
       limit: 50,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     const names = all.docs.map((d) => `${d.name} (${d.subdomain})`).join(', ')
     throw new Error(
@@ -231,9 +228,11 @@ async function resolveMediaIds(
   payload: Payload,
   tenantId: number,
   imageUrls: Record<keyof typeof SEED_MEDIA_ALTS, string>,
+  step: SeedStep,
 ): Promise<Record<keyof typeof SEED_MEDIA_ALTS, number>> {
   type MK = keyof typeof SEED_MEDIA_ALTS
   if (process.env.RE_SEED_SKIP_MEDIA === 'true') {
+    step.detail('RE_SEED_SKIP_MEDIA=true — koristim postojeće slike')
     const need = Object.keys(SEED_MEDIA_ALTS).length
     const any = await payload.find({
       collection: 'media',
@@ -241,19 +240,22 @@ async function resolveMediaIds(
       limit: need,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     const ids = any.docs.map((d) => (typeof d.id === 'number' ? d.id : Number(d.id))).filter(Boolean)
     if (ids.length < need) {
-      throw new Error(`RE_SEED_SKIP_MEDIA=true but fewer than ${need} image media documents exist.`)
+      step.fail(`RE_SEED_SKIP_MEDIA=true ali nema ${need} slika u medijima.`)
     }
     const keys = Object.keys(SEED_MEDIA_ALTS) as MK[]
     return Object.fromEntries(keys.map((k, i) => [k, ids[i]])) as Record<MK, number>
   }
 
   const keys = Object.keys(SEED_MEDIA_ALTS) as MK[]
-  const entries = await Promise.all(
-    keys.map(async (k) => [k, await getOrCreateSeedMedia(payload, k, imageUrls[k], tenantId)] as const),
-  )
+  const entries: [MK, number][] = []
+  for (const key of keys) {
+    step.detail(`medij: ${key}…`)
+    entries.push([key, await getOrCreateSeedMedia(payload, key, imageUrls[key], tenantId)])
+  }
   return Object.fromEntries(entries) as Record<MK, number>
 }
 
@@ -281,6 +283,7 @@ async function fetchPdfBytesForDocument(payload: Payload, docId: number): Promis
     id: docId,
     depth: 0,
     overrideAccess: true,
+    context: seedPayloadContext,
   })
   const row = doc as { url?: string | null; filename?: string | null }
   const url =
@@ -309,6 +312,7 @@ async function interactivePickStanoviDocument(payload: Payload): Promise<number 
       limit: 40,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
       sort: '-updatedAt',
     })
     if (!docs.docs.length) {
@@ -347,6 +351,7 @@ async function getOrCreateStanoviPdfDocument(
       limit: 1,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     const existing = found.docs[0]
     if (existing?.id) {
@@ -355,6 +360,7 @@ async function getOrCreateStanoviPdfDocument(
           collection: 'documents',
           id: existing.id,
           overrideAccess: true,
+      context: seedPayloadContext,
           data: { title: STANOVI_DOC_TITLE },
         })
       }
@@ -367,6 +373,7 @@ async function getOrCreateStanoviPdfDocument(
   const created = await payload.create({
     collection: 'documents',
     overrideAccess: true,
+    context: seedPayloadContext,
     data: { title: STANOVI_DOC_TITLE },
     file: {
       data: buffer,
@@ -386,6 +393,7 @@ async function getOrCreateStanoviFloorPlanMedia(payload: Payload, tenantId: numb
       limit: 1,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     const existing = found.docs[0]
     if (existing?.id) {
@@ -394,6 +402,7 @@ async function getOrCreateStanoviFloorPlanMedia(payload: Payload, tenantId: numb
           collection: 'media',
           id: existing.id,
           overrideAccess: true,
+      context: seedPayloadContext,
           data: { alt: STANOVI_FLOORPLAN_ALT },
         })
       }
@@ -415,6 +424,7 @@ async function getOrCreateStanoviFloorPlanMedia(payload: Payload, tenantId: numb
   const created = await payload.create({
     collection: 'media',
     overrideAccess: true,
+    context: seedPayloadContext,
     data: { alt: STANOVI_FLOORPLAN_ALT, tenant: tenantId },
     file: {
       data: png,
@@ -433,6 +443,7 @@ async function getOrCreateStanoviFloorPlanMedia(payload: Payload, tenantId: numb
 async function seedStanoviBuildingsFromPdf(
   payload: Payload,
   tenantId: number,
+  step: SeedStep,
 ): Promise<{
   buildingId: number | null
   typologyItems: import('../src/utils/deriveTypologyFromStanoviPdf').TypologyFromPdfItem[] | null
@@ -447,6 +458,7 @@ async function seedStanoviBuildingsFromPdf(
       limit: 1,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     const id = found.docs[0]?.id
     if (id == null) return null
@@ -460,7 +472,7 @@ async function seedStanoviBuildingsFromPdf(
   })
 
   if (process.env.RE_SEED_SKIP_STANOVI === 'true') {
-    console.info('RE_SEED_SKIP_STANOVI=true — skipping Stanovi PDF / buildings.')
+    step.skip('Stanovi PDF / zgrade preskočeno (RE_SEED_SKIP_STANOVI=true)')
     return empty()
   }
 
@@ -477,15 +489,15 @@ async function seedStanoviBuildingsFromPdf(
     docId = envDocId
     try {
       pdfBuffer = await fetchPdfBytesForDocument(payload, docId)
-      console.info(`  Stanovi PDF: CMS dokument id=${docId} (RE_SEED_STANOVI_DOCUMENT_ID / STANOVI_DOCUMENT_ID).`)
+      step.detail(`Stanovi PDF: CMS dokument id=${docId}`)
     } catch (e) {
-      console.error('  Učitavanje PDF-a iz CMS dokumenta nije uspjelo:', e)
+      step.detail(`Učitavanje PDF-a iz CMS-a nije uspjelo: ${e instanceof Error ? e.message : e}`)
       return empty()
     }
   } else if (fs.existsSync(pdfPath)) {
     pdfBuffer = fs.readFileSync(pdfPath)
     docId = await getOrCreateStanoviPdfDocument(payload, pdfPath)
-    console.info(`  Stanovi PDF: lokalna datoteka ${pdfPath} → documents id=${docId}.`)
+    step.detail(`Stanovi PDF: lokalna datoteka → documents id=${docId}`)
   } else if (
     process.stdin.isTTY &&
     process.env.RE_SEED_NON_INTERACTIVE !== 'true' &&
@@ -493,20 +505,20 @@ async function seedStanoviBuildingsFromPdf(
   ) {
     const picked = await interactivePickStanoviDocument(payload)
     if (picked == null) {
-      console.info('  Preskočen odabir PDF-a — nema importa stanova / zgrade.')
+      step.skip('Preskočen odabir PDF-a — nema importa stanova / zgrade')
       return empty()
     }
     docId = picked
     try {
       pdfBuffer = await fetchPdfBytesForDocument(payload, docId)
-      console.info(`  Stanovi PDF: interaktivno odabran CMS dokument id=${docId}.`)
+      step.detail(`Stanovi PDF: interaktivno odabran dokument id=${docId}`)
     } catch (e) {
-      console.error('  Učitavanje odabranog PDF-a nije uspjelo:', e)
+      step.detail(`Učitavanje odabranog PDF-a nije uspjelo: ${e instanceof Error ? e.message : e}`)
       return empty()
     }
   } else {
-    console.info(
-      `  Nema lokalnog PDF-a (${pdfPath}), nema RE_SEED_STANOVI_DOCUMENT_ID, interaktivni odabir isključen — preskačem stanove.`,
+    step.skip(
+      `Nema lokalnog PDF-a, nema RE_SEED_STANOVI_DOCUMENT_ID, interaktivni odabir isključen`,
     )
     return empty()
   }
@@ -517,9 +529,11 @@ async function seedStanoviBuildingsFromPdf(
 
   const parsedPages = dedupeStanPagesByLabel(await parseStanoviPdfBuffer(pdfBuffer))
   if (parsedPages.length === 0) {
-    console.warn(`No unit pages parsed from PDF (documents id=${docId}) — skipping buildings.`)
+    step.detail(`Nema jedinica u PDF-u (documents id=${docId}) — preskačem zgradu`)
     return empty()
   }
+
+  step.detail(`PDF: ${parsedPages.length} jedinica parsirano`)
 
   const { deriveTypologyItemsFromParsedPages } = await import('../src/utils/deriveTypologyFromStanoviPdf')
   const typologyItems = deriveTypologyItemsFromParsedPages(parsedPages)
@@ -531,6 +545,7 @@ async function seedStanoviBuildingsFromPdf(
     limit: 1,
     depth: 0,
     overrideAccess: true,
+    context: seedPayloadContext,
   })
 
   const floorPlanId = await getOrCreateStanoviFloorPlanMedia(payload, tenantId)
@@ -550,6 +565,7 @@ async function seedStanoviBuildingsFromPdf(
       id: existingId,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     const rows = (existingFull as { units?: PrevUnitRow[] | null }).units
     for (const row of rows ?? []) {
@@ -598,21 +614,23 @@ async function seedStanoviBuildingsFromPdf(
       collection: 'buildings',
       id,
       overrideAccess: true,
+      context: seedPayloadContext,
       data: buildingData,
     })
-    console.info(`Updated building "${buildingTitle}" id=${id} (${units.length} units).`)
+    step.detail(`Ažurirana zgrada „${buildingTitle}” id=${id} (${units.length} jedinica)`)
     buildingId = typeof id === 'number' ? id : Number(id)
   } else {
     const created = await payload.create({
       collection: 'buildings',
       overrideAccess: true,
+      context: seedPayloadContext,
       data: {
         title: buildingTitle,
         ...buildingData,
       },
     })
     const newId = created.id
-    console.info(`Created building "${buildingTitle}" id=${newId} (${units.length} units).`)
+    step.detail(`Kreirana zgrada „${buildingTitle}” id=${newId} (${units.length} jedinica)`)
     buildingId = typeof newId === 'number' ? newId : Number(newId)
   }
 
@@ -653,9 +671,10 @@ async function ensureTenantMarketingFooter(
   payload: Payload,
   tenantId: number,
   tenant: ResolvedTenantForSeed,
+  step: SeedStep,
 ): Promise<void> {
   if (process.env.RE_SEED_SKIP_FOOTER === 'true') {
-    console.info('      → kolekcija Podnožja: preskočeno (RE_SEED_SKIP_FOOTER=true)')
+    step.skip('Kolekcija Podnožja preskočena (RE_SEED_SKIP_FOOTER=true)')
     return
   }
 
@@ -677,10 +696,11 @@ async function ensureTenantMarketingFooter(
       id,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     if (!footerDocIsReLandingSeedStub(existingDoc as Record<string, unknown>)) {
-      console.info(
-        `      → Podnožje (kolekcija) već postoji id=${id} — nisam dirao (ručno uređeno; RE_SEED_FORCE_TENANT_FOOTER=true ili pnpm run clean:real-estate za seed tekstove)`,
+      step.skip(
+        `Podnožje id=${id} već postoji (ručno uređeno; RE_SEED_FORCE_TENANT_FOOTER=true ili clean:real-estate)`,
       )
       return
     }
@@ -752,25 +772,28 @@ async function ensureTenantMarketingFooter(
       collection: 'footer',
       locale: 'hr',
       overrideAccess: true,
+      context: seedPayloadContext,
       data: {
         ...localized('hr'),
         tenant: tenantId,
       },
     })
     id = created.id
-    console.info(`      → kreirano Podnožje (kolekcija) id=${id}`)
+    step.detail(`Kreirano Podnožje (kolekcija) id=${id}`)
   } else {
-    console.info(
-      `      → ažuriram Podnožje (kolekcija) id=${id}${force ? ' — RE_SEED_FORCE_TENANT_FOOTER' : ' (seed stub → tenant · subdomain)'}`,
+    step.detail(
+      `Ažuriram Podnožje id=${id}${force ? ' — RE_SEED_FORCE_TENANT_FOOTER' : ' (seed stub)'}`,
     )
   }
 
   for (const loc of ['hr', 'en', 'de'] as const) {
+    step.detail(`Podnožje lokalizacija: ${loc}…`)
     await payload.update({
       collection: 'footer',
       id: id!,
       locale: loc,
       overrideAccess: true,
+      context: seedPayloadContext,
       data: localized(loc),
     })
   }
@@ -831,21 +854,45 @@ function lexicalPlainParagraph(text: string) {
   }
 }
 
-async function ensureReLandingInquiryForm(payload: Payload): Promise<number> {
-  console.info('      → tražim postojeći obrazac…')
-  const existing = await payload.find({
-    collection: 'forms',
-    locale: 'hr',
-    limit: 50,
-    depth: 0,
-    overrideAccess: true,
-  })
+async function ensureReLandingInquiryForm(payload: Payload, step: SeedStep): Promise<number> {
+  step.detail(`Tražim obrazac „${RE_LANDING_INQUIRY_FORM_TITLE}”…`)
 
-  let id: string | number | undefined = existing.docs.find(
-    (doc) =>
-      doc.title?.trim() === RE_LANDING_INQUIRY_FORM_TITLE ||
-      LEGACY_RE_LANDING_INQUIRY_FORM_TITLES.includes(doc.title?.trim() ?? ''),
-  )?.id
+  const existing = await withTimeout(
+    payload.find({
+      collection: 'forms',
+      locale: 'hr',
+      where: { title: { equals: RE_LANDING_INQUIRY_FORM_TITLE } },
+      limit: 1,
+      depth: 0,
+      pagination: false,
+      overrideAccess: true,
+      context: seedPayloadContext,
+      select: { id: true, title: true },
+    }),
+    30_000,
+    'pretraga obrasca',
+  )
+
+  let id: string | number | undefined = existing.docs[0]?.id
+
+  if (id == null) {
+    const legacy = await withTimeout(
+      payload.find({
+        collection: 'forms',
+        locale: 'hr',
+        where: { title: { in: LEGACY_RE_LANDING_INQUIRY_FORM_TITLES } },
+        limit: 1,
+        depth: 0,
+        pagination: false,
+        overrideAccess: true,
+        context: seedPayloadContext,
+        select: { id: true, title: true },
+      }),
+      30_000,
+      'pretraga legacy obrasca',
+    )
+    id = legacy.docs[0]?.id
+  }
 
   const buildFields = (loc: 'hr' | 'en' | 'de') => {
     const fs = getReLandingLocalePack(loc).formSeed
@@ -894,31 +941,43 @@ async function ensureReLandingInquiryForm(payload: Payload): Promise<number> {
   }
 
   if (id == null) {
-    console.info('      → kreiram obrazac (hr)…')
-    const created = await payload.create({
-      collection: 'forms',
-      locale: 'hr',
-      overrideAccess: true,
-      data: formDataForLocale('hr'),
-    })
+    step.detail('Kreiram obrazac (hr)…')
+    logDbPoolStats(payload, 'prije create forms')
+    const created = await withTimeoutHeartbeat(
+      payload.create({
+        collection: 'forms',
+        locale: 'hr',
+        overrideAccess: true,
+        context: seedPayloadContext,
+        data: formDataForLocale('hr'),
+      }),
+      FORM_OP_TIMEOUT_MS,
+      'kreiranje obrasca (hr)',
+      step.detail,
+    )
     id = created.id
-    console.info(`      → kreiran obrazac id=${id}`)
+    step.detail(`Kreiran obrazac id=${id}`)
   } else {
-    console.info(`      → obrazac već postoji id=${id} — ažuriram lokalizacije`)
+    step.detail(`Obrazac već postoji id=${id} — ažuriram lokalizacije`)
   }
 
   for (const loc of ['hr', 'en', 'de'] as const) {
-    console.info(`      → obrazac lokalizacija: ${loc}`)
-    await payload.update({
-      collection: 'forms',
-      id: id!,
-      locale: loc,
-      overrideAccess: true,
-      data: formDataForLocale(loc),
-    })
+    step.detail(`Obrazac lokalizacija: ${loc}…`)
+    await withTimeout(
+      payload.update({
+        collection: 'forms',
+        id: id!,
+        locale: loc,
+        overrideAccess: true,
+        context: seedPayloadContext,
+        data: formDataForLocale(loc),
+      }),
+      FORM_OP_TIMEOUT_MS,
+      `obrazac ${loc}`,
+    )
   }
 
-  console.info(`      → obrazac spreman id=${id}`)
+  step.done(`obrazac id=${id} (hr, en, de)`)
   return Number(id)
 }
 
@@ -930,9 +989,10 @@ async function cleanReLandingSeedArtifacts(
   payload: Payload,
   tenantId: number,
   slug: string,
+  step: SeedStep,
 ): Promise<void> {
   const buildingTitle = (process.env.STANOVI_BUILDING_TITLE || 'KVART ŽIGICA — stanovi').trim()
-  console.info('      → RE_SEED_CLEAN: brišem stare seed zapise…')
+  step.detail('RE_SEED_CLEAN — brišem stare seed zapise…')
 
   const delCount = { pages: 0, buildings: 0, media: 0, documents: 0, footers: 0 }
 
@@ -944,10 +1004,16 @@ async function cleanReLandingSeedArtifacts(
     limit: 50,
     depth: 0,
     overrideAccess: true,
+    context: seedPayloadContext,
   })
   for (const doc of pageRows.docs) {
     if (doc?.id != null) {
-      await payload.delete({ collection: 'pages', id: doc.id, overrideAccess: true })
+      await payload.delete({
+        collection: 'pages',
+        id: doc.id,
+        overrideAccess: true,
+        context: seedPayloadContext,
+      })
       delCount.pages++
     }
   }
@@ -960,10 +1026,16 @@ async function cleanReLandingSeedArtifacts(
       limit: 20,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     for (const doc of bRows.docs) {
       if (doc?.id != null) {
-        await payload.delete({ collection: 'buildings', id: doc.id, overrideAccess: true })
+        await payload.delete({
+          collection: 'buildings',
+          id: doc.id,
+          overrideAccess: true,
+          context: seedPayloadContext,
+        })
         delCount.buildings++
       }
     }
@@ -984,10 +1056,16 @@ async function cleanReLandingSeedArtifacts(
       limit: 30,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     for (const doc of found.docs) {
       if (doc?.id != null) {
-        await payload.delete({ collection: 'media', id: doc.id, overrideAccess: true })
+        await payload.delete({
+          collection: 'media',
+          id: doc.id,
+          overrideAccess: true,
+          context: seedPayloadContext,
+        })
         delCount.media++
       }
     }
@@ -1000,18 +1078,24 @@ async function cleanReLandingSeedArtifacts(
       limit: 10,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     for (const doc of seedPdf.docs) {
       if (doc?.id != null) {
-        await payload.delete({ collection: 'documents', id: doc.id, overrideAccess: true })
+        await payload.delete({
+          collection: 'documents',
+          id: doc.id,
+          overrideAccess: true,
+          context: seedPayloadContext,
+        })
         delCount.documents++
       }
     }
   }
 
   if (process.env.RE_SEED_CLEAN_SKIP_FOOTER === 'true') {
-    console.info(
-      `      → obrisano: stranice=${delCount.pages}, zgrade=${delCount.buildings}, mediji=${delCount.media}, dokumenti=${delCount.documents}; Podnožja preskočeno (RE_SEED_CLEAN_SKIP_FOOTER)`,
+    step.detail(
+      `Obrisano: stranice=${delCount.pages}, zgrade=${delCount.buildings}, mediji=${delCount.media}, dokumenti=${delCount.documents}; Podnožja preskočeno`,
     )
     return
   }
@@ -1022,16 +1106,22 @@ async function cleanReLandingSeedArtifacts(
     limit: 20,
     depth: 0,
     overrideAccess: true,
+    context: seedPayloadContext,
   })
   for (const doc of footers.docs) {
     if (doc?.id != null) {
-      await payload.delete({ collection: 'footer', id: doc.id, overrideAccess: true })
+      await payload.delete({
+        collection: 'footer',
+        id: doc.id,
+        overrideAccess: true,
+        context: seedPayloadContext,
+      })
       delCount.footers++
     }
   }
 
-  console.info(
-    `      → obrisano: stranice=${delCount.pages}, zgrade=${delCount.buildings}, mediji=${delCount.media}, dokumenti=${delCount.documents}, podnožja=${delCount.footers}`,
+  step.detail(
+    `Obrisano: stranice=${delCount.pages}, zgrade=${delCount.buildings}, mediji=${delCount.media}, dokumenti=${delCount.documents}, podnožja=${delCount.footers}`,
   )
 }
 
@@ -1045,14 +1135,15 @@ async function run(): Promise<void> {
     process.env.RE_SEED_TENANT_SUBDOMAIN?.trim() ||
     (process.env.RE_SEED_TENANT_NAME || 'Real estate').trim()
 
-  banner('Real Estate landing')
-  console.info(`  slug:         ${slug}`)
-  console.info(`  tenant:       ${tenantHint}`)
-  console.info(`  skip mediji:  ${process.env.RE_SEED_SKIP_MEDIA === 'true' ? 'da' : 'ne'}`)
-  console.info(`  skip stanovi: ${process.env.RE_SEED_SKIP_STANOVI === 'true' ? 'da' : 'ne'}`)
-  console.info(`  clean:        ${process.env.RE_SEED_CLEAN === 'true' ? 'da (brije pa seeda)' : 'ne'}`)
+  log.banner('Real Estate landing', {
+    slug,
+    tenant: tenantHint,
+    skipMedia: process.env.RE_SEED_SKIP_MEDIA === 'true' ? 'da' : 'ne',
+    skipStanovi: process.env.RE_SEED_SKIP_STANOVI === 'true' ? 'da' : 'ne',
+    clean: process.env.RE_SEED_CLEAN === 'true' ? 'da' : 'ne',
+  })
 
-  step(1, totalSteps, 'Učitavam module (demo layout + Payload)…')
+  const s1 = log.step(1, totalSteps, 'Učitavam module')
   const { buildRealEstateLandingPayloadLayout, reLandingDemoImageUrls } = await import(
     '../src/data/realEstateLandingDemo'
   )
@@ -1060,55 +1151,59 @@ async function run(): Promise<void> {
     import('payload'),
     import('@payload-config'),
   ])
-  console.info('      → gotovo')
+  s1.done('layout builder + Payload')
 
-  step(2, totalSteps, 'Spajam se na bazu (getPayload)…')
+  const s2 = log.step(2, totalSteps, 'Spajam se na bazu')
   const resolvedConfig = await Promise.resolve(payloadConfig as Promise<typeof payloadConfig> | typeof payloadConfig)
   const payload = await getPayload({ config: resolvedConfig })
-  console.info('      → spojeno')
+  s2.done('povezano')
 
   try {
-    step(3, totalSteps, 'Tenant + demo mediji (Unsplash ili skip)…')
+    const s3 = log.step(3, totalSteps, 'Tenant')
     const tenant = await resolveTenantForSeed(payload)
     const tenantId = tenant.id
-    console.info(`      → tenant id=${tenantId} (${tenant.name} · ${tenant.subdomain})`)
+    s3.detail(`tenant id=${tenantId} (${tenant.name} · ${tenant.subdomain})`)
 
     if (process.env.RE_SEED_CLEAN === 'true') {
-      await cleanReLandingSeedArtifacts(payload, tenantId, slug)
+      await cleanReLandingSeedArtifacts(payload, tenantId, slug, s3)
     }
+    s3.done('tenant')
 
-    const mediaIds = await resolveMediaIds(payload, tenantId, reLandingDemoImageUrls)
-    console.info(
-      `      → media ids: ${Object.entries(mediaIds)
+    const s4 = log.step(4, totalSteps, 'Obrazac (Form Builder)')
+    const inquiryFormId = await ensureReLandingInquiryForm(payload, s4)
+
+    const s5 = log.step(5, totalSteps, 'Demo mediji')
+    const mediaIds = await resolveMediaIds(payload, tenantId, reLandingDemoImageUrls, s5)
+    s5.detail(
+      `media: ${Object.entries(mediaIds)
         .map(([k, v]) => `${k}=${v}`)
         .join(', ')}`,
     )
 
     if (process.env.RE_SEED_MARKETING_FOOTER === 'true') {
-      await ensureTenantMarketingFooter(payload, tenantId, tenant)
+      await ensureTenantMarketingFooter(payload, tenantId, tenant, s5)
     } else {
-      console.info('      → marketing Podnožje (kolekcija): preskočeno (RE landing podnožje je u layoutu)')
+      s5.detail('Marketing Podnožje (kolekcija): preskočeno — RE landing podnožje je u layoutu')
     }
+    s5.done('mediji')
 
-    step(4, totalSteps, 'Obrazac (Form Builder) za RE landing upit…')
-    const inquiryFormId = await ensureReLandingInquiryForm(payload)
-
-    step(5, totalSteps, 'Stanovi PDF → dokument, tlocrt, zgrada, tipologija…')
-    const stanovi = await seedStanoviBuildingsFromPdf(payload, tenantId)
+    const s6 = log.step(6, totalSteps, 'Stanovi PDF → zgrada + tipologija')
+    const stanovi = await seedStanoviBuildingsFromPdf(payload, tenantId, s6)
     if (stanovi.typologyItems?.length) {
-      console.info(
-        `      → tipologija: ${stanovi.typologyItems.length} redova (${stanovi.typologyItems.map((r) => `${r.name}×${r.count}`).join(', ')})`,
+      s6.detail(
+        `Tipologija: ${stanovi.typologyItems.length} redova (${stanovi.typologyItems.map((r) => `${r.name}×${r.count}`).join(', ')})`,
       )
     } else {
-      console.info('      → tipologija: default iz demo datoteke (nema PDF podataka)')
+      s6.detail('Tipologija: default iz demo datoteke (nema PDF podataka)')
     }
     if (stanovi.buildingId != null) {
-      console.info(`      → zgrada id=${stanovi.buildingId} (unit browser u layoutu)`)
+      s6.detail(`Zgrada id=${stanovi.buildingId} (unit browser u layoutu)`)
     } else {
-      console.info('      → nema zgrade za unit browser (PDF ili skip)')
+      s6.detail('Nema zgrade za unit browser (PDF ili skip)')
     }
+    s6.done('stanovi / zgrada')
 
-    step(6, totalSteps, 'Sastavljam layout blokova (hr, en, de)…')
+    const s7 = log.step(7, totalSteps, 'Layout blokova (hr, en, de)')
     const { reLandingPageTitle, reLandingMeta, typologyIntroFromPdf } = await import(
       '../src/data/realEstateLandingLocales'
     )
@@ -1131,8 +1226,9 @@ async function run(): Promise<void> {
     for (const loc of LOCALES) {
       assertReLandingLayoutTail(layouts[loc], loc)
     }
-    console.info(`      → ${layouts.hr.length} blokova × 3 jezika (upit + podnožje u layoutu)`)
-    step(7, totalSteps, 'Stranica `pages` (create ili update)…')
+    s7.done(`${layouts.hr.length} blokova × 3 jezika`)
+
+    const s8 = log.step(8, totalSteps, 'Stranica pages (hr, en, de)')
     const existing = await payload.find({
       collection: 'pages',
       where: {
@@ -1141,56 +1237,61 @@ async function run(): Promise<void> {
       limit: 1,
       depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
 
     let pageId: string | number
 
     if (existing.docs[0]?.id) {
       pageId = existing.docs[0].id
-      console.info(`      → postojeća stranica id=${pageId}`)
+      s8.detail(`Postojeća stranica id=${pageId}`)
     } else {
-      const created = await payload.create({
-        collection: 'pages',
-        locale: 'hr',
-        overrideAccess: true,
-        data: {
-          title: reLandingPageTitle('hr'),
-          slug,
-          tenant: tenantId,
-          layout: layouts.hr,
-          meta: { ...reLandingMeta('hr'), image: mediaIds.hero },
-        },
-      })
+      s8.detail('Kreiram novu stranicu (hr)…')
+      const created = await withTimeout(
+        payload.create({
+          collection: 'pages',
+          locale: 'hr',
+          overrideAccess: true,
+          context: seedPayloadContext,
+          data: {
+            title: reLandingPageTitle('hr'),
+            slug,
+            tenant: tenantId,
+            layout: layouts.hr,
+            meta: { ...reLandingMeta('hr'), image: mediaIds.hero },
+          },
+        }),
+        FORM_OP_TIMEOUT_MS,
+        'kreiranje stranice',
+      )
       pageId = created.id
-      console.info(`      → nova stranica id=${pageId}`)
+      s8.detail(`Nova stranica id=${pageId}`)
     }
 
-    step(8, totalSteps, 'Lokalizacije hr, en, de…')
     for (const locale of LOCALES) {
-      await payload.update({
-        collection: 'pages',
-        id: pageId,
-        locale,
-        overrideAccess: true,
-        data: {
-          title: reLandingPageTitle(locale),
-          layout: layouts[locale],
-          meta: { ...reLandingMeta(locale), image: mediaIds.hero },
-          tenant: tenantId,
-        },
-      })
-      console.info(`      → ${locale}: spremljeno`)
+      s8.detail(`Lokalizacija: ${locale}…`)
+      await withTimeout(
+        payload.update({
+          collection: 'pages',
+          id: pageId,
+          locale,
+          overrideAccess: true,
+          context: seedPayloadContext,
+          data: {
+            title: reLandingPageTitle(locale),
+            layout: layouts[locale],
+            meta: { ...reLandingMeta(locale), image: mediaIds.hero },
+            tenant: tenantId,
+          },
+        }),
+        FORM_OP_TIMEOUT_MS,
+        `stranica ${locale}`,
+      )
     }
+    s8.done(`stranica id=${pageId} (/${slug})`)
 
-    console.info(`\n  ✓ Završeno. Otvori Payload → Pages → „${reLandingPageTitle('hr')}” (slug /${slug})`)
-    console.info(
-      '  → RE landing podnožje: zadnji blok „RE landing — podnožje” u layoutu stranice.',
-    )
-    console.info(
-      '  → Kontakt obrazac: blok „RE landing — upit” + obrazac u Obrasci (Form Builder).',
-    )
-    console.info(
-      '  → Frontend dev: cache za stranice / menu / footer je isključen; u produkciji pričekaj revalidaciju ili spremi stranicu u Adminu.',
+    log.success(
+      `RE landing spremljen — Admin → Pages → „${reLandingPageTitle('hr')}”. Upit + podnožje u layoutu.`,
     )
   } finally {
     await shutdownDbPool(payload)
@@ -1198,11 +1299,8 @@ async function run(): Promise<void> {
 }
 
 run()
-  .then(() => {
-    console.info('\n[seed:real-estate] Izlaz iz procesa (0).\n')
-    process.exit(0)
-  })
+  .then(() => process.exit(0))
   .catch((err) => {
-    console.error('\n[seed:real-estate] Greška — izlaz (1).\n', err)
+    log.error('Seed nije uspio.', err)
     process.exit(1)
   })

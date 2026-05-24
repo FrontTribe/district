@@ -72,6 +72,21 @@ export function createSeedLog(scriptId: string) {
   }
 }
 
+type PgPoolLike = {
+  totalCount?: number
+  idleCount?: number
+  waitingCount?: number
+}
+
+/** Log pg pool pressure — useful when form create hangs after many S3 uploads. */
+export function logDbPoolStats(payload: unknown, label: string): void {
+  const pool = (payload as { db?: { pool?: PgPoolLike } })?.db?.pool
+  if (!pool || typeof pool.totalCount !== 'number') return
+  console.info(
+    `    ${seedColor.dim('·')} DB pool (${label}): total=${pool.totalCount} idle=${pool.idleCount ?? '?'} waiting=${pool.waitingCount ?? '?'}`,
+  )
+}
+
 export async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined
   try {
@@ -86,6 +101,29 @@ export async function withTimeout<T>(promise: Promise<T>, ms: number, label: str
     ])
   } finally {
     if (timer) clearTimeout(timer)
+  }
+}
+
+/** Same as withTimeout but emits a heartbeat every 15s while waiting (SSH terminals look frozen otherwise). */
+export async function withTimeoutHeartbeat<T>(
+  promise: Promise<T>,
+  ms: number,
+  label: string,
+  detail?: (message: string) => void,
+): Promise<T> {
+  let heartbeat: ReturnType<typeof setInterval> | undefined
+  if (detail) {
+    const startedAt = Date.now()
+    heartbeat = setInterval(() => {
+      const seconds = Math.round((Date.now() - startedAt) / 1000)
+      detail(`… ${label} (${seconds}s)`)
+    }, 15_000)
+  }
+
+  try {
+    return await withTimeout(promise, ms, label)
+  } finally {
+    if (heartbeat) clearInterval(heartbeat)
   }
 }
 
