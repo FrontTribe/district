@@ -14,6 +14,17 @@ import { migrations } from '../src/migrations/index.js'
 
 type MigrationDb = Awaited<ReturnType<typeof getMigrationDb>>
 
+async function shutdownDbPool(payload: Awaited<ReturnType<typeof getPayload>>): Promise<void> {
+  try {
+    const pool = (payload as { db?: { pool?: { end: () => Promise<void> } } }).db?.pool
+    if (pool && typeof pool.end === 'function') {
+      await pool.end()
+    }
+  } catch {
+    // Best-effort — CI must still exit even if pool teardown fails.
+  }
+}
+
 async function getMigrationDb(
   adapter: NonNullable<Awaited<ReturnType<typeof getPayload>>['db']>,
   req: PayloadRequest,
@@ -70,70 +81,76 @@ async function main() {
   const config = (await Promise.resolve(payloadConfig)) as SanitizedConfig
   const payload = await getPayload({ config })
 
-  const { docs: migrationsInDb } = await payload.find({
-    collection: 'payload-migrations',
-    limit: 0,
-    sort: '-batch',
-  })
+  try {
+    const { docs: migrationsInDb } = await payload.find({
+      collection: 'payload-migrations',
+      limit: 0,
+      sort: '-batch',
+    })
 
-  const applied = new Set(
-    migrationsInDb.filter((row) => row.batch !== -1).map((row) => String(row.name)),
-  )
+    const applied = new Set(
+      migrationsInDb.filter((row) => row.batch !== -1).map((row) => String(row.name)),
+    )
 
-  let latestBatch = migrationsInDb
-    .map((row) => Number(row.batch))
-    .filter((batch) => Number.isFinite(batch) && batch > 0)
-    .reduce((max, batch) => Math.max(max, batch), 0)
+    let latestBatch = migrationsInDb
+      .map((row) => Number(row.batch))
+      .filter((batch) => Number.isFinite(batch) && batch > 0)
+      .reduce((max, batch) => Math.max(max, batch), 0)
 
-  const runBatch = latestBatch + 1
+    const runBatch = latestBatch + 1
 
-  for (const migration of migrations) {
-    if (applied.has(migration.name)) continue
+    for (const migration of migrations) {
+      if (applied.has(migration.name)) continue
 
-    const batch = runBatch
-    const req = await createLocalReq({}, payload)
+      const batch = runBatch
+      const req = await createLocalReq({}, payload)
 
-    payload.logger.info({ msg: `Migrating: ${migration.name}` })
-    const started = Date.now()
+      payload.logger.info({ msg: `Migrating: ${migration.name}` })
+      const started = Date.now()
 
-    try {
-      await initTransaction(req)
-      const db = await getMigrationDb(payload.db, req)
-      await migration.up({ db, payload, req })
+      try {
+        await initTransaction(req)
+        const db = await getMigrationDb(payload.db, req)
+        await migration.up({ db, payload, req })
 
-      await payload.create({
-        collection: 'payload-migrations',
-        data: { name: migration.name, batch },
-        req,
-      })
+        await payload.create({
+          collection: 'payload-migrations',
+          data: { name: migration.name, batch },
+          req,
+        })
 
-      await commitTransaction(req)
-      payload.logger.info({
-        msg: `Migrated:  ${migration.name} (${Date.now() - started}ms)`,
-      })
-    } catch (err) {
-      await killTransaction(req)
+        await commitTransaction(req)
+        payload.logger.info({
+          msg: `Migrated:  ${migration.name} (${Date.now() - started}ms)`,
+        })
+      } catch (err) {
+        await killTransaction(req)
 
-      if (!isAlreadyAppliedError(err)) {
-        throw err
+        if (!isAlreadyAppliedError(err)) {
+          throw err
+        }
+
+        payload.logger.warn({
+          msg: `Baseline skip (schema already present): ${migration.name}`,
+        })
+
+        await payload.create({
+          collection: 'payload-migrations',
+          data: { name: migration.name, batch },
+        })
+        applied.add(migration.name)
       }
-
-      payload.logger.warn({
-        msg: `Baseline skip (schema already present): ${migration.name}`,
-      })
-
-      await payload.create({
-        collection: 'payload-migrations',
-        data: { name: migration.name, batch },
-      })
-      applied.add(migration.name)
     }
-  }
 
-  payload.logger.info({ msg: 'Done.' })
+    payload.logger.info({ msg: 'Done.' })
+  } finally {
+    await shutdownDbPool(payload)
+  }
 }
 
-main().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })
