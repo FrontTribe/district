@@ -10,3 +10,13 @@ export function getPayloadServerURL(): string {
 
   return 'http://localhost:3000'
 }
+
+/**
+ * In the browser, postMessage origin must match the open admin tab (not env drift http/https).
+ */
+export function resolvePayloadServerURL(): string {
+  if (typeof window !== 'undefined') {
+    return window.location.origin
+  }
+  return getPayloadServerURL()
+}

@@ -1,12 +1,11 @@
-import PageClient from '@/components/PageClient'
+import { LivePreviewPage } from '@/components/LivePreviewPage'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import type { Tenant } from '@/payload-types'
-import { RealEstateLandingShell } from '@/components/real-estate-landing'
-import { MomentoLandingShell } from '@/components/momento-landing'
 import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
+import { resolveTenantSubdomain, resolveTenantId } from '@/utils/resolveTenantSubdomain'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
 import { getTenantVisualTheme } from '@/utils/tenantVisualTheme'
 import { getCachedPageBySlug } from '@/utils/getCachedPages'
@@ -20,6 +19,9 @@ type PageProps = {
   params: Promise<{
     slug: string
     locale: string
+  }>
+  searchParams: Promise<{
+    previewTenant?: string
   }>
 }
 
@@ -48,8 +50,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return generateMetadataFromPage(page, locale, baseUrl)
 }
 
-export default async function Page({ params }: PageProps) {
+export default async function Page({ params, searchParams }: PageProps) {
   const { slug, locale } = await params
+  const { previewTenant } = await searchParams
   const supportedLocale = localeLang.find((lang) => lang.code === locale)
   if (!supportedLocale) {
     return notFound()
@@ -64,15 +67,20 @@ export default async function Page({ params }: PageProps) {
   // Get tenant data for menu and footer
   const requestHeaders: Headers = await headers()
   const headersList = requestHeaders
-  const subdomain = headersList.get('x-tenant-subdomain')
+  const subdomain = resolveTenantSubdomain(
+    headersList.get('x-tenant-subdomain'),
+    page,
+    previewTenant,
+  )
 
   let currentTenant: Tenant | null = null
   if (subdomain) {
     currentTenant = await getTenantBySubdomain(subdomain)
+  } else if (page.tenant && typeof page.tenant === 'object') {
+    currentTenant = page.tenant
   }
 
-  // Fetch menu and footer for the current tenant
-  const tenantId = currentTenant?.id ? String(currentTenant.id) : null
+  const tenantId = resolveTenantId(page, currentTenant)
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
   const tenantVisualTheme = getTenantVisualTheme(subdomain)
   const isBoutiqueTenantPage = Boolean(currentTenant && tenantVisualTheme === 'boutique')
@@ -115,11 +123,14 @@ export default async function Page({ params }: PageProps) {
         }
       : undefined
 
-  const pageClient = (
-    <PageClient
+  const pageContent = (
+    <LivePreviewPage
       page={mergedPage}
       locale={locale}
       tenantVisualTheme={currentTenant ? tenantVisualTheme : 'default'}
+      momentoMenu={momentoMenu}
+      isRealEstateLandingPage={isRealEstateLandingPage}
+      isBoutiqueTenantPage={isBoutiqueTenantPage}
     />
   )
 
@@ -167,21 +178,7 @@ export default async function Page({ params }: PageProps) {
         />
       )}
 
-      {isRealEstateLandingPage ? (
-        <RealEstateLandingShell>{pageClient}</RealEstateLandingShell>
-      ) : isMomentoTenantPage ? (
-        <MomentoLandingShell menu={momentoMenu}>{pageClient}</MomentoLandingShell>
-      ) : (
-        <div
-          className={
-            isBoutiqueTenantPage
-              ? 'content content--full-bleed'
-              : 'content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
-          }
-        >
-          {pageClient}
-        </div>
-      )}
+      {pageContent}
 
       {showTenantFooter && footerGlobal && !isRealEstateLandingPage ? (
         <Footer

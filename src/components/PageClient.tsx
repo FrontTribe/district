@@ -4,7 +4,9 @@ import { Page as PageType } from '@/payload-types'
 import { BlockRenderer } from './BlockRenderer'
 import { useLivePreview } from '@payloadcms/live-preview-react'
 import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
-import { getPayloadServerURL } from '@/utils/payloadServerUrl'
+import { getTenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { resolveTenantSubdomain } from '@/utils/resolveTenantSubdomain'
+import { resolvePayloadServerURL } from '@/utils/payloadServerUrl'
 
 const LIVE_PREVIEW_DEPTH = 6
 
@@ -19,9 +21,14 @@ export default function PageClient({
 }) {
   const { data: page } = useLivePreview({
     initialData: initialPage,
-    serverURL: getPayloadServerURL(),
+    serverURL: resolvePayloadServerURL(),
     depth: LIVE_PREVIEW_DEPTH,
   })
+
+  const liveSubdomain = resolveTenantSubdomain(null, page)
+  const resolvedTheme = liveSubdomain
+    ? getTenantVisualTheme(liveSubdomain)
+    : tenantVisualTheme
 
   if (!page) {
     return null
@@ -41,7 +48,7 @@ export default function PageClient({
     <BlockRenderer
       blocks={page.layout}
       locale={locale}
-      tenantVisualTheme={tenantVisualTheme}
+      tenantVisualTheme={resolvedTheme}
     />
   )
 }

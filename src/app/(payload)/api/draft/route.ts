@@ -6,6 +6,7 @@ export async function GET(req: NextRequest): Promise<Response> {
   const { searchParams } = new URL(req.url)
   const secret = searchParams.get('secret')
   const redirectUrl = searchParams.get('url')
+  const previewTenant = searchParams.get('previewTenant')
 
   if (secret !== process.env.DRAFT_SECRET) {
     return new Response('Invalid secret', { status: 401 })
@@ -15,7 +16,12 @@ export async function GET(req: NextRequest): Promise<Response> {
     return new Response('Missing redirect URL', { status: 400 })
   }
 
+  const target = new URL(redirectUrl, req.nextUrl.origin)
+  if (previewTenant?.trim()) {
+    target.searchParams.set('previewTenant', previewTenant.trim())
+  }
+
   const draft = await draftMode()
   draft.enable()
-  return redirect(redirectUrl)
+  return redirect(`${target.pathname}${target.search}`)
 }

@@ -9,6 +9,10 @@ import {
   hubSans,
 } from '@/app/(frontend)/fonts'
 import { realEstateLandingSerifFont } from '@/components/real-estate-landing/landingFonts'
+import {
+  momentoMonoFont,
+  momentoSansFont,
+} from '@/components/momento-landing/landingFonts'
 
 const siteUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://district.hr'
 const metadataBase = (() => {
@@ -33,6 +37,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     hubMono.variable,
     hubSans.variable,
     realEstateLandingSerifFont.variable,
+    momentoSansFont.variable,
+    momentoMonoFont.variable,
   ].join(' ')
 
   return (

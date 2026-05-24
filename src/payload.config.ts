@@ -86,6 +86,10 @@ export default buildConfig({
           draftURL.searchParams.set('locale', locale.code)
         }
 
+        if (tenantSubdomain) {
+          draftURL.searchParams.set('previewTenant', tenantSubdomain)
+        }
+
         return draftURL.toString()
       },
     },
