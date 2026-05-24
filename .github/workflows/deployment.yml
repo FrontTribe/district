@@ -12,23 +12,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set deploy target
+      - name: Set migration target
         id: target
         run: |
+          # PR: verify against dev only (never mutate prod before merge).
+          # Push: auto-apply migrations on the target environment, then verify.
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BRANCH="${{ github.base_ref }}"
-          else
-            BRANCH="${{ github.ref_name }}"
-          fi
-
-          if [ "$BRANCH" = "main" ]; then
+            echo "path=/var/www/district-dev" >> $GITHUB_OUTPUT
+            echo "app=district-dev"           >> $GITHUB_OUTPUT
+            echo "apply_migrations=false"     >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" = "main" ]; then
             echo "path=/var/www/district-prod" >> $GITHUB_OUTPUT
             echo "app=district-prod"           >> $GITHUB_OUTPUT
-            echo "branch=main"                 >> $GITHUB_OUTPUT
+            echo "apply_migrations=true"       >> $GITHUB_OUTPUT
           else
             echo "path=/var/www/district-dev"  >> $GITHUB_OUTPUT
             echo "app=district-dev"            >> $GITHUB_OUTPUT
-            echo "branch=development"          >> $GITHUB_OUTPUT
+            echo "apply_migrations=true"       >> $GITHUB_OUTPUT
           fi
 
       - name: Checkout repo
@@ -62,6 +62,7 @@ jobs:
             DEPLOY_PATH="${{ steps.target.outputs.path }}"
             APP_NAME="${{ steps.target.outputs.app }}"
             OPS_PATH="${DEPLOY_PATH}-ops"
+            APPLY_MIGRATIONS="${{ steps.target.outputs.apply_migrations }}"
 
             rm -rf "$OPS_PATH"
             mkdir -p "$OPS_PATH"
@@ -88,9 +89,12 @@ jobs:
             pnpm install --frozen-lockfile
             chmod +x scripts/server/seed
 
-            # Apply pending migrations only on push to development — never during PR checks.
-            if [ "${{ github.event_name }}" = "push" ] && [ "$APP_NAME" = "district-dev" ]; then
+            # PR: verify only (dev DB). Push: apply pending migrations, then verify.
+            if [ "$APPLY_MIGRATIONS" = "true" ]; then
+              echo "Applying pending migrations on $APP_NAME…"
               pnpm run payload -- migrate
+            else
+              echo "PR check — skipping migrate (read-only verify on $APP_NAME)."
             fi
 
             pnpm run check:migrations
