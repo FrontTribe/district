@@ -28,9 +28,10 @@ import {
   type BoutiqueDemoMediaKey,
   type RentlioRoomPreserve,
 } from '../src/data/boutiqueLandingDemo'
-import { assertSeedAllowed } from './seed-guard'
+import { createSeedLog, seedColor, seedPayloadContext, withTimeout, type SeedStep } from './seed-ui'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const log = createSeedLog('seed:boutique')
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
@@ -38,6 +39,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
 const LOCALES = ['hr', 'en', 'de'] as const
 const BOUTIQUE_SEED_MENU_TITLE = 'Boutique — navigacija'
 const BOUTIQUE_ROOM_COUNT = 4
+const FORM_OP_TIMEOUT_MS = 120_000
 
 /** Keep CMS Rentlio links when re-seeding. Demo IDs only when BOUTIQUE_SEED_RENTLIO=true. */
 function resolveRentlioPreserveForSeed(
@@ -99,6 +101,18 @@ const SEED_MEDIA_ALTS: Record<BoutiqueDemoMediaKey, string> = {
   jacuzzi4: 'Boutique — jacuzzi 4',
 }
 
+async function shutdownDbPool(payload: Payload): Promise<void> {
+  try {
+    const pool = (payload as unknown as { db?: { pool?: { end: () => Promise<void> } } }).db?.pool
+    if (pool && typeof pool.end === 'function') {
+      await pool.end()
+      console.info(`    ${seedColor.dim('·')} DB pool zatvoren`)
+    }
+  } catch {
+    console.info(`    ${seedColor.warn('!')} Zatvaranje DB poola preskočeno`)
+  }
+}
+
 function readPublicImage(publicPath: string) {
   const fsPath = path.resolve(__dirname, '../public', publicPath.replace(/^\//, ''))
   if (!fs.existsSync(fsPath)) {
@@ -123,6 +137,7 @@ async function getOrCreateMedia(
     limit: 1,
     depth: 0,
     overrideAccess: true,
+    context: seedPayloadContext,
   })
   if (found.docs[0]?.id) {
     return Number(found.docs[0].id)
@@ -132,62 +147,65 @@ async function getOrCreateMedia(
   const created = await payload.create({
     collection: 'media',
     overrideAccess: true,
+    context: seedPayloadContext,
     data: { alt, tenant: tenantId },
     file: { data: buffer, mimetype: mime, name: `boutique-${key}.jpg`, size: buffer.length },
   })
   return Number(created.id)
 }
 
-async function resolveMediaIds(payload: Payload, tenantId: number) {
+async function resolveMediaIds(
+  payload: Payload,
+  tenantId: number,
+  step: SeedStep,
+): Promise<Record<BoutiqueDemoMediaKey, number>> {
+  const keys = Object.keys(boutiqueDemoImageUrls) as BoutiqueDemoMediaKey[]
+
   if (process.env.BOUTIQUE_SEED_SKIP_MEDIA === 'true') {
-    console.info('  → Mediji: preskočeno (BOUTIQUE_SEED_SKIP_MEDIA=true)')
+    step.detail('BOUTIQUE_SEED_SKIP_MEDIA=true — koristim postojeće slike tenanta')
     const first = await payload.find({
       collection: 'media',
       where: { tenant: { equals: tenantId } },
       limit: 30,
+      depth: 0,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
     const fallback = Number(first.docs[0]?.id ?? 0)
-    const ids = {} as Record<BoutiqueDemoMediaKey, number>
-    for (const key of Object.keys(boutiqueDemoImageUrls) as BoutiqueDemoMediaKey[]) {
-      ids[key] = fallback
+    if (!fallback) {
+      step.fail('Nema medija za tenant — ukloni BOUTIQUE_SEED_SKIP_MEDIA ili uploadaj slike.')
     }
-    return ids
+    return Object.fromEntries(keys.map((key) => [key, fallback])) as Record<BoutiqueDemoMediaKey, number>
   }
 
-  console.info(`  → Mediji: ${Object.keys(boutiqueDemoImageUrls).length} slika (S3 upload može potrajati)…`)
+  step.detail(`${keys.length} slika (S3 upload može potrajati)…`)
   const ids = {} as Record<BoutiqueDemoMediaKey, number>
-  for (const [key, url] of Object.entries(boutiqueDemoImageUrls) as [BoutiqueDemoMediaKey, string][]) {
-    console.info(`      → ${key}…`)
-    ids[key] = await getOrCreateMedia(payload, key, url, tenantId)
+  for (const key of keys) {
+    step.detail(`medij: ${key}…`)
+    ids[key] = await getOrCreateMedia(payload, key, boutiqueDemoImageUrls[key], tenantId)
   }
-  console.info('  → Mediji: gotovo')
   return ids
 }
 
-async function resolveTenant(payload: Payload) {
+async function resolveTenant(payload: Payload, step: SeedStep) {
   const subdomain = (process.env.BOUTIQUE_SEED_TENANT_SUBDOMAIN || 'boutique').trim()
   const found = await payload.find({
     collection: 'tenants',
     where: { subdomain: { equals: subdomain } },
     limit: 1,
+    depth: 0,
     overrideAccess: true,
+    context: seedPayloadContext,
   })
   const t = found.docs[0]
-  if (!t?.id) throw new Error(`Tenant not found: subdomain="${subdomain}". Run pnpm run seed:hub first.`)
+  if (!t?.id) {
+    step.fail(`Tenant nije pronađen: subdomain="${subdomain}". Prvo pokreni pnpm run seed:hub.`)
+  }
+  step.detail(`tenant id=${t.id} (${subdomain})`)
   return { id: Number(t.id), subdomain }
 }
 
-async function ensureMenu(payload: Payload, tenantId: number) {
-  const existing = await payload.find({
-    collection: 'menu',
-    where: {
-      and: [{ tenant: { equals: tenantId } }, { identifier: { equals: 'tenant-menu' } }],
-    } as Where,
-    limit: 1,
-    overrideAccess: true,
-  })
-
+async function ensureMenu(payload: Payload, tenantId: number, step: SeedStep) {
   const localized = (loc: (typeof LOCALES)[number]) => {
     const pack = getBoutiqueLocalePack(loc)
     return {
@@ -203,30 +221,62 @@ async function ensureMenu(payload: Payload, tenantId: number) {
     }
   }
 
+  step.detail('Provjeravam tenant-menu…')
+  const existing = await withTimeout(
+    payload.find({
+      collection: 'menu',
+      where: {
+        and: [{ tenant: { equals: tenantId } }, { identifier: { equals: 'tenant-menu' } }],
+      } as Where,
+      limit: 1,
+      depth: 0,
+      pagination: false,
+      overrideAccess: true,
+      context: seedPayloadContext,
+      select: { id: true, identifier: true },
+    }),
+    30_000,
+    'pretraga izbornika',
+  )
+
   let id = existing.docs[0]?.id
 
   if (id == null) {
-    const created = await payload.create({
-      collection: 'menu',
-      locale: 'hr',
-      overrideAccess: true,
-      data: localized('hr'),
-    })
+    step.detail('Kreiram tenant-menu (hr)…')
+    const created = await withTimeout(
+      payload.create({
+        collection: 'menu',
+        locale: 'hr',
+        overrideAccess: true,
+        context: seedPayloadContext,
+        data: localized('hr'),
+      }),
+      FORM_OP_TIMEOUT_MS,
+      'kreiranje izbornika',
+    )
     id = created.id
-    console.info(`  → Created menu id=${id}`)
+    step.detail(`Kreiran tenant-menu id=${id}`)
   } else {
-    console.info(`  → Updating menu id=${id}`)
+    step.detail(`Pronađen tenant-menu id=${id} — ažuriram lokalizacije`)
   }
 
   for (const loc of LOCALES) {
-    await payload.update({
-      collection: 'menu',
-      id: id!,
-      locale: loc,
-      overrideAccess: true,
-      data: localized(loc),
-    })
+    step.detail(`Sprema lokalizaciju: ${loc}…`)
+    await withTimeout(
+      payload.update({
+        collection: 'menu',
+        id: id!,
+        locale: loc,
+        overrideAccess: true,
+        context: seedPayloadContext,
+        data: localized(loc),
+      }),
+      FORM_OP_TIMEOUT_MS,
+      `izbornik ${loc}`,
+    )
   }
+
+  step.done(`tenant-menu id=${id} (hr, en, de)`)
 }
 
 function lexicalPlain(text: string) {
@@ -251,14 +301,26 @@ function lexicalPlain(text: string) {
   }
 }
 
-async function ensureContactForm(payload: Payload): Promise<number> {
-  const existing = await payload.find({
-    collection: 'forms',
-    locale: 'hr',
-    limit: 20,
-    overrideAccess: true,
-  })
-  let id = existing.docs.find((d) => d.title === BOUTIQUE_INQUIRY_FORM_TITLE)?.id
+async function ensureContactForm(payload: Payload, step: SeedStep): Promise<number> {
+  step.detail(`Tražim obrazac „${BOUTIQUE_INQUIRY_FORM_TITLE}”…`)
+
+  const existing = await withTimeout(
+    payload.find({
+      collection: 'forms',
+      locale: 'hr',
+      where: { title: { equals: BOUTIQUE_INQUIRY_FORM_TITLE } },
+      limit: 1,
+      depth: 0,
+      pagination: false,
+      overrideAccess: true,
+      context: seedPayloadContext,
+      select: { id: true, title: true },
+    }),
+    30_000,
+    'pretraga obrasca',
+  )
+
+  let id = existing.docs[0]?.id
 
   const buildFields = (loc: (typeof LOCALES)[number]) => {
     const fs = getBoutiqueLocalePack(loc).formSeed
@@ -290,7 +352,10 @@ async function ensureContactForm(payload: Payload): Promise<number> {
         label: fs.typeFieldLabel,
         required: true,
         placeholder: fs.typePlaceholder,
-        options: fs.typeOptions,
+        options: fs.typeOptions.map((option) => ({
+          label: option.label,
+          value: option.value,
+        })),
       },
       {
         blockType: 'textarea' as const,
@@ -314,39 +379,72 @@ async function ensureContactForm(payload: Payload): Promise<number> {
   }
 
   if (id == null) {
-    const created = await payload.create({
-      collection: 'forms',
-      locale: 'hr',
-      overrideAccess: true,
-      data: formData('hr'),
-    })
+    step.detail('Kreiram obrazac (hr)…')
+    const created = await withTimeout(
+      payload.create({
+        collection: 'forms',
+        locale: 'hr',
+        overrideAccess: true,
+        context: seedPayloadContext,
+        data: formData('hr'),
+      }),
+      FORM_OP_TIMEOUT_MS,
+      'kreiranje obrasca (hr)',
+    )
     id = created.id
+    step.detail(`Kreiran obrazac id=${id}`)
+  } else {
+    step.detail(`Obrazac već postoji id=${id} — ažuriram lokalizacije`)
   }
 
   for (const loc of LOCALES) {
-    await payload.update({
-      collection: 'forms',
-      id: id!,
-      locale: loc,
-      overrideAccess: true,
-      data: formData(loc),
-    })
+    step.detail(`Obrazac lokalizacija: ${loc}…`)
+    await withTimeout(
+      payload.update({
+        collection: 'forms',
+        id: id!,
+        locale: loc,
+        overrideAccess: true,
+        context: seedPayloadContext,
+        data: formData(loc),
+      }),
+      FORM_OP_TIMEOUT_MS,
+      `obrazac ${loc}`,
+    )
   }
 
+  step.done(`obrazac id=${id} (hr, en, de)`)
   return Number(id)
 }
 
-async function main() {
+async function run(): Promise<void> {
+  const { assertSeedAllowed } = await import('./seed-guard')
   assertSeedAllowed('seed:boutique')
 
+  const totalSteps = 6
   const slug = (process.env.BOUTIQUE_SEED_PAGE_SLUG || 'boutique').trim()
-  const { getPayload } = await import('payload')
-  const { default: payloadConfig } = await import('../src/payload.config')
+  const tenantHint = (process.env.BOUTIQUE_SEED_TENANT_SUBDOMAIN || 'boutique').trim()
+
+  log.banner('Boutique landing', {
+    slug,
+    tenant: tenantHint,
+    skipMedia: process.env.BOUTIQUE_SEED_SKIP_MEDIA === 'true' ? 'da' : 'ne',
+  })
+
+  const s1 = log.step(1, totalSteps, 'Učitavam module')
+  const [{ getPayload }, { default: payloadConfig }] = await Promise.all([
+    import('payload'),
+    import('@payload-config'),
+  ])
+  s1.done('layout builder + Payload')
+
+  const s2 = log.step(2, totalSteps, 'Spajam se na bazu')
   const payload = await getPayload({ config: await Promise.resolve(payloadConfig) })
+  s2.done('povezano')
 
   try {
-    const tenant = await resolveTenant(payload)
-    console.info(`Tenant id=${tenant.id} (${tenant.subdomain})`)
+    const s3 = log.step(3, totalSteps, 'Tenant + mediji + Rentlio')
+    const tenant = await resolveTenant(payload, s3)
 
     const existingPage = await payload.find({
       collection: 'pages',
@@ -356,6 +454,7 @@ async function main() {
       limit: 1,
       depth: 2,
       overrideAccess: true,
+      context: seedPayloadContext,
     })
 
     const rentlioPreserve = resolveRentlioPreserveForSeed(
@@ -364,20 +463,29 @@ async function main() {
       ),
     )
     if (rentlioPreserve.some((r) => r.rentlioPropertyId || r.rentlioUnitTypeId)) {
-      console.info('  → Zadržavam postojeće Rentlio veze iz CMS-a.')
+      s3.detail('Zadržavam postojeće Rentlio veze iz CMS-a')
     } else {
-      console.info(
-        '  → Sobe bez Rentlio veza — povežite property/channel/unit type ručno u Adminu (Products dropdown).',
+      s3.detail(
+        'Sobe bez Rentlio veza — povežite property/channel/unit type ručno u Adminu (Products dropdown)',
       )
     }
 
-    const mediaIds = await resolveMediaIds(payload, tenant.id)
-    console.info('  → Obrazac (Form Builder)…')
-    const formId = await ensureContactForm(payload)
-    console.info(`  → Obrazac id=${formId}`)
-    console.info('  → Izbornik…')
-    await ensureMenu(payload, tenant.id)
+    const mediaIds = await resolveMediaIds(payload, tenant.id, s3)
+    s3.detail(
+      `media: ${Object.entries(mediaIds)
+        .slice(0, 4)
+        .map(([k, v]) => `${k}=${v}`)
+        .join(', ')}…`,
+    )
+    s3.done('tenant + mediji')
 
+    const s4 = log.step(4, totalSteps, 'Obrazac (Form Builder)')
+    const formId = await ensureContactForm(payload, s4)
+
+    const s5 = log.step(5, totalSteps, 'Izbornik')
+    await ensureMenu(payload, tenant.id, s5)
+
+    const s6 = log.step(6, totalSteps, 'Stranica pages')
     const layouts = Object.fromEntries(
       LOCALES.map((loc) => [
         loc,
@@ -385,49 +493,68 @@ async function main() {
       ]),
     ) as Record<(typeof LOCALES)[number], ReturnType<typeof buildBoutiquePayloadLayout>>
 
+    s6.detail(`${layouts.hr.length} blokova × 3 jezika`)
     let pageId = existingPage.docs[0]?.id
 
     if (!pageId) {
-      const created = await payload.create({
-        collection: 'pages',
-        locale: 'hr',
-        overrideAccess: true,
-        data: {
-          title: boutiquePageTitle('hr'),
-          slug,
-          tenant: tenant.id,
-          layout: layouts.hr as never,
-          meta: { ...boutiquePageMeta('hr'), image: mediaIds.hero },
-        },
-      })
+      s6.detail('Kreiram novu stranicu (hr)…')
+      const created = await withTimeout(
+        payload.create({
+          collection: 'pages',
+          locale: 'hr',
+          overrideAccess: true,
+          context: seedPayloadContext,
+          data: {
+            title: boutiquePageTitle('hr'),
+            slug,
+            tenant: tenant.id,
+            layout: layouts.hr as never,
+            meta: { ...boutiquePageMeta('hr'), image: mediaIds.hero },
+          },
+        }),
+        FORM_OP_TIMEOUT_MS,
+        'kreiranje stranice',
+      )
       pageId = created.id
-      console.info(`Created page id=${pageId}`)
+      s6.detail(`Nova stranica id=${pageId}`)
     } else {
-      console.info(`Updating page id=${pageId}`)
+      s6.detail(`Postojeća stranica id=${pageId} — ažuriram lokalizacije`)
     }
 
     for (const loc of LOCALES) {
-      await payload.update({
-        collection: 'pages',
-        id: pageId!,
-        locale: loc,
-        overrideAccess: true,
-        data: {
-          title: boutiquePageTitle(loc),
-          layout: layouts[loc] as never,
-          meta: { ...boutiquePageMeta(loc), image: mediaIds.hero },
-        },
-      })
+      s6.detail(`Lokalizacija: ${loc}…`)
+      await withTimeout(
+        payload.update({
+          collection: 'pages',
+          id: pageId!,
+          locale: loc,
+          overrideAccess: true,
+          context: seedPayloadContext,
+          data: {
+            title: boutiquePageTitle(loc),
+            layout: layouts[loc] as never,
+            meta: { ...boutiquePageMeta(loc), image: mediaIds.hero },
+            tenant: tenant.id,
+          },
+        }),
+        FORM_OP_TIMEOUT_MS,
+        `stranica ${loc}`,
+      )
     }
 
-    console.info('\nDone. Boutique landing seeded (hr/en/de). Footer is layout block `boutique-footer`.')
+    s6.done(`stranica id=${pageId} (/${slug})`)
+
+    log.success(
+      `Boutique landing spremljen — Admin → Pages → „${boutiquePageTitle('hr')}”. Footer: blok \`boutique-footer\`.`,
+    )
   } finally {
-    const pool = (payload as unknown as { db?: { pool?: { end?: () => Promise<void> } } }).db?.pool
-    if (pool?.end) await pool.end()
+    await shutdownDbPool(payload)
   }
 }
 
-main().catch((e) => {
-  console.error(e)
-  process.exit(1)
-})
+run()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    log.error('Seed nije uspio.', err)
+    process.exit(1)
+  })
