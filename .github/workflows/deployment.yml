@@ -92,9 +92,13 @@ jobs:
               pnpm run migrate:ci
             fi
 
+            echo "Verifying migration status..."
             pnpm run check:migrations
+            echo "Migration verification passed."
 
+            echo "Cleaning up $OPS_PATH..."
             rm -rf "$OPS_PATH" || :
+            echo "Cleanup done."
 
   build:
     name: Build

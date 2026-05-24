@@ -16,9 +16,17 @@ type MigrationDb = Awaited<ReturnType<typeof getMigrationDb>>
 
 async function shutdownDbPool(payload: Awaited<ReturnType<typeof getPayload>>): Promise<void> {
   try {
-    const pool = (payload as { db?: { pool?: { end: () => Promise<void> } } }).db?.pool
-    if (pool && typeof pool.end === 'function') {
-      await pool.end()
+    const db = payload.db as {
+      pool?: { end: () => Promise<void> }
+      destroy?: () => Promise<void>
+    }
+
+    if (typeof db.destroy === 'function') {
+      await db.destroy()
+    }
+
+    if (db.pool && typeof db.pool.end === 'function') {
+      await db.pool.end()
     }
   } catch {
     // Best-effort — CI must still exit even if pool teardown fails.

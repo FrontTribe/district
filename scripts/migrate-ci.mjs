@@ -67,3 +67,4 @@ function runDriftTolerantMigrate() {
 
 await clearDevModeMarkers()
 runDriftTolerantMigrate()
+process.exit(0)

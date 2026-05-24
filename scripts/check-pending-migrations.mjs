@@ -8,24 +8,29 @@
  * Optional (local/CI escape hatch only — do not use in GitHub Actions):
  *   SKIP_DB_CHECK=true  — only validate migration files vs src/migrations/index.ts
  */
-import { spawnSync } from 'child_process'
-import { readdirSync, readFileSync } from 'fs'
-import { dirname, resolve } from 'path'
+import { createRequire } from 'node:module'
+import { readdirSync, readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const migrationDir = resolve(__dirname, '../src/migrations')
+const root = resolve(__dirname, '..')
+const migrationDir = resolve(root, 'src/migrations')
 
-function stripAnsi(value) {
-  return value.replace(/\x1b\[[0-9;]*m/g, '')
+function loadPg() {
+  const req = createRequire(resolve(root, 'package.json'))
+  const reqDb = createRequire(req.resolve('@payloadcms/db-postgres'))
+  return reqDb('pg')
 }
 
-function checkMigrationIndexSync() {
-  const migrationNames = readdirSync(migrationDir)
+function listMigrationNames() {
+  return readdirSync(migrationDir)
     .filter((file) => file.endsWith('.ts') && file !== 'index.ts')
     .map((file) => file.replace(/\.ts$/, ''))
     .sort()
+}
 
+function checkMigrationIndexSync(migrationNames) {
   const indexContent = readFileSync(resolve(migrationDir, 'index.ts'), 'utf8')
   const registeredNames = [...indexContent.matchAll(/name:\s*['"]([^'"]+)['"]/g)].map(
     (match) => match[1],
@@ -54,17 +59,7 @@ function checkMigrationIndexSync() {
   console.log(`✓ ${migrationNames.length} migration file(s) registered in index.ts`)
 }
 
-function parsePendingMigrations(output) {
-  const plain = stripAnsi(output)
-
-  return plain
-    .split('\n')
-    .filter((line) => line.includes('│') && /│\s*No\s*│/.test(line))
-    .map((line) => line.split('│').map((part) => part.trim()).filter(Boolean)[0])
-    .filter(Boolean)
-}
-
-function checkDatabaseMigrations() {
+async function checkDatabaseMigrations(migrationNames) {
   if (process.env.SKIP_DB_CHECK === 'true') {
     console.log('Skipping database migration check (SKIP_DB_CHECK=true)')
     return
@@ -77,31 +72,35 @@ function checkDatabaseMigrations() {
     }
   }
 
-  const result = spawnSync('pnpm', ['run', 'payload', '--', 'migrate:status'], {
-    cwd: resolve(__dirname, '..'),
-    env: process.env,
-    encoding: 'utf8',
-  })
+  const pg = loadPg()
+  const client = new pg.Client({ connectionString: process.env.DATABASE_URI })
 
-  const output = `${result.stdout || ''}${result.stderr || ''}`
-  process.stdout.write(output)
+  try {
+    await client.connect()
+    const { rows } = await client.query(
+      'SELECT name FROM payload_migrations WHERE batch IS DISTINCT FROM -1',
+    )
+    const applied = new Set(rows.map((row) => String(row.name)))
+    const pending = migrationNames.filter((name) => !applied.has(name))
 
-  if (result.status !== 0) {
+    if (pending.length > 0) {
+      console.error('\n✗ Pending migrations (not applied to the database):')
+      pending.forEach((name) => console.error(`  - ${name}`))
+      console.error('\nApply them before deploying: pnpm run migrate:ci')
+      process.exit(1)
+    }
+
+    console.log('\n✓ All migrations are applied to the database.')
+  } catch (err) {
     console.error('\n✗ Failed to read migration status from the database.')
-    process.exit(result.status || 1)
-  }
-
-  const pending = parsePendingMigrations(output)
-
-  if (pending.length > 0) {
-    console.error('\n✗ Pending migrations (not applied to the database):')
-    pending.forEach((name) => console.error(`  - ${name}`))
-    console.error('\nApply them before deploying: pnpm payload migrate')
+    console.error(err)
     process.exit(1)
+  } finally {
+    await client.end()
   }
-
-  console.log('\n✓ All migrations are applied to the database.')
 }
 
-checkMigrationIndexSync()
-checkDatabaseMigrations()
+const migrationNames = listMigrationNames()
+checkMigrationIndexSync(migrationNames)
+await checkDatabaseMigrations(migrationNames)
+process.exit(0)
