@@ -1,34 +1,17 @@
 #!/usr/bin/env node
 /**
  * Fails when migration files are out of sync with the repo or not applied to the database.
- *
- * Usage:
- *   DATABASE_URI=... PAYLOAD_SECRET=... node scripts/check-pending-migrations.mjs
- *
- * Optional (local/CI escape hatch only — do not use in GitHub Actions):
- *   SKIP_DB_CHECK=true  — only validate migration files vs src/migrations/index.ts
  */
-import { createRequire } from 'node:module'
-import { readdirSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'url'
+import {
+  getPendingMigrationNames,
+  listMigrationNames,
+} from './migration-pg-utils.mjs'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const root = resolve(__dirname, '..')
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const migrationDir = resolve(root, 'src/migrations')
-
-function loadPg() {
-  const req = createRequire(resolve(root, 'package.json'))
-  const reqDb = createRequire(req.resolve('@payloadcms/db-postgres'))
-  return reqDb('pg')
-}
-
-function listMigrationNames() {
-  return readdirSync(migrationDir)
-    .filter((file) => file.endsWith('.ts') && file !== 'index.ts')
-    .map((file) => file.replace(/\.ts$/, ''))
-    .sort()
-}
 
 function checkMigrationIndexSync(migrationNames) {
   const indexContent = readFileSync(resolve(migrationDir, 'index.ts'), 'utf8')
@@ -72,16 +55,8 @@ async function checkDatabaseMigrations(migrationNames) {
     }
   }
 
-  const pg = loadPg()
-  const client = new pg.Client({ connectionString: process.env.DATABASE_URI })
-
   try {
-    await client.connect()
-    const { rows } = await client.query(
-      'SELECT name FROM payload_migrations WHERE batch IS DISTINCT FROM -1',
-    )
-    const applied = new Set(rows.map((row) => String(row.name)))
-    const pending = migrationNames.filter((name) => !applied.has(name))
+    const pending = await getPendingMigrationNames(process.env.DATABASE_URI, root)
 
     if (pending.length > 0) {
       console.error('\n✗ Pending migrations (not applied to the database):')
@@ -95,12 +70,10 @@ async function checkDatabaseMigrations(migrationNames) {
     console.error('\n✗ Failed to read migration status from the database.')
     console.error(err)
     process.exit(1)
-  } finally {
-    await client.end()
   }
 }
 
-const migrationNames = listMigrationNames()
+const migrationNames = listMigrationNames(root)
 checkMigrationIndexSync(migrationNames)
 await checkDatabaseMigrations(migrationNames)
 process.exit(0)
