@@ -503,6 +503,67 @@
   }
   .hero--centered .hero__bottom{ grid-template-columns: 1fr; text-align: center; justify-items: center; }
   .hero--centered .hero__meta{ justify-self: center; text-align: center; align-items: center; }
+
+  @media (max-width: 900px) {
+    .hero{
+      min-height: auto;
+      padding: 96px 20px clamp(3rem, 8vh + env(safe-area-inset-bottom, 0px), 5rem);
+      gap: 0;
+    }
+
+    .hero__top{
+      flex-shrink: 0;
+    }
+
+    .hero__inner{
+      margin-top: 20px;
+      flex-shrink: 0;
+    }
+
+    .hero__eyebrow{
+      margin-bottom: 16px;
+      font-size: 10px;
+    }
+
+    .hero__title{
+      font-size: clamp(52px, 16vw, 88px);
+      line-height: 0.92;
+    }
+
+    .hero__media,
+    .hero--split .hero__media,
+    .hero--centered .hero__media{
+      position: relative;
+      right: auto;
+      top: auto;
+      order: 0;
+      width: 100%;
+      max-width: none;
+      height: auto;
+      min-height: clamp(260px, 48svh, 420px);
+      aspect-ratio: 4 / 3;
+      margin: 24px 0 0;
+      clip-path: none !important;
+      flex-shrink: 0;
+    }
+
+    .hero__media img{
+      transform: none;
+      object-position: center center;
+    }
+
+    .hero__bottom{
+      margin-top: 28px;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .hero__lead{
+      max-width: none;
+      font-size: clamp(18px, 4.8vw, 21px);
+      padding-inline-start: 0;
+    }
+  }
   
   
   .marquee{
@@ -1899,8 +1960,6 @@
     }
     .nav.nav--menu-open .nav__brand{ color: var(--ink); }
     .nav.nav--menu-open:not(.nav--scrolled) .nav__brand b{ color: var(--ink); }
-    .hero{ padding: 100px 20px clamp(4rem, 12vh + env(safe-area-inset-bottom, 0px), 7rem); }
-    .hero__media{ position: relative; right: auto; top: auto; width: 100%; height: 36vh; margin: 20px 0 0; }
     .hero__bottom{ grid-template-columns: 1fr; gap: 24px; }
     .manifesto, .tip, .galerija__intro, .tp, .kat, .dp, .partner, .cta{ padding-left: 20px; padding-right: 20px; }
     .manifesto, .partner, .cta__inner{ grid-template-columns: 1fr; gap: 30px; }
