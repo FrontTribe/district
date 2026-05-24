@@ -45,6 +45,11 @@ if (isProductionRuntime && requestedSchemaPush) {
 
 const allowSchemaPush = requestedSchemaPush && !isProductionRuntime
 
+const seedPgPoolOptions =
+  process.env.PAYLOAD_DISABLE_DB_TRANSACTIONS === 'true'
+    ? { options: '-c lock_timeout=30s -c statement_timeout=120s' }
+    : {}
+
 /** Max upload size (bytes) for multipart/file fields — PDFs (e.g. building unit details) can be large. */
 const maxUploadFileBytes = 50 * 1024 * 1024
 
@@ -111,11 +116,15 @@ export default buildConfig({
   db: postgresAdapter({
     // Never push DB schema unless explicitly enabled in a non-production runtime.
     push: allowSchemaPush,
+    // Seed CLI sets PAYLOAD_DISABLE_DB_TRANSACTIONS=true to avoid long-held locks on forms.
+    transactionOptions:
+      process.env.PAYLOAD_DISABLE_DB_TRANSACTIONS === 'true' ? false : undefined,
     pool: {
       connectionString: process.env.DATABASE_URI,
       max: 10,
       connectionTimeoutMillis: 15_000,
       idleTimeoutMillis: 30_000,
+      ...seedPgPoolOptions,
     },
     migrationDir: path.resolve(dirname, 'migrations'),
     // Keep runtime boot non-interactive; only run migrations on boot if explicitly requested.

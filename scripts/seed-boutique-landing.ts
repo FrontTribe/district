@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url'
 import dotenv from 'dotenv'
 import type { Payload, Where } from 'payload'
 
-import { BOUTIQUE_INQUIRY_FORM_TITLE, getBoutiqueLocalePack } from '../src/data/boutiqueSeedDefaults'
+import { getBoutiqueLocalePack } from '../src/data/boutiqueSeedDefaults'
 import {
   boutiqueDemoImageUrls,
   boutiquePageMeta,
@@ -28,7 +28,7 @@ import {
   type BoutiqueDemoMediaKey,
   type RentlioRoomPreserve,
 } from '../src/data/boutiqueLandingDemo'
-import { createSeedLog, seedColor, seedPayloadContext, withTimeout, withTimeoutHeartbeat, logDbPoolStats, type SeedStep } from './seed-ui'
+import { createSeedLog, seedColor, seedPayloadContext, withTimeout, type SeedStep, runSeedFormWorker } from './seed-ui'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const log = createSeedLog('seed:boutique')
@@ -279,146 +279,6 @@ async function ensureMenu(payload: Payload, tenantId: number, step: SeedStep) {
   step.done(`tenant-menu id=${id} (hr, en, de)`)
 }
 
-function lexicalPlain(text: string) {
-  return {
-    root: {
-      type: 'root',
-      children: [
-        {
-          type: 'paragraph',
-          children: [{ type: 'text', text, version: 1 }],
-          direction: 'ltr' as const,
-          format: '' as const,
-          indent: 0,
-          version: 1,
-        },
-      ],
-      direction: 'ltr' as const,
-      format: '' as const,
-      indent: 0,
-      version: 1,
-    },
-  }
-}
-
-async function ensureContactForm(payload: Payload, step: SeedStep): Promise<number> {
-  step.detail(`Tražim obrazac „${BOUTIQUE_INQUIRY_FORM_TITLE}”…`)
-
-  const existing = await withTimeout(
-    payload.find({
-      collection: 'forms',
-      locale: 'hr',
-      where: { title: { equals: BOUTIQUE_INQUIRY_FORM_TITLE } },
-      limit: 1,
-      depth: 0,
-      pagination: false,
-      overrideAccess: true,
-      context: seedPayloadContext,
-      select: { id: true, title: true },
-    }),
-    30_000,
-    'pretraga obrasca',
-  )
-
-  let id = existing.docs[0]?.id
-
-  const buildFields = (loc: (typeof LOCALES)[number]) => {
-    const fs = getBoutiqueLocalePack(loc).formSeed
-    return [
-      {
-        blockType: 'text' as const,
-        name: 'naziv',
-        label: fs.nameFieldLabel,
-        required: true,
-        placeholder: fs.namePlaceholder,
-      },
-      {
-        blockType: 'email' as const,
-        name: 'email',
-        label: fs.emailFieldLabel,
-        required: true,
-        placeholder: fs.emailPlaceholder,
-      },
-      {
-        blockType: 'text' as const,
-        name: 'telefon',
-        label: fs.phoneFieldLabel,
-        required: false,
-        placeholder: fs.phonePlaceholder,
-      },
-      {
-        blockType: 'select' as const,
-        name: 'tip',
-        label: fs.typeFieldLabel,
-        required: true,
-        placeholder: fs.typePlaceholder,
-        options: fs.typeOptions.map((option) => ({
-          label: option.label,
-          value: option.value,
-        })),
-      },
-      {
-        blockType: 'textarea' as const,
-        name: 'poruka',
-        label: fs.messageFieldLabel,
-        required: true,
-        placeholder: fs.messagePlaceholder,
-      },
-    ]
-  }
-
-  const formData = (loc: (typeof LOCALES)[number]) => {
-    const pack = getBoutiqueLocalePack(loc)
-    return {
-      title: BOUTIQUE_INQUIRY_FORM_TITLE,
-      submitButtonLabel: pack.formSeed.submitButtonLabel,
-      confirmationType: 'message' as const,
-      confirmationMessage: lexicalPlain(pack.formSeed.successMessage),
-      fields: buildFields(loc),
-    }
-  }
-
-  if (id == null) {
-    step.detail('Kreiram obrazac (hr)…')
-    logDbPoolStats(payload, 'prije create forms')
-    const created = await withTimeoutHeartbeat(
-      payload.create({
-        collection: 'forms',
-        locale: 'hr',
-        overrideAccess: true,
-        context: seedPayloadContext,
-        data: formData('hr'),
-      }),
-      FORM_OP_TIMEOUT_MS,
-      'kreiranje obrasca (hr)',
-      step.detail,
-    )
-    id = created.id
-    step.detail(`Kreiran obrazac id=${id}`)
-  } else {
-    step.detail(`Obrazac već postoji id=${id} — ažuriram lokalizacije`)
-  }
-
-  for (const loc of LOCALES) {
-    step.detail(`Obrazac lokalizacija: ${loc}…`)
-    await withTimeout(
-      payload.update({
-        collection: 'forms',
-        id: id!,
-        locale: loc,
-        overrideAccess: true,
-        context: seedPayloadContext,
-        data: formData(loc),
-      }),
-      FORM_OP_TIMEOUT_MS,
-      `obrazac ${loc}`,
-    )
-  }
-
-  step.done(`obrazac id=${id} (hr, en, de)`)
-  return Number(id)
-}
-
 async function run(): Promise<void> {
   const { assertSeedAllowed } = await import('./seed-guard')
   assertSeedAllowed('seed:boutique')
@@ -474,7 +334,7 @@ async function run(): Promise<void> {
     s3.done('tenant')
 
     const s4 = log.step(4, totalSteps, 'Obrazac (Form Builder)')
-    const formId = await ensureContactForm(payload, s4)
+    const formId = await runSeedFormWorker('boutique', s4)
 
     const s5 = log.step(5, totalSteps, 'Demo mediji')
     const mediaIds = await resolveMediaIds(payload, tenant.id, s5)

@@ -19,11 +19,12 @@
  *   RE_SEED_TENANT_SUBDOMAIN — match tenant by subdomain instead of name
  *   RE_SEED_PAGE_SLUG     — page slug (default: "real-estate")
  *   RE_SEED_SKIP_MEDIA    — if "true", reuse first 5 image media docs for tenant (may look wrong)
- *   RE_SEED_SKIP_STANOVI  — if "true", skip PDF parse + documents/media/buildings seed
- *   RE_SEED_STANOVI_DOCUMENT_ID — Payload `documents.id` (PDF već u CMS-u; preuzima se za parse)
+ *   RE_SEED_SKIP_STANOVI  — if "true", skip PDF parse + buildings seed
+ *   RE_SEED_STANOVI_MEDIA_ID — Payload `media.id` (PDF prenesen u Admin → Mediji)
+ *   RE_SEED_STANOVI_DOCUMENT_ID — legacy: `documents.id` (deprecated; koristite media)
  *   STANOVI_DOCUMENT_ID   — isto kao gore (alias)
- *   STANOVI_PDF           — lokalna datoteka (dev); ako postoji, upload u `documents` s naslovom seeda
- *   RE_SEED_NON_INTERACTIVE — "true" = bez readline odabira PDF-a (CI / produkcija skripta)
+ *   STANOVI_PDF           — lokalna datoteka (dev); upload u `documents` ako postoji na disku
+ *   RE_SEED_NON_INTERACTIVE — "true" = bez interaktivnog odabira PDF-a iz Mediji (CI / produkcija)
  *   STANOVI_BUILDING_TITLE — buildings.title for upsert (default: KVART ŽIGICA — stanovi)
  *   ALLOW_SEED           — set `true` to run against non-dev DATABASE_URI (see scripts/seed-guard.ts)
  *   RE_SEED_SKIP_FOOTER   — ako je "true", ne dira kolekciju Podnožja (marketing footer za ostale stranice)
@@ -46,7 +47,7 @@ import sharp from 'sharp'
 
 import { resolvePayloadFileUrl } from '../src/utils/resolvePayloadFileUrl'
 import { getReLandingLocalePack } from '../src/data/realEstateLandingLocales'
-import { createSeedLog, seedColor, seedPayloadContext, withTimeout, withTimeoutHeartbeat, logDbPoolStats, type SeedStep } from './seed-ui'
+import { createSeedLog, seedColor, seedPayloadContext, withTimeout, type SeedStep, runSeedFormWorker } from './seed-ui'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const log = createSeedLog('seed:real-estate')
@@ -265,6 +266,17 @@ const STANOVI_FLOORPLAN_ALT = 'KVART ŽIGICA — tlocrt (placeholder)'
 const LEGACY_STANOVI_FLOORPLAN_ALT = 'seed:re-landing:floorplan-placeholder'
 const LEGACY_STANOVI_BUILDING_TITLE = 'KVART ŽIGICA — stanovi (seed)'
 
+function parseEnvStanoviMediaId(): number | null {
+  const raw = process.env.RE_SEED_STANOVI_MEDIA_ID?.trim()
+  if (!raw) return null
+  const n = Number.parseInt(raw, 10)
+  if (!Number.isFinite(n) || n < 1) {
+    console.warn(`  Ignoriram neispravan RE_SEED_STANOVI_MEDIA_ID="${raw}"`)
+    return null
+  }
+  return n
+}
+
 function parseEnvStanoviDocumentId(): number | null {
   const raw =
     process.env.RE_SEED_STANOVI_DOCUMENT_ID?.trim() || process.env.STANOVI_DOCUMENT_ID?.trim()
@@ -277,22 +289,31 @@ function parseEnvStanoviDocumentId(): number | null {
   return n
 }
 
-async function fetchPdfBytesForDocument(payload: Payload, docId: number): Promise<Buffer> {
+async function fetchPdfBytesFromUpload(
+  payload: Payload,
+  collection: 'media' | 'documents',
+  uploadId: number,
+): Promise<Buffer> {
   const doc = await payload.findByID({
-    collection: 'documents',
-    id: docId,
+    collection,
+    id: uploadId,
     depth: 0,
     overrideAccess: true,
     context: seedPayloadContext,
   })
-  const row = doc as { url?: string | null; filename?: string | null }
+  const row = doc as { url?: string | null; filename?: string | null; mimeType?: string | null }
+  if (row.mimeType && !row.mimeType.toLowerCase().includes('pdf')) {
+    throw new Error(`${collection} id=${uploadId} nije PDF (${row.mimeType})`)
+  }
   const url =
     row.url ??
     (row.filename && process.env.S3_BUCKET && process.env.S3_REGION
       ? `https://${process.env.S3_BUCKET}.s3.${process.env.S3_REGION}.amazonaws.com/${row.filename}`
       : null)
   if (!url) {
-    throw new Error(`Dokument id=${docId} nema url/filename — prenesite PDF u Admin → Documents.`)
+    throw new Error(
+      `${collection} id=${uploadId} nema url/filename — prenesite PDF u Admin → Mediji.`,
+    )
   }
   const base = process.env.NEXT_PUBLIC_SERVER_URL?.trim() || 'http://127.0.0.1:3000'
   const absolute = resolvePayloadFileUrl(url, base)
@@ -303,36 +324,141 @@ async function fetchPdfBytesForDocument(payload: Payload, docId: number): Promis
   return Buffer.from(await res.arrayBuffer())
 }
 
-/** Interaktivno: odabir jednog retka iz kolekcije `documents` (zadnjih N). */
-async function interactivePickStanoviDocument(payload: Payload): Promise<number | null> {
-  const rl = createInterface({ input: process.stdin, output: process.stdout })
-  try {
-    const docs = await payload.find({
+/** @deprecated Koristi fetchPdfBytesFromUpload(..., 'media', id) */
+async function fetchPdfBytesForDocument(payload: Payload, docId: number): Promise<Buffer> {
+  return fetchPdfBytesFromUpload(payload, 'documents', docId)
+}
+
+async function fetchPdfBytesForMedia(payload: Payload, mediaId: number): Promise<Buffer> {
+  return fetchPdfBytesFromUpload(payload, 'media', mediaId)
+}
+
+/**
+ * Zgrada (`buildings.unitDetailsPdf`) i dalje referencira `documents`.
+ * Odabrani PDF iz Mediji syncamo u documents (po filename) da frontend `/api/pdf-file` radi.
+ */
+async function ensureStanoviDocumentFromMedia(payload: Payload, mediaId: number): Promise<number> {
+  const media = await payload.findByID({
+    collection: 'media',
+    id: mediaId,
+    depth: 0,
+    overrideAccess: true,
+    context: seedPayloadContext,
+  })
+  const row = media as {
+    filename?: string | null
+    alt?: string | null
+    mimeType?: string | null
+  }
+
+  if (row.mimeType && !row.mimeType.toLowerCase().includes('pdf')) {
+    throw new Error(`Medij id=${mediaId} nije PDF`)
+  }
+
+  const filename = row.filename?.trim()
+  if (filename) {
+    const byFilename = await payload.find({
       collection: 'documents',
-      limit: 40,
+      where: { filename: { equals: filename } },
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+      context: seedPayloadContext,
+    })
+    const existing = byFilename.docs[0]
+    if (existing?.id) {
+      return typeof existing.id === 'number' ? existing.id : Number(existing.id)
+    }
+  }
+
+  const buffer = await fetchPdfBytesForMedia(payload, mediaId)
+  const title = row.alt?.trim() || filename || STANOVI_DOC_TITLE
+  const created = await payload.create({
+    collection: 'documents',
+    overrideAccess: true,
+    context: seedPayloadContext,
+    data: { title },
+    file: {
+      data: buffer,
+      mimetype: 'application/pdf',
+      name: filename || 'stanovi.pdf',
+      size: buffer.length,
+    },
+  })
+  return typeof created.id === 'number' ? created.id : Number(created.id)
+}
+
+async function listStanoviPdfMedia(payload: Payload, tenantId: number) {
+  const pdfWhere = { mimeType: { contains: 'pdf' } } as const
+
+  const forTenant = await payload.find({
+    collection: 'media',
+    where: {
+      and: [
+        pdfWhere,
+        {
+          or: [{ tenant: { equals: tenantId } }, { tenant: { exists: false } }],
+        },
+      ],
+    } as Where,
+    limit: 50,
+    depth: 0,
+    overrideAccess: true,
+    context: seedPayloadContext,
+    sort: '-updatedAt',
+  })
+
+  if (forTenant.docs.length > 0) return forTenant.docs
+
+  return (
+    await payload.find({
+      collection: 'media',
+      where: pdfWhere,
+      limit: 50,
       depth: 0,
       overrideAccess: true,
       context: seedPayloadContext,
       sort: '-updatedAt',
     })
-    if (!docs.docs.length) {
+  ).docs
+}
+
+/** Interaktivno: odabir PDF-a iz kolekcije `media` (Admin → Mediji). */
+async function interactivePickStanoviPdfMedia(
+  payload: Payload,
+  tenantId: number,
+): Promise<number | null> {
+  const rl = createInterface({ input: process.stdin, output: process.stdout })
+  try {
+    const pdfs = await listStanoviPdfMedia(payload, tenantId)
+    if (!pdfs.length) {
       console.info(
-        '  Nema dokumenata u `documents` — prenesite PDF u Admin ili postavite RE_SEED_STANOVI_DOCUMENT_ID.',
+        '\n  Nema PDF-ova u Mediji — prenesite STANOVI.pdf u Admin → Mediji (application/pdf), zatim pokrenite seed ponovno.',
       )
+      console.info('  Ili postavite RE_SEED_STANOVI_MEDIA_ID=<id>.\n')
       return null
     }
-    console.info('\n  PDF dokumenti u CMS-u (odabir za parsiranje stanova / zgradu):')
-    docs.docs.forEach((d, i) => {
-      const title = (d as { title?: string | null }).title || '(bez naslova)'
+
+    console.info('\n  PDF datoteke u Mediji (odabir za import stanova / zgradu):')
+    pdfs.forEach((d, i) => {
+      const alt = (d as { alt?: string | null }).alt?.trim()
       const fn = (d as { filename?: string | null }).filename || ''
       const id = typeof d.id === 'number' ? d.id : Number(d.id)
-      console.info(`    ${i + 1}) id=${id}  ${String(title)}  ${fn}`)
+      const tenant = (d as { tenant?: number | { id?: number } | null }).tenant
+      const tenantLabel =
+        tenant == null
+          ? ''
+          : typeof tenant === 'object'
+            ? ` tenant=${tenant.id ?? '?'}`
+            : ` tenant=${tenant}`
+      console.info(`    ${i + 1}) id=${id}  ${alt || fn || '(bez naziva)'}  ${fn}${tenantLabel}`)
     })
     console.info('    0) Preskoči (bez zgrade / tipologije iz PDF-a)\n')
+
     const ans = (await rl.question('  Upišite broj (0–N): ')).trim()
     const n = Number.parseInt(ans, 10)
     if (!Number.isFinite(n) || n < 1) return null
-    const pick = docs.docs[n - 1]
+    const pick = pdfs[n - 1]
     if (!pick?.id) return null
     return typeof pick.id === 'number' ? pick.id : Number(pick.id)
   } finally {
@@ -437,7 +563,7 @@ async function getOrCreateStanoviFloorPlanMedia(payload: Payload, tenantId: numb
 }
 
 /**
- * Parsira `STANOVI_PDF`, kreira/ponovno koristi dokument + placeholder tlocrt,
+ * Parsira PDF stanova (Mediji → documents sync), kreira placeholder tlocrt,
  * upsert-a `buildings` s jedinicama, te iz istog parsa gradi redove za blok tipologije.
  */
 async function seedStanoviBuildingsFromPdf(
@@ -479,19 +605,29 @@ async function seedStanoviBuildingsFromPdf(
   let docId: number
   let pdfBuffer: Buffer
 
+  const envMediaId = parseEnvStanoviMediaId()
   const envDocId = parseEnvStanoviDocumentId()
   const pdfPath = path.resolve(
     process.cwd(),
     (process.env.STANOVI_PDF || 'Stanovi Compressed.pdf').trim(),
   )
 
-  if (envDocId != null) {
+  if (envMediaId != null) {
+    try {
+      pdfBuffer = await fetchPdfBytesForMedia(payload, envMediaId)
+      docId = await ensureStanoviDocumentFromMedia(payload, envMediaId)
+      step.detail(`Stanovi PDF: Mediji id=${envMediaId} → documents id=${docId}`)
+    } catch (e) {
+      step.detail(`Učitavanje PDF-a iz Mediji nije uspjelo: ${e instanceof Error ? e.message : e}`)
+      return empty()
+    }
+  } else if (envDocId != null) {
     docId = envDocId
     try {
       pdfBuffer = await fetchPdfBytesForDocument(payload, docId)
-      step.detail(`Stanovi PDF: CMS dokument id=${docId}`)
+      step.detail(`Stanovi PDF: documents id=${docId} (legacy env)`)
     } catch (e) {
-      step.detail(`Učitavanje PDF-a iz CMS-a nije uspjelo: ${e instanceof Error ? e.message : e}`)
+      step.detail(`Učitavanje PDF-a iz documents nije uspjelo: ${e instanceof Error ? e.message : e}`)
       return empty()
     }
   } else if (fs.existsSync(pdfPath)) {
@@ -503,22 +639,22 @@ async function seedStanoviBuildingsFromPdf(
     process.env.RE_SEED_NON_INTERACTIVE !== 'true' &&
     process.env.CI !== 'true'
   ) {
-    const picked = await interactivePickStanoviDocument(payload)
-    if (picked == null) {
+    const pickedMediaId = await interactivePickStanoviPdfMedia(payload, tenantId)
+    if (pickedMediaId == null) {
       step.skip('Preskočen odabir PDF-a — nema importa stanova / zgrade')
       return empty()
     }
-    docId = picked
     try {
-      pdfBuffer = await fetchPdfBytesForDocument(payload, docId)
-      step.detail(`Stanovi PDF: interaktivno odabran dokument id=${docId}`)
+      pdfBuffer = await fetchPdfBytesForMedia(payload, pickedMediaId)
+      docId = await ensureStanoviDocumentFromMedia(payload, pickedMediaId)
+      step.detail(`Stanovi PDF: odabran Mediji id=${pickedMediaId} → documents id=${docId}`)
     } catch (e) {
       step.detail(`Učitavanje odabranog PDF-a nije uspjelo: ${e instanceof Error ? e.message : e}`)
       return empty()
     }
   } else {
     step.skip(
-      `Nema lokalnog PDF-a, nema RE_SEED_STANOVI_DOCUMENT_ID, interaktivni odabir isključen`,
+      `Nema PDF-a u Mediji — prenesite u Admin → Mediji, postavite RE_SEED_STANOVI_MEDIA_ID, ili pokrenite seed interaktivno`,
     )
     return empty()
   }
@@ -818,169 +954,6 @@ function assertReLandingLayoutTail(layout: { blockType?: string }[], locale: str
   }
 }
 
-const RE_LANDING_INQUIRY_FORM_TITLE = 'Upit — KVART ŽIGICA'
-const LEGACY_RE_LANDING_INQUIRY_FORM_TITLES = ['RE Landing — inquiry (seed)', 'RE Landing — inquiry']
-
-/** Minimal Lexical rich text for Payload Form Builder `confirmationMessage`. */
-function lexicalPlainParagraph(text: string) {
-  return {
-    root: {
-      type: 'root',
-      format: '',
-      indent: 0,
-      version: 1,
-      direction: 'ltr' as const,
-      children: [
-        {
-          type: 'paragraph',
-          format: '',
-          indent: 0,
-          version: 1,
-          direction: 'ltr' as const,
-          children: [
-            {
-              type: 'text',
-              detail: 0,
-              format: 0,
-              mode: 'normal',
-              style: '',
-              text,
-              version: 1,
-            },
-          ],
-        },
-      ],
-    },
-  }
-}
-
-async function ensureReLandingInquiryForm(payload: Payload, step: SeedStep): Promise<number> {
-  step.detail(`Tražim obrazac „${RE_LANDING_INQUIRY_FORM_TITLE}”…`)
-
-  const existing = await withTimeout(
-    payload.find({
-      collection: 'forms',
-      locale: 'hr',
-      where: { title: { equals: RE_LANDING_INQUIRY_FORM_TITLE } },
-      limit: 1,
-      depth: 0,
-      pagination: false,
-      overrideAccess: true,
-      context: seedPayloadContext,
-      select: { id: true, title: true },
-    }),
-    30_000,
-    'pretraga obrasca',
-  )
-
-  let id: string | number | undefined = existing.docs[0]?.id
-
-  if (id == null) {
-    const legacy = await withTimeout(
-      payload.find({
-        collection: 'forms',
-        locale: 'hr',
-        where: { title: { in: LEGACY_RE_LANDING_INQUIRY_FORM_TITLES } },
-        limit: 1,
-        depth: 0,
-        pagination: false,
-        overrideAccess: true,
-        context: seedPayloadContext,
-        select: { id: true, title: true },
-      }),
-      30_000,
-      'pretraga legacy obrasca',
-    )
-    id = legacy.docs[0]?.id
-  }
-
-  const buildFields = (loc: 'hr' | 'en' | 'de') => {
-    const fs = getReLandingLocalePack(loc).formSeed
-    return [
-      {
-        blockType: 'text' as const,
-        name: 'name',
-        label: fs.nameFieldLabel,
-        required: true,
-        placeholder: fs.namePlaceholder,
-      },
-      {
-        blockType: 'text' as const,
-        name: 'contact',
-        label: fs.contactFieldLabel,
-        required: true,
-        placeholder: fs.contactPlaceholder,
-      },
-      {
-        blockType: 'select' as const,
-        name: 'interest',
-        label: fs.interestFieldLabel,
-        required: true,
-        placeholder: fs.interestPlaceholder,
-        options: fs.interestOptions.map((o) => ({ label: o.label, value: o.value })),
-      },
-      {
-        blockType: 'textarea' as const,
-        name: 'message',
-        label: fs.messageFieldLabel,
-        required: false,
-        placeholder: fs.messagePlaceholder,
-      },
-    ]
-  }
-
-  const formDataForLocale = (loc: 'hr' | 'en' | 'de') => {
-    const pack = getReLandingLocalePack(loc)
-    return {
-      title: RE_LANDING_INQUIRY_FORM_TITLE,
-      submitButtonLabel: pack.inquiry.submitButtonLabel,
-      confirmationType: 'message' as const,
-      confirmationMessage: lexicalPlainParagraph(pack.inquiry.successMessage),
-      fields: buildFields(loc),
-    }
-  }
-
-  if (id == null) {
-    step.detail('Kreiram obrazac (hr)…')
-    logDbPoolStats(payload, 'prije create forms')
-    const created = await withTimeoutHeartbeat(
-      payload.create({
-        collection: 'forms',
-        locale: 'hr',
-        overrideAccess: true,
-        context: seedPayloadContext,
-        data: formDataForLocale('hr'),
-      }),
-      FORM_OP_TIMEOUT_MS,
-      'kreiranje obrasca (hr)',
-      step.detail,
-    )
-    id = created.id
-    step.detail(`Kreiran obrazac id=${id}`)
-  } else {
-    step.detail(`Obrazac već postoji id=${id} — ažuriram lokalizacije`)
-  }
-
-  for (const loc of ['hr', 'en', 'de'] as const) {
-    step.detail(`Obrazac lokalizacija: ${loc}…`)
-    await withTimeout(
-      payload.update({
-        collection: 'forms',
-        id: id!,
-        locale: loc,
-        overrideAccess: true,
-        context: seedPayloadContext,
-        data: formDataForLocale(loc),
-      }),
-      FORM_OP_TIMEOUT_MS,
-      `obrazac ${loc}`,
-    )
-  }
-
-  step.done(`obrazac id=${id} (hr, en, de)`)
-  return Number(id)
-}
-
 /**
  * Briše rezultate prethodnog `seed:real-estate` za istog tenanta (slug + STANOVI_BUILDING_TITLE + seed altovi).
  * Zgrada i dokument naslova `seed:re-landing:unit-details-pdf` nisu vezani na tenanta u CMS-u — oprez ako dijelite bazu.
@@ -1170,7 +1143,7 @@ async function run(): Promise<void> {
     s3.done('tenant')
 
     const s4 = log.step(4, totalSteps, 'Obrazac (Form Builder)')
-    const inquiryFormId = await ensureReLandingInquiryForm(payload, s4)
+    const inquiryFormId = await runSeedFormWorker('real-estate', s4)
 
     const s5 = log.step(5, totalSteps, 'Demo mediji')
     const mediaIds = await resolveMediaIds(payload, tenantId, reLandingDemoImageUrls, s5)
@@ -1187,7 +1160,7 @@ async function run(): Promise<void> {
     }
     s5.done('mediji')
 
-    const s6 = log.step(6, totalSteps, 'Stanovi PDF → zgrada + tipologija')
+    const s6 = log.step(6, totalSteps, 'Stanovi PDF (Mediji) → zgrada + tipologija')
     const stanovi = await seedStanoviBuildingsFromPdf(payload, tenantId, s6)
     if (stanovi.typologyItems?.length) {
       s6.detail(

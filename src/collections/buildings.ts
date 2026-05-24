@@ -56,8 +56,8 @@ const Buildings: CollectionConfig = {
       required: true,
       admin: {
         description: {
-          en: 'e.g. STANOVI.pdf — page 1 = first unit, page 2 = second, etc. Upload under Media & Assets → Documents, then select here.',
-          hr: 'npr. STANOVI.pdf — stranica 1 = prva jedinica, stranica 2 = druga itd. Prenesite u Mediji i datoteke → Dokumenti, zatim odaberite ovdje.',
+          en: 'e.g. STANOVI.pdf — page 1 = first unit, page 2 = second, etc. Upload PDF under Media (Mediji), run seed to pick it, or use Documents here directly.',
+          hr: 'npr. STANOVI.pdf — stranica 1 = prva jedinica, stranica 2 = druga itd. PDF prenesite u Mediji, seed odabire iz liste, ili odaberite Dokument ovdje.',
         },
       },
     },

@@ -1063,7 +1063,7 @@ export interface Building {
    */
   floorPlanImage: number | Media;
   /**
-   * e.g. STANOVI.pdf — page 1 = first unit, page 2 = second, etc. Upload under Media & Assets → Documents, then select here.
+   * e.g. STANOVI.pdf — page 1 = first unit, page 2 = second, etc. Upload PDF under Media (Mediji), run seed to pick it, or use Documents here directly.
    */
   unitDetailsPdf: number | Document;
   /**
