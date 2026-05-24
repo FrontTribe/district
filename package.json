@@ -25,6 +25,7 @@
     "seed:form-worker": "cross-env NODE_OPTIONS=\"--no-deprecation --loader ./scripts/ignore-scss-loader.mjs\" tsx scripts/seed-form-worker.ts",
     "check:migrations": "node scripts/check-pending-migrations.mjs",
     "migrate": "cross-env NODE_NO_WARNINGS=1 NODE_OPTIONS=\"--no-deprecation --loader ./scripts/ignore-scss-loader.mjs\" payload migrate",
+    "migrate:ci": "node scripts/migrate-ci.mjs",
     "migrate:create": "cross-env NODE_NO_WARNINGS=1 NODE_OPTIONS=\"--no-deprecation --loader ./scripts/ignore-scss-loader.mjs\" payload migrate:create",
     "migrate:status": "cross-env NODE_NO_WARNINGS=1 NODE_OPTIONS=\"--no-deprecation --loader ./scripts/ignore-scss-loader.mjs\" payload migrate:status",
     "generate:form-blocks-migration": "node scripts/generate-form-blocks-migration.mjs",

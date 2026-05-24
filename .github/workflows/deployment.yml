@@ -89,7 +89,7 @@ jobs:
 
             # appleboy/drone-ssh can split on ';' — avoid case/;; and if/else tests.
             [ "$APPLY_MIGRATIONS" = "true" ] && echo "Applying pending migrations on $APP_NAME..." || :
-            [ "$APPLY_MIGRATIONS" = "true" ] && pnpm run payload -- migrate || :
+            [ "$APPLY_MIGRATIONS" = "true" ] && pnpm run migrate:ci || :
 
             pnpm run check:migrations
 

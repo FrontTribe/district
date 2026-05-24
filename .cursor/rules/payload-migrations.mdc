@@ -47,3 +47,13 @@ That script temporarily restores legacy `forms_blocks_*` parent tables in a thro
 ./seed migrate
 ./seed migrate:status
 ```
+
+## CI / prod: dev-mode marker (batch = -1)
+
+If `payload migrate` hangs or asks *"It looks like you've run Payload in dev mode..."*, the database has dev/push markers in `payload_migrations` (`batch = -1`). Remove them once:
+
+```sql
+DELETE FROM payload_migrations WHERE batch = -1;
+```
+
+GitHub Actions uses `pnpm run migrate:ci` (auto-confirms) so deploys do not block on the interactive prompt. Do not run local `pnpm dev` with `PAYLOAD_DB_PUSH=true` against prod/staging DB.
