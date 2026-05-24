@@ -15,12 +15,11 @@ jobs:
       - name: Set migration target
         id: target
         run: |
-          # PR: verify against dev only (never mutate prod before merge).
-          # Push: auto-apply migrations on the target environment, then verify.
+          # PR: apply + verify on dev (staging). Push: apply + verify target env.
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "path=/var/www/district-dev" >> $GITHUB_OUTPUT
             echo "app=district-dev"           >> $GITHUB_OUTPUT
-            echo "apply_migrations=false"     >> $GITHUB_OUTPUT
+            echo "apply_migrations=true"      >> $GITHUB_OUTPUT
           elif [ "${{ github.ref_name }}" = "main" ]; then
             echo "path=/var/www/district-prod" >> $GITHUB_OUTPUT
             echo "app=district-prod"           >> $GITHUB_OUTPUT
@@ -61,10 +60,9 @@ jobs:
 
             DEPLOY_PATH="${{ steps.target.outputs.path }}"
             APP_NAME="${{ steps.target.outputs.app }}"
-            OPS_PATH="${DEPLOY_PATH}-ops"
+            OPS_PATH="${DEPLOY_PATH}-ops-ci-${{ github.run_id }}-${{ github.run_attempt }}"
             APPLY_MIGRATIONS="${{ steps.target.outputs.apply_migrations }}"
 
-            rm -rf "$OPS_PATH"
             mkdir -p "$OPS_PATH"
             tar -xzf /tmp/source.tgz -C "$OPS_PATH"
             rm -f /tmp/source.tgz
@@ -96,11 +94,14 @@ jobs:
                 pnpm run payload -- migrate
                 ;;
               *)
-                echo "PR check — skipping migrate (read-only verify on $APP_NAME)."
+                echo "Skipping migrate."
                 ;;
             esac
 
             pnpm run check:migrations
+
+            rm -rf "$OPS_PATH" || true
+            find "$(dirname "$DEPLOY_PATH")" -maxdepth 1 -name "$(basename "$DEPLOY_PATH")-ops-ci-*" -mtime +2 -exec rm -rf {} + 2>/dev/null || true
 
   build:
     name: Build
