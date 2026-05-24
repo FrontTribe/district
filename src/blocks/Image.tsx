@@ -2,9 +2,11 @@ import { Block } from 'payload'
 import React from 'react'
 import ImageAnimated from '@/blocks/ImageAnimated'
 import { getOptimizedImageUrl } from '@/utils/getOptimizedImageUrl'
+import { districtAdminGroups } from '@/blocks/district-admin-groups'
 
 const Image: Block = {
   slug: 'image',
+  admin: { group: districtAdminGroups.hub },
   fields: [
     {
       name: 'media',

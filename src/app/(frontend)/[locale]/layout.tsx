@@ -1,5 +1,6 @@
 import { localeLang } from '@/utils/locale'
 import { notFound } from 'next/navigation'
+import { RefreshRouteOnSave } from '@/components/RefreshRouteOnSave'
 
 type Props = {
   children: React.ReactNode
@@ -12,5 +13,10 @@ export default async function LocaleLayout({ children, params }: Props) {
   if (!supported) {
     notFound()
   }
-  return <>{children}</>
+  return (
+    <>
+      <RefreshRouteOnSave />
+      {children}
+    </>
+  )
 }

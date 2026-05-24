@@ -39,6 +39,8 @@ const defaultProps = {
   onLanguageChange: jest.fn(),
   isLanguageChanging: false,
   isTenantMenu: false,
+  isOpen: false,
+  onClose: jest.fn(),
 }
 
 describe('MobileMenu', () => {

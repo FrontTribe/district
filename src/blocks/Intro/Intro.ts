@@ -1,7 +1,9 @@
 import { Block } from 'payload'
+import { districtAdminGroups } from '@/blocks/district-admin-groups'
 
 const Intro: Block = {
   slug: 'intro',
+  admin: { group: districtAdminGroups.hub },
   fields: [
     {
       name: 'content',

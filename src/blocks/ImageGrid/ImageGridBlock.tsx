@@ -2,13 +2,20 @@
 
 import React, { useEffect, useRef } from 'react'
 import { gsap, ScrollTrigger } from '@/lib/gsap'
+import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { MomentoStorySection } from '@/components/momento-landing'
+import { resolveMediaUrl } from '@/components/momento-landing/utils'
 
 type ImageItem = {
-  image: {
-    url: string
-    alt?: string
-  }
+  image: unknown
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+}
+
+function resolveMediaAlt(media: unknown): string {
+  if (media && typeof media === 'object' && 'alt' in media) {
+    return String((media as { alt?: string | null }).alt ?? '')
+  }
+  return ''
 }
 
 type Props = {
@@ -18,9 +25,24 @@ type Props = {
   buttonUrl?: string
   images: ImageItem[]
   sectionId?: string
+  tenantVisualTheme?: TenantVisualTheme
+  locale?: string
 }
 
-export const ImageGridBlock: React.FC<Props> = ({
+export const ImageGridBlock: React.FC<Props> = (props) =>
+  props.tenantVisualTheme === 'momento' ? (
+    <MomentoStorySection
+      title={props.title}
+      subtitle={props.subtitle}
+      images={props.images}
+      sectionId={props.sectionId}
+      locale={props.locale}
+    />
+  ) : (
+    <ImageGridBlockDefault {...props} />
+  )
+
+const ImageGridBlockDefault: React.FC<Props> = ({
   title,
   subtitle,
   buttonText,
@@ -223,8 +245,8 @@ export const ImageGridBlock: React.FC<Props> = ({
         {imagesByPosition['top-left'] && (
           <div className="image-grid__image image-grid__image--top-left">
             <img
-              src={imagesByPosition['top-left'].image.url}
-              alt={imagesByPosition['top-left'].image.alt || ''}
+              src={resolveMediaUrl(imagesByPosition['top-left'].image)}
+              alt={resolveMediaAlt(imagesByPosition['top-left'].image)}
               className="image-grid__img"
             />
           </div>
@@ -234,8 +256,8 @@ export const ImageGridBlock: React.FC<Props> = ({
         {imagesByPosition['top-right'] && (
           <div className="image-grid__image image-grid__image--top-right">
             <img
-              src={imagesByPosition['top-right'].image.url}
-              alt={imagesByPosition['top-right'].image.alt || ''}
+              src={resolveMediaUrl(imagesByPosition['top-right'].image)}
+              alt={resolveMediaAlt(imagesByPosition['top-right'].image)}
               className="image-grid__img"
             />
           </div>
@@ -245,8 +267,8 @@ export const ImageGridBlock: React.FC<Props> = ({
         {imagesByPosition['bottom-left'] && (
           <div className="image-grid__image image-grid__image--bottom-left">
             <img
-              src={imagesByPosition['bottom-left'].image.url}
-              alt={imagesByPosition['bottom-left'].image.alt || ''}
+              src={resolveMediaUrl(imagesByPosition['bottom-left'].image)}
+              alt={resolveMediaAlt(imagesByPosition['bottom-left'].image)}
               className="image-grid__img"
             />
           </div>
@@ -256,8 +278,8 @@ export const ImageGridBlock: React.FC<Props> = ({
         {imagesByPosition['bottom-right'] && (
           <div className="image-grid__image image-grid__image--bottom-right">
             <img
-              src={imagesByPosition['bottom-right'].image.url}
-              alt={imagesByPosition['bottom-right'].image.alt || ''}
+              src={resolveMediaUrl(imagesByPosition['bottom-right'].image)}
+              alt={resolveMediaAlt(imagesByPosition['bottom-right'].image)}
               className="image-grid__img"
             />
           </div>
@@ -280,7 +302,7 @@ export const ImageGridBlock: React.FC<Props> = ({
         <div className="image-grid__marquee" ref={marqueeRef}>
           {images.map((item, index) => (
             <div key={index} className="image-grid__card">
-              <img src={item.image.url} alt={item.image.alt || ''} className="image-grid__img" />
+              <img src={resolveMediaUrl(item.image)} alt={resolveMediaAlt(item.image)} className="image-grid__img" />
             </div>
           ))}
         </div>

@@ -25,6 +25,11 @@ import Documents from './collections/documents'
 import Buildings from './collections/buildings'
 import { loadRentlioOptions } from './utils/rentlio'
 import { migrations } from './migrations'
+import { getTenantVisualTheme } from './utils/tenantVisualTheme'
+import {
+  getLivePreviewFrontendUrl,
+  getLivePreviewPagePath,
+} from './utils/livePreviewFrontendUrl'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -39,6 +44,11 @@ if (isProductionRuntime && requestedSchemaPush) {
 }
 
 const allowSchemaPush = requestedSchemaPush && !isProductionRuntime
+
+const seedPgPoolOptions =
+  process.env.PAYLOAD_DISABLE_DB_TRANSACTIONS === 'true'
+    ? { options: '-c lock_timeout=30s -c statement_timeout=120s' }
+    : {}
 
 /** Max upload size (bytes) for multipart/file fields — PDFs (e.g. building unit details) can be large. */
 const maxUploadFileBytes = 50 * 1024 * 1024
@@ -67,16 +77,17 @@ export default buildConfig({
           tenantSubdomain = user.tenant.subdomain
         }
 
-        const frontendURL = tenantSubdomain
-          ? `https://${tenantSubdomain}.test:3000`
-          : 'https://localhost:3000'
-
-        let pagePath = '/'
-        if (data.slug !== '/') {
-          pagePath = locale ? `/${locale.code}/${data.slug}` : `/${data.slug}`
-        } else {
-          pagePath = locale ? `/${locale.code}` : '/'
+        const slug = typeof data.slug === 'string' ? data.slug.trim().toLowerCase() : ''
+        if (!tenantSubdomain && slug && getTenantVisualTheme(slug) !== 'default') {
+          tenantSubdomain = slug
         }
+
+        const frontendURL = getLivePreviewFrontendUrl(tenantSubdomain)
+
+        const pagePath = getLivePreviewPagePath(
+          typeof data.slug === 'string' ? data.slug : '/',
+          locale?.code,
+        )
 
         const draftURL = new URL(`${frontendURL}/api/draft`)
         draftURL.searchParams.set('url', pagePath)
@@ -84,6 +95,10 @@ export default buildConfig({
 
         if (locale) {
           draftURL.searchParams.set('locale', locale.code)
+        }
+
+        if (tenantSubdomain) {
+          draftURL.searchParams.set('previewTenant', tenantSubdomain)
         }
 
         return draftURL.toString()
@@ -101,8 +116,15 @@ export default buildConfig({
   db: postgresAdapter({
     // Never push DB schema unless explicitly enabled in a non-production runtime.
     push: allowSchemaPush,
+    // Seed CLI sets PAYLOAD_DISABLE_DB_TRANSACTIONS=true to avoid long-held locks on forms.
+    transactionOptions:
+      process.env.PAYLOAD_DISABLE_DB_TRANSACTIONS === 'true' ? false : undefined,
     pool: {
       connectionString: process.env.DATABASE_URI,
+      max: 10,
+      connectionTimeoutMillis: 15_000,
+      idleTimeoutMillis: 30_000,
+      ...seedPgPoolOptions,
     },
     migrationDir: path.resolve(dirname, 'migrations'),
     // Keep runtime boot non-interactive; only run migrations on boot if explicitly requested.
@@ -137,11 +159,26 @@ export default buildConfig({
       formOverrides: {
         admin: {
           group: { en: 'Forms', hr: 'Obrasci' },
+          description: {
+            en: 'Reusable form definitions. RE landing contact form: create here, then select in Pages → “RE Landing — Inquiry”.',
+            hr: 'Ponovno upotrebljivi obrasci. RE landing kontakt obrazac: kreiraj ovdje, zatim odaberi u Stranice → „RE landing — upit”.',
+          },
         },
       },
       formSubmissionOverrides: {
         admin: {
           group: { en: 'Forms', hr: 'Obrasci' },
+        },
+      },
+      fields: {
+        text: {
+          fields: [{ name: 'placeholder', type: 'text', label: 'Placeholder', localized: true }],
+        },
+        textarea: {
+          fields: [{ name: 'placeholder', type: 'text', label: 'Placeholder', localized: true }],
+        },
+        select: {
+          fields: [{ name: 'placeholder', type: 'text', label: 'Placeholder', localized: true }],
         },
       },
     }),

@@ -1,5 +1,6 @@
 import { Block, type Condition } from 'payload'
 import { loadRentlioOptions } from '@/utils/rentlio'
+import { districtAdminGroups } from '@/blocks/district-admin-groups'
 
 const DEFAULT_SALES_CHANNEL_ID = '45'
 
@@ -91,7 +92,21 @@ if (typeof window === 'undefined') {
 
 const Rooms: Block = {
   slug: 'rooms',
+  admin: { group: districtAdminGroups.boutique },
   fields: [
+    {
+      name: 'chapterNum',
+      type: 'text',
+      label: { en: 'Chapter number', hr: 'Broj poglavlja' },
+      defaultValue: 'ii.',
+    },
+    {
+      name: 'chapterLabel',
+      type: 'text',
+      label: { en: 'Chapter label', hr: 'Oznaka poglavlja' },
+      defaultValue: 'Capitulum · Sobe',
+      localized: true,
+    },
     {
       name: 'eyebrow',
       type: 'text',
@@ -131,7 +146,16 @@ const Rooms: Block = {
         rentlioPropertyField,
         rentlioSalesChannelField,
         rentlioUnitTypeField,
+        { name: 'roomNumber', type: 'text', label: { en: 'Room number (01–04)', hr: 'Broj sobe' }, localized: true },
         { name: 'title', type: 'text', required: true, localized: true },
+        { name: 'displayPrice', type: 'number', label: { en: 'Display price (from)', hr: 'Prikazna cijena (od)' } },
+        {
+          name: 'displayPriceSuffix',
+          type: 'text',
+          label: { en: 'Price suffix', hr: 'Sufiks cijene' },
+          defaultValue: '€/noć',
+          localized: true,
+        },
         { name: 'description', type: 'textarea', localized: true },
         {
           name: 'badges',
@@ -157,7 +181,7 @@ const Rooms: Block = {
         condition: roomsFieldCondition,
       },
     },
-    { name: 'sectionId', type: 'text', label: 'Section ID', localized: true },
+    { name: 'sectionId', type: 'text', label: 'Section ID', defaultValue: 'sobe', localized: true },
   ],
 }
 

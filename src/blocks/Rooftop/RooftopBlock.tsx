@@ -1,170 +1,182 @@
 'use client'
 
 import React, { useEffect, useMemo, useRef } from 'react'
-import { gsap, ScrollTrigger } from '@/lib/gsap'
+import { gsap } from '@/lib/gsap'
 import { getOptimizedImageUrl } from '@/utils/getOptimizedImageUrl'
+import { renderBoutiqueHeroHeading } from '@/blocks/BoutiqueHeroContent'
+import { BoutiqueChapterLabel } from '@/components/boutique-landing/BoutiqueChapterLabel'
 
-type RooftopImage = {
-  media: any
-  alt?: string
-  caption?: string
+type RooftopImage = { media: unknown; alt?: string; caption?: string }
+type MetaRow = { text: string }
+type ManifestItem = { key: string; value: string }
+type StackImage = { media: unknown; alt?: string }
+
+function mediaBg(m: unknown): string | undefined {
+  const src = getOptimizedImageUrl(m as Parameters<typeof getOptimizedImageUrl>[0], { widthHint: 1400 })
+  return src ? `url(${src})` : undefined
 }
 
 export const RooftopBlock: React.FC<{
+  layoutVariant?: 'editorial' | 'marquee' | null
+  chapterNum?: string | null
+  chapterLabel?: string | null
+  eyebrow?: string | null
   heading: string
-  images: RooftopImage[]
+  mastheadMedia?: unknown
+  metaRows?: MetaRow[] | null
+  manifestEyebrow?: string | null
+  manifestHeading?: string | null
+  manifestItems?: ManifestItem[] | null
+  stackImages?: StackImage[] | null
+  cta?: { label?: string; href?: string } | null
+  images?: RooftopImage[]
   baseDuration?: number
   sectionId?: string
-}> = ({ heading, images = [], baseDuration = 20, sectionId }) => {
+}> = ({
+  layoutVariant = 'editorial',
+  chapterNum,
+  chapterLabel,
+  heading,
+  mastheadMedia,
+  metaRows,
+  manifestEyebrow,
+  manifestHeading,
+  manifestItems,
+  stackImages,
+  cta,
+  images = [],
+  baseDuration = 20,
+  sectionId = 'krov',
+}) => {
   const trackRef = useRef<HTMLDivElement | null>(null)
   const marqueeTween = useRef<gsap.core.Tween | null>(null)
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const headingRef = useRef<HTMLHeadingElement | null>(null)
 
-  // Duplicate images for seamless loop
+  const isMarquee = layoutVariant === 'marquee' || (!mastheadMedia && images.length >= 3)
+
   const loopImages = useMemo(() => [...images, ...images], [images])
 
   useEffect(() => {
-    if (!trackRef.current) return
+    if (!isMarquee || !trackRef.current) return
     const track = trackRef.current
-
     const createTween = () => {
-      if (!track) return
-      // kill previous
       marqueeTween.current?.kill()
       gsap.set(track, { x: 0 })
-
       const width = track.scrollWidth / 2
-      if (!width || !isFinite(width) || width < 10) {
-        // try again shortly if layout isn't ready yet
-        gsap.delayedCall(0.25, createTween)
-        return
-      }
-
+      if (!width || width < 10) return
       const xWrap = gsap.utils.wrap(-width, 0)
-
       marqueeTween.current = gsap.to(track, {
         x: -width,
         ease: 'none',
         duration: baseDuration,
         repeat: -1,
-        modifiers: {
-          x: gsap.utils.unitize((x) => xWrap(parseFloat(x))),
-        },
+        modifiers: { x: gsap.utils.unitize((x) => xWrap(parseFloat(x))) },
       })
     }
-
-    // Ensure images are loaded before measuring widths
-    const imgs = Array.from(track.querySelectorAll('img')) as HTMLImageElement[]
-    const pending = imgs.filter((img) => !img.complete).length
-    if (pending === 0) {
-      // allow a tick for layout/css settling
-      requestAnimationFrame(() => requestAnimationFrame(createTween))
-    } else {
-      let remaining = pending
-      const onLoad = () => {
-        remaining -= 1
-        if (remaining <= 0) requestAnimationFrame(() => requestAnimationFrame(createTween))
-      }
-      imgs.forEach((img) => img.addEventListener('load', onLoad, { once: true }))
-    }
-
-    // also try once when window fully loaded (fonts, etc.)
-    const onWindowLoad = () => requestAnimationFrame(() => requestAnimationFrame(createTween))
-    window.addEventListener('load', onWindowLoad, { once: true })
-
-    // Speed control with scroll velocity
-    let timeoutId: any
-    let st: ScrollTrigger | null = null
-
-    // Add error handling for ScrollTrigger.create
-    try {
-      if (containerRef.current) {
-        st = ScrollTrigger.create({
-          trigger: containerRef.current,
-          start: 'top bottom',
-          end: 'bottom top',
-          onUpdate: (self) => {
-            const velocity = Math.abs(self.getVelocity())
-            const mapped = gsap.utils.clamp(1, 4, gsap.utils.mapRange(0, 4000, 1, 4, velocity))
-            marqueeTween.current?.timeScale(mapped)
-            clearTimeout(timeoutId)
-            timeoutId = setTimeout(() => {
-              gsap.to(marqueeTween.current, { timeScale: 1, duration: 0.6, ease: 'power2.out' })
-            }, 400)
-          },
-        })
-      }
-    } catch (error) {}
-
-    // Recreate on resize
-    const ro = new ResizeObserver(() => createTween())
-    ro.observe(track)
-
+    requestAnimationFrame(createTween)
     return () => {
       marqueeTween.current?.kill()
-      try {
-        if (st) st.kill()
-      } catch (error) {}
-      ro.disconnect()
-      window.removeEventListener('load', onWindowLoad)
     }
-  }, [images, baseDuration])
+  }, [isMarquee, images, baseDuration])
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      try {
-        if (headingRef.current) {
-          gsap.from(headingRef.current, {
-            y: 24,
-            opacity: 0,
-            duration: 0.9,
-            ease: 'power3.out',
-            scrollTrigger: { trigger: headingRef.current, start: 'top 85%', once: true },
-          })
-        }
+  if (isMarquee) {
+    return (
+      <section id={sectionId} className="rooftop-block rooftop-block--marquee">
+        <div className="rooftop-inner">
+          <h2 className="rooftop-heading">{heading}</h2>
+          <div className="rooftop-marquee">
+            <div className="rooftop-track" ref={trackRef}>
+              {loopImages.map((item, index) => {
+                const src = getOptimizedImageUrl(item.media as Parameters<typeof getOptimizedImageUrl>[0], {
+                  widthHint: 560,
+                  aspect: 'portrait34',
+                })
+                return (
+                  <figure className="rooftop-card" key={index}>
+                    {src && <img src={src} alt={item.alt || ''} loading="lazy" />}
+                    {item.caption ? (
+                      <figcaption className="rooftop-card__caption">{item.caption}</figcaption>
+                    ) : null}
+                  </figure>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
-        if (trackRef.current) {
-          const cards = trackRef.current.querySelectorAll('.rooftop-card')
-          gsap.set(cards, { opacity: 0, y: 16 })
-          gsap.to(cards, {
-            opacity: 1,
-            y: 0,
-            duration: 0.6,
-            stagger: 0.08,
-            ease: 'power2.out',
-            scrollTrigger: { trigger: trackRef.current, start: 'top 90%', once: true },
-          })
-          // ensure triggers are aware after layout/tween init
-          requestAnimationFrame(() => ScrollTrigger.refresh())
-        }
-      } catch (error) {}
-    }, containerRef.current || undefined)
-
-    return () => ctx.revert()
-  }, [])
+  const mastBg = mediaBg(mastheadMedia)
+  const ctaHref = cta?.href || '#kontakt'
+  const ctaLabel = cta?.label || 'Pošalji upit za rooftop →'
 
   return (
-    <section id={sectionId} className="rooftop-block" ref={containerRef}>
-      <div className="rooftop-inner">
-        <h2 className="rooftop-heading" ref={headingRef}>
-          {heading}
-        </h2>
+    <section id={sectionId} className="rooftop">
+      <div className="rooftop-mast">
+        <div
+          className="rooftop-mast-image"
+          data-parallax="0.3"
+          style={{
+            backgroundImage: mastBg
+              ? `linear-gradient(180deg, rgba(26,23,20,0.35) 0%, rgba(26,23,20,0.2) 50%, rgba(26,23,20,0.7) 100%), ${mastBg}`
+              : undefined,
+          }}
+        />
+        <div className="rooftop-mast-inner">
+          <BoutiqueChapterLabel chapterNum={chapterNum} chapterLabel={chapterLabel} data-reveal="fade-up" />
+          <h2 className="rooftop-headline" data-reveal="lines">
+            {renderBoutiqueHeroHeading(heading)}
+          </h2>
+          {metaRows && metaRows.length > 0 ? (
+            <div className="rooftop-mast-meta">
+              {metaRows.map((row, i) => (
+                <span key={row.text} data-reveal="fade-up" data-delay={String(0.1 + i * 0.06)}>
+                  {row.text}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </div>
 
-        <div className="rooftop-marquee">
-          <div className="rooftop-track" ref={trackRef}>
-            {loopImages.map((item, index) => {
-              const src = getOptimizedImageUrl(item.media, { widthHint: 560, aspect: 'portrait34' })
-              return (
-                <figure className="rooftop-card" key={index}>
-                  {src && <img src={src} alt={item.alt || ''} loading="lazy" />}
-                  {item.caption && (
-                    <figcaption className="rooftop-card__caption">{item.caption}</figcaption>
-                  )}
-                </figure>
-              )
-            })}
-          </div>
+      <div className="rooftop-manifest-section">
+        <div className="rooftop-manifest" data-reveal="fade-up">
+          {manifestEyebrow ? <span className="rooftop-manifest-eyebrow">{manifestEyebrow}</span> : null}
+          {manifestHeading ? (
+            <h3 data-reveal="lines">{renderBoutiqueHeroHeading(manifestHeading)}</h3>
+          ) : null}
+          {manifestItems && manifestItems.length > 0 ? (
+            <dl className="rooftop-manifest-list">
+              {manifestItems.map((item) => (
+                <div key={item.key} className="rooftop-manifest-row">
+                  <dt>{item.key}</dt>
+                  <dd>{item.value}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
+          <a className="btn btn-light rooftop-btn" href={ctaHref}>
+            <span className="btn__label">{ctaLabel.replace(/\s*→\s*$/, '')}</span>
+            <span className="arrow" aria-hidden>
+              →
+            </span>
+          </a>
+        </div>
+
+        <div className="rooftop-stack">
+          {stackImages?.map((item, i) => {
+            const bg = mediaBg(item.media)
+            if (!bg) return null
+            return (
+              <div
+                key={i}
+                className={`curtain rooftop-stack-img rooftop-stack-${i + 1}`}
+                data-reveal="curtain"
+              >
+                <div className="curtain-inner" style={{ backgroundImage: bg }} />
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>

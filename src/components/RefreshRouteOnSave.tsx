@@ -1,15 +1,38 @@
 'use client'
-import { RefreshRouteOnSave as PayloadLivePreview } from '@payloadcms/live-preview-react'
-import { useRouter } from 'next/navigation.js'
-import React from 'react'
 
+import { isDocumentEvent, ready } from '@payloadcms/live-preview'
+import { useRouter } from 'next/navigation.js'
+import React, { useCallback, useEffect, useRef } from 'react'
+import { resolvePayloadServerURL } from '@/utils/payloadServerUrl'
+
+/**
+ * Refreshes server components when a document is saved in Payload admin.
+ * Does NOT refresh on mount — that would overwrite useLivePreview unsaved edits.
+ */
 export const RefreshRouteOnSave: React.FC = () => {
   const router = useRouter()
+  const serverURL = resolvePayloadServerURL()
+  const hasSentReadyMessage = useRef(false)
 
-  return (
-    <PayloadLivePreview
-      refresh={() => router.refresh()}
-      serverURL={process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}
-    />
+  const onMessage = useCallback(
+    (event: MessageEvent) => {
+      if (isDocumentEvent(event, serverURL)) {
+        router.refresh()
+      }
+    },
+    [router, serverURL],
   )
+
+  useEffect(() => {
+    window.addEventListener('message', onMessage)
+
+    if (!hasSentReadyMessage.current) {
+      hasSentReadyMessage.current = true
+      ready({ serverURL })
+    }
+
+    return () => window.removeEventListener('message', onMessage)
+  }, [onMessage, serverURL])
+
+  return null
 }

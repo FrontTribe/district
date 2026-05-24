@@ -340,3 +340,138 @@
     }
   }
 }
+
+/* Full-viewport intro while hub triptych landing boots (MainPageLoader) */
+.district-hub-loader {
+  --district-gold: #c8a76b;
+  --district-bg: #0a0a08;
+  --district-cream: #f4f1e8;
+
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  min-height: 100dvh;
+  min-height: 100vh;
+  /* Transparent — columns are full-viewport bands; footer is an opaque dock on top */
+  background: transparent;
+  color: var(--district-cream);
+  overflow: hidden;
+}
+
+.district-hub-loader__grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  /* Same footprint as real `.district-hub__cols` (full viewport) so hub CTAs at bottom stay covered */
+  min-height: 100%;
+}
+
+.district-hub-loader__col {
+  position: relative;
+  overflow: hidden;
+  min-height: 100%;
+  border-right: 1px solid rgba(244, 241, 232, 0.1);
+  /* Solid band per third — vanishes on outro so real column shows through */
+  background: var(--district-bg);
+  clip-path: inset(0 0 0 0);
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.district-hub-loader__col-inner {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #16130f 0%, #0a0a08 55%, #12100d 100%);
+}
+
+.district-hub-loader__veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(200, 167, 107, 0.12) 0%,
+    rgba(10, 10, 8, 0.2) 45%,
+    rgba(10, 10, 8, 0.85) 100%
+  );
+}
+
+.district-hub-loader__num {
+  position: absolute;
+  top: clamp(72px, 10vh, 108px);
+  left: clamp(16px, 3vw, 36px);
+  z-index: 2;
+  font-family: var(--font-hub-mono), 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--district-gold);
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 22px;
+    height: 1px;
+    margin-right: 10px;
+    vertical-align: middle;
+    background: rgba(200, 167, 107, 0.55);
+  }
+}
+
+.district-hub-loader__footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  padding: 0 clamp(20px, 4vw, 48px) clamp(28px, 5vh, 52px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  /* Fully opaque — previous transparent gradient let the real hub show through at the bottom */
+  background: var(--district-bg);
+  box-shadow: 0 -20px 40px rgba(0, 0, 0, 0.35);
+}
+
+.district-hub-loader__wordmark {
+  font-family: var(--font-marcellus), 'Marcellus', serif;
+  font-size: clamp(2.25rem, 5vw, 3.25rem);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  color: var(--district-cream);
+  opacity: 0;
+}
+
+.district-hub-loader__bar-track {
+  width: min(320px, 72vw);
+  height: 2px;
+  background: rgba(244, 241, 232, 0.12);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.district-hub-loader__bar-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(200, 167, 107, 0.55), var(--district-gold));
+  border-radius: 1px;
+}
+
+@media (max-width: 520px) {
+  .district-hub-loader__num {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+
+    &::before {
+      width: 14px;
+      margin-right: 6px;
+    }
+  }
+}

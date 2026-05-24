@@ -3,27 +3,35 @@ import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import type { Tenant } from '@/payload-types'
+import { RealEstateLandingShell } from '@/components/real-estate-landing'
+import { MomentoLandingShell } from '@/components/momento-landing'
 import { MenuWrapper } from '@/components/MenuWrapper'
 import { Footer } from '@/components/Footer'
+import { resolveTenantSubdomain, resolveTenantId } from '@/utils/resolveTenantSubdomain'
 import { getTenantBySubdomain, getTenantMenuAndFooter } from '@/utils/getTenantData'
+import { getTenantVisualTheme } from '@/utils/tenantVisualTheme'
 import { getCachedPageBySlug } from '@/utils/getCachedPages'
 import { localeLang } from '@/utils/locale'
 import { generateMetadataFromPage } from '@/utils/generateMetadata'
+import { enrichInquiryFormsInPage } from '@/utils/enrichInquiryFormsInPage'
+import { layoutHasBoutiqueFooter } from '@/utils/boutiqueLayoutFlags'
+import { buildMomentoShellMenu } from '@/utils/buildMomentoShellMenu'
+import { BoutiqueLandingShell } from '@/components/boutique-landing/BoutiqueLandingShell'
 
 type PageProps = {
   params: Promise<{
     slug: string
     locale: string
   }>
+  searchParams: Promise<{
+    previewTenant?: string
+  }>
 }
 
 type AllowedLocale = 'en' | 'hr' | 'de' | undefined
 
-const fetchPage = (slug: string, locale: AllowedLocale) => getCachedPageBySlug(slug, locale, 4)
+const fetchPage = (slug: string, locale: AllowedLocale) => getCachedPageBySlug(slug, locale, 6)
 
-/**
- * Generate metadata for the page
- */
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug, locale } = await params
   const page = await fetchPage(slug, locale as AllowedLocale)
@@ -35,14 +43,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
   }
 
-  // Get base URL from environment or construct it
   const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
   return generateMetadataFromPage(page, locale, baseUrl)
 }
 
-export default async function Page({ params }: PageProps) {
+export default async function Page({ params, searchParams }: PageProps) {
   const { slug, locale } = await params
+  const { previewTenant } = await searchParams
   const supportedLocale = localeLang.find((lang) => lang.code === locale)
   if (!supportedLocale) {
     return notFound()
@@ -54,30 +62,69 @@ export default async function Page({ params }: PageProps) {
     return notFound()
   }
 
-  // Get tenant data for menu and footer
-  const requestHeaders: Headers = await headers()
-  const headersList = requestHeaders
-  const subdomain = headersList.get('x-tenant-subdomain')
+  const requestHeaders = await headers()
+  const subdomain = resolveTenantSubdomain(
+    requestHeaders.get('x-tenant-subdomain'),
+    page,
+    previewTenant,
+  )
 
   let currentTenant: Tenant | null = null
   if (subdomain) {
     currentTenant = await getTenantBySubdomain(subdomain)
   }
+  if (!currentTenant && page.tenant && typeof page.tenant === 'object') {
+    currentTenant = page.tenant
+  }
 
-  // Fetch menu and footer for the current tenant
-  const tenantId = currentTenant?.id ? String(currentTenant.id) : null
+  const tenantId = resolveTenantId(page, currentTenant)
   const { menu: menuGlobal, footer: footerGlobal } = await getTenantMenuAndFooter(tenantId, locale)
+  const tenantVisualTheme = getTenantVisualTheme(subdomain)
+  const isMomentoTheme = tenantVisualTheme === 'momento'
+  const isBoutiqueTenantPage = tenantVisualTheme === 'boutique' && Boolean(subdomain || currentTenant)
+  const isMomentoTenantPage = isMomentoTheme && Boolean(subdomain || currentTenant)
 
-  const layout = page.layout ?? []
-  const isRealEstatePage =
-    layout.length > 0 &&
-    layout.every((b: { blockType?: string }) => b.blockType?.startsWith('real-estate-'))
+  const mergedPage = await enrichInquiryFormsInPage(page, locale)
 
-  return (
+  const layout = mergedPage.layout ?? []
+  const blockType = (b: { blockType?: string | null }) => String(b.blockType ?? '')
+
+  const isRealEstateLandingPage =
+    layout.length > 0 && layout.every((b) => blockType(b).startsWith('real-estate-landing-'))
+
+  const hasLandingNav = layout.some((b) => b.blockType === 'real-estate-landing-nav')
+
+  const showTenantMenu = Boolean(
+    currentTenant && !(isRealEstateLandingPage && hasLandingNav) && !isMomentoTenantPage,
+  )
+  const hasBoutiqueFooterBlock = layoutHasBoutiqueFooter(layout)
+  const showTenantFooter = Boolean(
+    currentTenant &&
+      footerGlobal &&
+      !isMomentoTenantPage &&
+      !isRealEstateLandingPage &&
+      !hasBoutiqueFooterBlock,
+  )
+
+  const momentoMenu = isMomentoTheme ? buildMomentoShellMenu(menuGlobal, locale) : undefined
+
+  const pageClient = (
+    <PageClient
+      page={mergedPage}
+      locale={locale}
+      previewTenant={previewTenant}
+      tenantVisualTheme={tenantVisualTheme}
+    />
+  )
+
+  const pageBody = (
     <>
-      {/* Menu Wrapper - only show for tenant pages */}
-      {currentTenant && (
+      {showTenantMenu && (
         <MenuWrapper
+          tenantVisualTheme={tenantVisualTheme}
+          brandSubtitle={
+            tenantVisualTheme === 'boutique' ? 'Boutique · Osijek' : undefined
+          }
           menuItems={
             menuGlobal?.menuItems?.map((item) => ({
               label: item.label,
@@ -113,24 +160,38 @@ export default async function Page({ params }: PageProps) {
         />
       )}
 
-      {isRealEstatePage ? (
-        <main className="real-estate-preview">
-          <PageClient page={page} locale={locale} />
-        </main>
+      {isRealEstateLandingPage ? (
+        <RealEstateLandingShell>{pageClient}</RealEstateLandingShell>
+      ) : isMomentoTenantPage ? (
+        <MomentoLandingShell menu={momentoMenu}>{pageClient}</MomentoLandingShell>
       ) : (
-        <div className="content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <PageClient page={page} locale={locale} />
+        <div
+          className={
+            isBoutiqueTenantPage
+              ? 'content content--full-bleed'
+              : 'content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
+          }
+        >
+          {pageClient}
         </div>
       )}
 
-      {/* Footer - only show for tenant pages */}
-      {currentTenant && footerGlobal && (
+      {showTenantFooter && footerGlobal && !isRealEstateLandingPage ? (
         <Footer
+          variant={tenantVisualTheme === 'boutique' ? 'boutique' : 'default'}
           leftContent={footerGlobal.leftContent}
           rightContent={footerGlobal.rightContent}
           bottomContent={footerGlobal.bottomContent}
         />
-      )}
+      ) : null}
     </>
+  )
+
+  return isBoutiqueTenantPage ? (
+    <BoutiqueLandingShell locale={locale}>{pageBody}</BoutiqueLandingShell>
+  ) : isMomentoTenantPage ? (
+    <div className="momento-tenant-root">{pageBody}</div>
+  ) : (
+    pageBody
   )
 }

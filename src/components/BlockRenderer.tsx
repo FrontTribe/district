@@ -16,14 +16,22 @@ import { JobOpportunityBlock } from '@/blocks/JobOpportunity'
 import { ImageGridBlock } from '@/blocks/ImageGrid'
 import { IntroBlock } from '@/blocks/Intro'
 import { FloorPlanBlock } from '@/blocks/FloorPlan'
-import { RealEstateHeroBlock } from '@/blocks/RealEstateHero'
-import { RealEstateAboutUsBlock } from '@/blocks/RealEstateAboutUs'
-import { RealEstateProjectsWeDidBlock } from '@/blocks/RealEstateProjectsWeDid'
-import { RealEstateCurrentProjectsBlock } from '@/blocks/RealEstateCurrentProjects'
-import { RealEstateLiveCameraBlock } from '@/blocks/RealEstateLiveCamera'
-import { RealEstateLookingForJobBlock } from '@/blocks/RealEstateLookingForJob'
-import { RealEstateContactBlock } from '@/blocks/RealEstateContact'
 import { AnchorBlock } from '@/blocks/Anchor'
+import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { RealEstateLandingNavBlock } from '@/blocks/RealEstateLandingNav'
+import { RealEstateLandingHeroBlock } from '@/blocks/RealEstateLandingHero'
+import { RealEstateLandingMarqueeBlock } from '@/blocks/RealEstateLandingMarquee'
+import { RealEstateLandingManifestoBlock } from '@/blocks/RealEstateLandingManifesto'
+import { RealEstateLandingTypologyBlock } from '@/blocks/RealEstateLandingTypology'
+import { RealEstateLandingGalleryBlock } from '@/blocks/RealEstateLandingGallery'
+import { RealEstateLandingCurrentProjectBlock } from '@/blocks/RealEstateLandingCurrentProject'
+import { RealEstateLandingPartnerBlock } from '@/blocks/RealEstateLandingPartner'
+import { RealEstateLandingInquiryBlock } from '@/blocks/RealEstateLandingInquiry'
+import { RealEstateLandingFooterBlock } from '@/blocks/RealEstateLandingFooter'
+import { RealEstateLandingUnitBrowserBlock } from '@/blocks/RealEstateLandingUnitBrowser'
+import { RealEstateLandingPastProjectsBlock } from '@/blocks/RealEstateLandingPastProjects'
+import { MomentoFooterBlock } from '@/blocks/MomentoFooter'
+import { BoutiqueFooterBlock } from '@/blocks/BoutiqueFooter'
 
 const blockComponents = {
   section: SectionBlock,
@@ -42,19 +50,56 @@ const blockComponents = {
   intro: IntroBlock,
   'image-grid': ImageGridBlock,
   'floor-plan': FloorPlanBlock,
-  'real-estate-hero': RealEstateHeroBlock,
-  'real-estate-about-us': RealEstateAboutUsBlock,
-  'real-estate-projects-we-did': RealEstateProjectsWeDidBlock,
-  'real-estate-current-projects': RealEstateCurrentProjectsBlock,
-  'real-estate-live-camera': RealEstateLiveCameraBlock,
-  'real-estate-looking-for-job': RealEstateLookingForJobBlock,
-  'real-estate-contact': RealEstateContactBlock,
   anchor: AnchorBlock,
+  'real-estate-landing-nav': RealEstateLandingNavBlock,
+  'real-estate-landing-hero': RealEstateLandingHeroBlock,
+  'real-estate-landing-marquee': RealEstateLandingMarqueeBlock,
+  'real-estate-landing-manifesto': RealEstateLandingManifestoBlock,
+  'real-estate-landing-typology': RealEstateLandingTypologyBlock,
+  'real-estate-landing-gallery': RealEstateLandingGalleryBlock,
+  'real-estate-landing-current-project': RealEstateLandingCurrentProjectBlock,
+  'real-estate-landing-partner': RealEstateLandingPartnerBlock,
+  'real-estate-landing-inquiry': RealEstateLandingInquiryBlock,
+  'real-estate-landing-page-footer': RealEstateLandingFooterBlock,
+  'real-estate-landing-unit-browser': RealEstateLandingUnitBrowserBlock,
+  'real-estate-landing-past-projects': RealEstateLandingPastProjectsBlock,
+  'momento-footer': MomentoFooterBlock,
+  'boutique-footer': BoutiqueFooterBlock,
 }
 
 type _Block = NonNullable<Page['layout']>[number]
 
-function renderSingleBlock(block: _Block, index: number, locale: string) {
+const LANDING_PREFIX = 'real-estate-landing-'
+
+const BOUTIQUE_FULL_BLEED_BLOCKS = new Set([
+  'hero',
+  'botique-intro',
+  'rooms',
+  'rooftop',
+  'rooftop-features',
+  'boutique-contact',
+  'boutique-footer',
+])
+
+function isFullBleedBlockType(blockType?: string | null, theme: TenantVisualTheme = 'default') {
+  return (
+    !!blockType?.startsWith(LANDING_PREFIX) ||
+    blockType === 'momento-footer' ||
+    blockType === 'boutique-footer' ||
+    (theme === 'boutique' && !!blockType && BOUTIQUE_FULL_BLEED_BLOCKS.has(blockType))
+  )
+}
+
+function isMomentoTheme(theme: TenantVisualTheme) {
+  return theme === 'momento'
+}
+
+function renderSingleBlock(
+  block: _Block,
+  index: number,
+  locale: string,
+  tenantVisualTheme: TenantVisualTheme,
+) {
   const { blockType } = block
 
   if (blockType && blockType in blockComponents) {
@@ -62,7 +107,7 @@ function renderSingleBlock(block: _Block, index: number, locale: string) {
     const key = block.id ? `${block.id}-${index}` : index
     return (
       // @ts-expect-error - Block component props are dynamically typed based on block type
-      <BlockComponent key={key} {...block} locale={locale} />
+      <BlockComponent key={key} {...block} locale={locale} tenantVisualTheme={tenantVisualTheme} />
     )
   }
 
@@ -78,22 +123,52 @@ const proseBlockWrapperClass = 'prose mx-auto max-w-4xl px-4 py-6 lg:px-8 lg:py-
 export const BlockRenderer: React.FC<{
   blocks: Page['layout'] | undefined | null
   locale?: string
-}> = ({ blocks, locale = 'en' }) => {
+  tenantVisualTheme?: TenantVisualTheme
+}> = ({ blocks, locale = 'hr', tenantVisualTheme = 'default' }) => {
   if (!blocks || blocks.length === 0) {
     return null
   }
 
-  const [first, ...rest] = blocks
-  if (first?.blockType === 'three-columns') {
-    return (
-      <>
-        {renderSingleBlock(first, 0, locale)}
-        {rest.length > 0 ? (
-          <div className={proseBlockWrapperClass}>{rest.map((b, i) => renderSingleBlock(b, i + 1, locale))}</div>
-        ) : null}
-      </>
+  const proseClassName =
+    tenantVisualTheme === 'boutique' ? 'boutique-page-blocks' : proseBlockWrapperClass
+
+  const nodes: React.ReactNode[] = []
+  let proseBuffer: _Block[] = []
+
+  const flushProse = (key: string) => {
+    if (proseBuffer.length === 0) return
+    nodes.push(
+      <div key={key} className={proseClassName}>
+        {proseBuffer.map((block, idx) => renderSingleBlock(block, idx, locale, tenantVisualTheme))}
+      </div>,
     )
+    proseBuffer = []
   }
 
-  return <div className={proseBlockWrapperClass}>{blocks.map((block, index) => renderSingleBlock(block, index, locale))}</div>
+  let i = 0
+  while (i < blocks.length) {
+    const block = blocks[i]
+    const t = block.blockType ?? ''
+
+    if (i === 0 && t === 'three-columns') {
+      flushProse(`prose-before-${i}`)
+      nodes.push(renderSingleBlock(block, i, locale, tenantVisualTheme))
+      i++
+      continue
+    }
+
+    if (isMomentoTheme(tenantVisualTheme) || isFullBleedBlockType(t, tenantVisualTheme)) {
+      flushProse(`prose-before-${i}`)
+      nodes.push(renderSingleBlock(block, i, locale, tenantVisualTheme))
+      i++
+      continue
+    }
+
+    proseBuffer.push(block)
+    i++
+  }
+
+  flushProse('prose-tail')
+
+  return <>{nodes}</>
 }

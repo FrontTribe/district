@@ -11,8 +11,10 @@ const Footer: CollectionConfig = {
     useAsTitle: 'title',
     group: { en: 'Site Content', hr: 'Sadržaj stranice' },
     description: {
-      en: 'Manage footer content for tenants and main domain',
-      hr: 'Upravljanje sadržajem podnožja za stanare i glavnu domenu',
+      en:
+        'Per-tenant marketing footer (multi-column). Used on the public site for tenant pages, including RE landing. Suggested first line in Main heading: your brand, then a line with tenant name · subdomain · Real Estate.',
+      hr:
+        'Marketinško podnožje po tenantu (više stupaca). Koristi se na javnoj stranici za tenanta, uključujući RE landing. U „Glavni naslov” tipično: marka, zatim redak s nazivom tenanta · subdomain · Real Estate.',
     },
   },
   access: {
@@ -26,7 +28,19 @@ const Footer: CollectionConfig = {
         },
       }
     },
+    create: ({ req }) =>
+      (req.user as any)?.role === 'superadmin' || (req.user as any)?.role === 'tenant-admin',
     update: ({ req }) => {
+      if ((req.user as any)?.role === 'superadmin') {
+        return true
+      }
+      return {
+        tenant: {
+          equals: (req.user as any)?.tenant?.id || (req.user as any)?.tenant,
+        },
+      }
+    },
+    delete: ({ req }) => {
       if ((req.user as any)?.role === 'superadmin') {
         return true
       }
@@ -68,6 +82,12 @@ const Footer: CollectionConfig = {
       type: 'relationship',
       relationTo: 'tenants',
       required: false,
+      admin: {
+        description: {
+          en: 'Which organization this footer belongs to. Content (headings, address, links) should match that tenant.',
+          hr: 'Za koju organizaciju je ovo podnožje. Tekstovi i kontakt trebaju odgovarati tom tenantu.',
+        },
+      },
       access: {
         create: ({ req }) =>
           (req.user as any)?.role === 'superadmin' || (req.user as any)?.role === 'tenant-admin',
@@ -86,12 +106,24 @@ const Footer: CollectionConfig = {
           label: { en: 'Main Heading', hr: 'Glavni naslov' },
           required: true,
           localized: true,
+          admin: {
+            description: {
+              en: 'RE landing: usually one line with <b>district.</b> (HTML allowed). Boutique/other: brand headline.',
+              hr: 'RE landing: tipično jedan red s <b>district.</b> (dozvoljen HTML). Boutique/ostalo: naslov marke.',
+            },
+          },
         },
         {
           name: 'subheading',
           type: 'text',
-          label: { en: 'Subheading (optional)', hr: 'Podnaslov (opcionalno)' },
+          label: { en: 'Tagline (optional)', hr: 'Tagline (opcionalno)' },
           localized: true,
+          admin: {
+            description: {
+              en: 'RE landing: second line under the brand, e.g. Tenant name · subdomain · Real Estate (plain text).',
+              hr: 'RE landing: drugi red ispod marke, npr. Naziv tenanta · subdomain · Real Estate (običan tekst).',
+            },
+          },
         },
       ],
     },
@@ -185,6 +217,12 @@ const Footer: CollectionConfig = {
       name: 'bottomContent',
       type: 'group',
       label: { en: 'Bottom Content', hr: 'Donji sadržaj' },
+      admin: {
+        description: {
+          en: 'RE landing: copyright (left), optional links (next to ©), optional right tail. Matches District footer bar.',
+          hr: 'RE landing: copyright (lijevo), opcionalni linkovi pokraj ©, opcionalni desni rep — kao District donja traka.',
+        },
+      },
       fields: [
         {
           name: 'copyright',
@@ -224,10 +262,15 @@ const Footer: CollectionConfig = {
         {
           name: 'madeBy',
           type: 'text',
-          label: { en: 'Made By Text', hr: 'Tekst „Izradio"' },
-          required: true,
-          defaultValue: 'Designed with passion by De Jongens van Boven',
+          label: { en: 'Right tail (optional)', hr: 'Desni rep (opcionalno)' },
+          required: false,
           localized: true,
+          admin: {
+            description: {
+              en: 'RE landing: small caps line on the bottom-right (e.g. credits). Leave empty to hide.',
+              hr: 'RE landing: mali tekst dolje desno (npr. krediti). Prazno = sakrij.',
+            },
+          },
         },
       ],
     },

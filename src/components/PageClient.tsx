@@ -2,39 +2,49 @@
 
 import { Page as PageType } from '@/payload-types'
 import { BlockRenderer } from './BlockRenderer'
-import { useState, useEffect } from 'react'
+import { useLivePreview } from '@payloadcms/live-preview-react'
+import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { getTenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { resolveTenantSubdomain } from '@/utils/resolveTenantSubdomain'
+import { resolvePayloadServerURL } from '@/utils/payloadServerUrl'
+
+const LIVE_PREVIEW_DEPTH = 6
 
 export default function PageClient({
   page: initialPage,
   locale = 'hr',
+  tenantVisualTheme = 'default',
+  previewTenant,
 }: {
   page: PageType
   locale?: string
+  tenantVisualTheme?: TenantVisualTheme
+  previewTenant?: string
 }) {
-  const [_hasRendered, setHasRendered] = useState(false)
+  const { data: livePage } = useLivePreview({
+    initialData: initialPage,
+    serverURL: resolvePayloadServerURL(),
+    depth: LIVE_PREVIEW_DEPTH,
+  })
 
-  // Track if we've rendered content
-  useEffect(() => {
-    if (initialPage?.layout && initialPage.layout.length > 0) {
-      setHasRendered(true)
-    }
-  }, [initialPage])
-
-  // If we have no data at all, don't render anything
-  if (!initialPage) {
-    return null
+  const page: PageType = {
+    ...initialPage,
+    ...livePage,
+    layout: livePage?.layout?.length ? livePage.layout : initialPage.layout,
   }
 
-  // If we have no layout, show a fallback
-  if (!initialPage.layout || initialPage.layout.length === 0) {
+  const subdomain = resolveTenantSubdomain(null, page, previewTenant)
+  const resolvedTheme = subdomain ? getTenantVisualTheme(subdomain) : tenantVisualTheme
+
+  if (!page.layout?.length) {
     return (
       <div className="prose mx-auto max-w-4xl p-4 lg:p-8">
-        <div className="text-center text-gray-500">
-          <p>No content available for this page</p>
-        </div>
+        <p className="text-center text-gray-500">No content available for this page</p>
       </div>
     )
   }
 
-  return <BlockRenderer blocks={initialPage.layout} locale={locale} />
+  return (
+    <BlockRenderer blocks={page.layout} locale={locale} tenantVisualTheme={resolvedTheme} />
+  )
 }

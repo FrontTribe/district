@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DEPLOY_PATH="${DISTRICT_DEPLOY_PATH:?Missing DISTRICT_DEPLOY_PATH}"
+OPS_PATH="${DISTRICT_OPS_PATH:-${DEPLOY_PATH}-ops}"
+
+if [ ! -f "$OPS_PATH/package.json" ]; then
+  echo "Missing $OPS_PATH — wait for CI deploy (syncs source there)."
+  exit 1
+fi
+
+set -a
+for env_file in .env .env.local .env.production; do
+  if [ -f "$DEPLOY_PATH/$env_file" ]; then
+    # shellcheck disable=SC1090
+    source "$DEPLOY_PATH/$env_file"
+  fi
+done
+set +a
+
+export ALLOW_SEED="${ALLOW_SEED:-true}"
+export NODE_NO_WARNINGS=1
+
+cd "$OPS_PATH"
+
+case "${1:-}" in
+  momento) pnpm run seed:momento ;;
+  clean:momento) pnpm run clean:momento ;;
+  boutique) pnpm run seed:boutique ;;
+  hub) pnpm run seed:hub ;;
+  real-estate) pnpm run seed:real-estate ;;
+  clean:real-estate) pnpm run clean:real-estate ;;
+  migrate) pnpm run migrate ;;
+  migrate:status) pnpm run migrate:status ;;
+  help | -h | --help | '')
+    cat <<'EOF'
+Usage: ./seed <command>
+
+  momento              Seed Momento landing
+  clean:momento        Reset + seed Momento
+  boutique             Seed Boutique landing
+  hub                  Seed hub tenants
+  real-estate          Seed real estate demo
+  clean:real-estate    Reset + seed real estate
+  migrate              Run pending DB migrations
+  migrate:status       Show migration status
+EOF
+    ;;
+  *)
+    echo "Unknown: $1 (try ./seed help)"
+    exit 1
+    ;;
+esac

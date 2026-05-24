@@ -26,7 +26,19 @@ const Menu: CollectionConfig = {
         },
       }
     },
+    create: ({ req }) =>
+      (req.user as any)?.role === 'superadmin' || (req.user as any)?.role === 'tenant-admin',
     update: ({ req }) => {
+      if ((req.user as any)?.role === 'superadmin') {
+        return true
+      }
+      return {
+        tenant: {
+          equals: (req.user as any)?.tenant?.id || (req.user as any)?.tenant,
+        },
+      }
+    },
+    delete: ({ req }) => {
       if ((req.user as any)?.role === 'superadmin') {
         return true
       }

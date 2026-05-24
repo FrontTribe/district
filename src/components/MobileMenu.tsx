@@ -1,11 +1,13 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { gsap } from '@/lib/gsap'
 import EnhancedLanguageSwitcher from './EnhancedLanguageSwitcher'
-import { HubLogoWordmark } from './HubLogoWordmark'
+import { TenantMobileMenuShell } from '@/components/mobile-nav/TenantMobileMenuShell'
 import type { HubSocialLink } from '@/utils/hubSocialLinks'
+import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { BoutiqueMobileMenu } from '@/components/BoutiqueMobileMenu'
+import { handleInPageNavClick, restorePageScroll, scrollToSectionById } from '@/utils/scrollToSection'
 
 interface MenuItem {
   label: string
@@ -29,6 +31,8 @@ interface MobileMenuProps {
   isLanguageChanging: boolean
   isTenantMenu?: boolean
   hubLanding?: boolean
+  tenantVisualTheme?: TenantVisualTheme
+  brandSubtitle?: string | null
   isOpen: boolean
   onClose: () => void
   hubSocialLinks?: HubSocialLink[]
@@ -43,19 +47,18 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   isLanguageChanging,
   isTenantMenu = false,
   hubLanding = false,
+  tenantVisualTheme = 'default',
+  brandSubtitle,
   isOpen,
   onClose,
   hubSocialLinks,
 }) => {
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
-  const overlayRef = useRef<HTMLDivElement>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
-  const menuItemsRef = useRef<HTMLDivElement>(null)
-  const tl = useRef<gsap.core.Timeline | null>(null)
-
   const sectionSpyEnabled = isTenantMenu || hubLanding
+  const isBoutiqueDrawer = isTenantMenu && tenantVisualTheme === 'boutique' && !hubLanding
+  const drawerVariant = hubLanding ? 'hub' : isTenantMenu ? 'default' : 'default'
+  const menuId = hubLanding ? 'hub-mobile-menu' : 'district-mobile-menu'
 
-  // Observe sections and mark active menu item when in view (tenant or hub landing)
   useEffect(() => {
     if (!sectionSpyEnabled) return
 
@@ -73,8 +76,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       (entries) => {
         for (const entry of entries) {
           const el = entry.target as HTMLElement
-          const id = el.id
-          visibilityById.set(id, entry.isIntersecting ? entry.intersectionRatio : 0)
+          visibilityById.set(el.id, entry.isIntersecting ? entry.intersectionRatio : 0)
         }
 
         let bestId: string | null = null
@@ -95,281 +97,137 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
     )
 
     targets.forEach((el) => observer.observe(el))
-
-    return () => {
-      observer.disconnect()
-    }
+    return () => observer.disconnect()
   }, [menuItems, sectionSpyEnabled, activeSectionId])
 
-  // GSAP animations
-  useEffect(() => {
-    if (!overlayRef.current || !menuRef.current) return
-
-    const overlay = overlayRef.current
-    const menu = menuRef.current
-
-    if (isOpen) {
-      // Open animation
-      tl.current = gsap.timeline()
-
-      // Show overlay with fade in
-      tl.current
-        .set(overlay, { opacity: 0 })
-        .to(overlay, { opacity: 1, duration: 0.3, ease: 'power2.out' })
-        // Slide menu in from right
-        .fromTo(menu, { x: '100%' }, { x: 0, duration: 0.4, ease: 'power3.out' }, '-=0.2')
-
-      // Animate menu items if they exist
-      if (menuItemsRef.current) {
-        const menuItems = menuItemsRef.current
-        tl.current.fromTo(
-          menuItems.querySelectorAll('.mobile-menu-item'),
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
-          '-=0.2',
-        )
-      }
-    } else {
-      // Close animation - create a new timeline for closing
-      const closeTl = gsap.timeline()
-
-      // Animate menu items out first
-      if (menuItemsRef.current) {
-        const menuItems = menuItemsRef.current
-        closeTl.to(menuItems.querySelectorAll('.mobile-menu-item'), {
-          opacity: 0,
-          y: -20,
-          duration: 0.2,
-          ease: 'power2.in',
-        })
-      }
-
-      // Then slide menu out and fade overlay
-      closeTl
-        .to(menu, { x: '100%', duration: 0.3, ease: 'power3.in' }, '-=0.1')
-        .to(overlay, { opacity: 0, duration: 0.2, ease: 'power2.in' }, '-=0.2')
-        .set(overlay, { display: 'none' })
-    }
-  }, [isOpen])
-
-  // Close menu on escape key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose()
-      }
-    }
-
-    document.addEventListener('keydown', handleEscape)
-    return () => document.removeEventListener('keydown', handleEscape)
-  }, [isOpen, onClose])
-
-  // Prevent body scroll when menu is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [isOpen])
-
   const handleMenuClick = (item: MenuItem, e: React.MouseEvent) => {
-    if (item.scrollTarget && !item.external) {
-      e.preventDefault()
-      const targetElement = document.getElementById(item.scrollTarget)
-      if (targetElement) {
-        targetElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        })
-      }
-    }
-    // Close menu after click
-    onClose()
+    handleInPageNavClick(e, {
+      scrollTarget: item.scrollTarget,
+      href: item.link,
+      external: item.external,
+      afterMenuClose: true,
+      onAfterNavigate: onClose,
+    })
   }
 
-  const handleLogoClick = (e: React.MouseEvent) => {
-    if (isTenantMenu || hubLanding) {
-      e.preventDefault()
-      const heroElement = document.querySelector('section[id*="hero"], .hero-block, [id*="hero"]')
-      if (heroElement) {
-        heroElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        })
-      } else {
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth',
-        })
-      }
+  const handleLogoClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
+    if (!isTenantMenu && !hubLanding) {
+      onClose()
+      return
     }
-    onClose()
-  }
 
-  const renderMenuItem = (item: MenuItem, index: number) => {
-    const linkContent = (
-      <>
-        {item.label}
-        {item.external && (
-          <svg
-            className="ml-2 h-4 w-4 inline"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-            />
-          </svg>
-        )}
-      </>
+    e.preventDefault()
+    onClose()
+
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const topById = document.getElementById('top')
+        if (topById) {
+          scrollToSectionById('top', { offset: -30, duration: 1.2 })
+          return
+        }
+
+        const heroElement = document.querySelector(
+          'section[id*="hero"], .hero-block, [id*="hero"]',
+        ) as HTMLElement | null
+
+        if (heroElement?.id) {
+          scrollToSectionById(heroElement.id, { offset: -30, duration: 1.2 })
+          return
+        }
+
+        restorePageScroll()
+        if (heroElement) {
+          heroElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          return
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }),
     )
+  }
 
-    const linkProps = item.external
-      ? { href: item.link, target: '_blank', rel: 'noopener noreferrer' }
-      : { href: item.link }
-
+  if (isBoutiqueDrawer) {
     return (
-      <div key={index} className="mobile-menu-item">
-        <Link
-          {...linkProps}
-          onClick={(e) => handleMenuClick(item, e)}
-          className={`mobile-menu-link${
-            item.scrollTarget && activeSectionId === item.scrollTarget ? ' is-active' : ''
-          }`}
-        >
-          {linkContent}
-        </Link>
-        {item.children && item.children.length > 0 && (
-          <div className="mobile-submenu">
-            {item.children.map((child, childIndex) => (
-              <Link
-                key={childIndex}
-                href={child.link}
-                target={child.external ? '_blank' : undefined}
-                rel={child.external ? 'noopener noreferrer' : undefined}
-                onClick={(e) => handleMenuClick(child, e)}
-                className="mobile-submenu-link"
-              >
-                {child.label}
-                {child.external && (
-                  <svg
-                    className="ml-2 h-3 w-3 inline"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
-                )}
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+      <BoutiqueMobileMenu
+        menuItems={menuItems}
+        logo={logo}
+        logoText={logoText}
+        brandSubtitle={brandSubtitle}
+        locale={locale}
+        isOpen={isOpen}
+        activeSectionId={activeSectionId}
+        isLanguageChanging={isLanguageChanging}
+        onClose={onClose}
+        onLanguageChange={onLanguageChange}
+        onMenuClick={handleMenuClick}
+        onLogoClick={handleLogoClick}
+      />
     )
   }
+
+  const flatItems = menuItems.flatMap((item) => [item, ...(item.children ?? [])])
 
   return (
-    <>
-      {/* Mobile Menu Overlay */}
-      <div
-        ref={overlayRef}
-        className={`mobile-menu-overlay ${isOpen ? 'is-open' : ''}`}
-        onClick={onClose}
-      >
-        {/* Mobile Menu Panel */}
-        <div
-          ref={menuRef}
-          className={`mobile-menu-panel${hubLanding ? ' mobile-menu-panel--hub' : ''}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Mobile Menu Header */}
-          <div className={`mobile-menu-header${hubLanding ? ' mobile-menu-header--hub' : ''}`}>
-            <div className="mobile-menu-header__top">
-              <div className="mobile-menu-header-left">
-                <Link
-                  href={hubLanding ? `/${locale}` : '/'}
-                  onClick={handleLogoClick}
-                  className={`mobile-menu-logo${hubLanding ? ' mobile-menu-logo--hub' : ''}`}
+    <TenantMobileMenuShell
+      isOpen={isOpen}
+      onClose={onClose}
+      variant={drawerVariant}
+      syncNavOffset
+      menuId={menuId}
+      ariaLabel="Navigation"
+    >
+      <nav className="tenant-mobile-menu__links" aria-label="Primary">
+        {flatItems.map((item, index) => {
+          const linkProps = item.external
+            ? { href: item.link, target: '_blank' as const, rel: 'noopener noreferrer' }
+            : { href: item.link }
+
+          return (
+            <Link
+              key={`${item.link}-${item.label}`}
+              {...linkProps}
+              className={`tenant-mobile-menu__link${
+                item.scrollTarget && activeSectionId === item.scrollTarget ? ' is-active' : ''
+              }`}
+              style={{ animationDelay: `${index * 45}ms` }}
+              onClick={(e) => handleMenuClick(item, e)}
+            >
+              {item.label}
+            </Link>
+          )
+        })}
+      </nav>
+
+      <div className="tenant-mobile-menu__footer">
+        <EnhancedLanguageSwitcher
+          currentLocale={locale}
+          onLanguageChange={onLanguageChange}
+          theme={hubLanding ? 'hub' : 'transparent'}
+          disabled={isLanguageChanging}
+          variant={hubLanding ? 'hub-inline' : 'dropdown'}
+        />
+        {hubLanding && hubSocialLinks && hubSocialLinks.length > 0 ? (
+          <div className="tenant-mobile-menu__lang" aria-label="Social media">
+            {hubSocialLinks.map((s, index) => (
+              <React.Fragment key={`${s.label}-${s.href}`}>
+                {index > 0 ? <span className="tenant-mobile-menu__lang-sep"> · </span> : null}
+                <a
+                  href={s.href}
+                  className="tenant-mobile-menu__link"
+                  style={{ fontSize: '11px', animation: 'none', opacity: 1, transform: 'none' }}
+                  {...(s.href.startsWith('http')
+                    ? { target: '_blank' as const, rel: 'noopener noreferrer' }
+                    : {})}
+                  onClick={onClose}
                 >
-                  {hubLanding ? (
-                    <HubLogoWordmark logo={logo} logoText={logoText} />
-                  ) : logo ? (
-                    <img src={logo.url} alt={logo.alt} width={logo.width} height={logo.height} />
-                  ) : logoText ? (
-                    <h1>{logoText}</h1>
-                  ) : (
-                    <h1>district.</h1>
-                  )}
-                </Link>
-              </div>
-              <div className="mobile-menu-header-right">
-                <EnhancedLanguageSwitcher
-                  currentLocale={locale}
-                  onLanguageChange={onLanguageChange}
-                  theme={hubLanding ? 'hub' : 'transparent'}
-                  disabled={isLanguageChanging}
-                />
-                {hubLanding && hubSocialLinks && hubSocialLinks.length > 0 ? (
-                  <div className="mobile-menu-hub-socials" aria-label="Social media">
-                    {hubSocialLinks.map((s, index) => (
-                      <React.Fragment key={`${s.label}-${s.href}`}>
-                        {index > 0 ? (
-                          <span className="mobile-menu-hub-socials__dot" aria-hidden>
-                            ·
-                          </span>
-                        ) : null}
-                        <a
-                          href={s.href}
-                          className="mobile-menu-hub-socials__link"
-                          {...(s.href.startsWith('http')
-                            ? { target: '_blank' as const, rel: 'noopener noreferrer' }
-                            : {})}
-                        >
-                          {s.label}
-                        </a>
-                      </React.Fragment>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile Menu Items */}
-          <div ref={menuItemsRef} className="mobile-menu-items">
-            {menuItems.map(renderMenuItem)}
-          </div>
-
-          {/* Mobile Menu Footer — hidden on hub (socials sit under language in header; page has HubBottombar) */}
-          {!hubLanding ? (
-            <div className="mobile-menu-footer">
-              <div className="mobile-social-links">
-                <a href="#" className="mobile-social-link">
-                  Facebook
+                  {s.label}
                 </a>
-                <a href="#" className="mobile-social-link">
-                  Instagram
-                </a>
-              </div>
-            </div>
-          ) : null}
-        </div>
+              </React.Fragment>
+            ))}
+          </div>
+        ) : null}
       </div>
-    </>
+    </TenantMobileMenuShell>
   )
 }

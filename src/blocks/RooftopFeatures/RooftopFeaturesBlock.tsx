@@ -1,66 +1,52 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
-import { gsap, ScrollTrigger } from '@/lib/gsap'
+import React from 'react'
+import { getOptimizedImageUrl } from '@/utils/getOptimizedImageUrl'
+import { renderBoutiqueHeroHeading } from '@/blocks/BoutiqueHeroContent'
 
 type Feature = {
-  icon?: string
+  romanNumeral?: string | null
+  tag?: string | null
   title: string
-  description?: string
+  description?: string | null
+  media?: unknown
+  reverseLayout?: boolean | null
 }
 
 export const RooftopFeaturesBlock: React.FC<{
-  heading: string
+  heading?: string | null
   features: Feature[]
   sectionId?: string
 }> = ({ heading, features = [], sectionId }) => {
-  const wrapRef = useRef<HTMLDivElement | null>(null)
-  const headingRef = useRef<HTMLHeadingElement | null>(null)
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      if (headingRef.current) {
-        gsap.from(headingRef.current, {
-          y: 24,
-          opacity: 0,
-          duration: 0.8,
-          ease: 'power3.out',
-          scrollTrigger: { trigger: headingRef.current, start: 'top 85%', once: true },
-        })
-      }
-
-      if (wrapRef.current) {
-        const items = wrapRef.current.querySelectorAll('.rf-item')
-        gsap.set(items, { opacity: 0, y: 12 })
-        gsap.to(items, {
-          opacity: 1,
-          y: 0,
-          duration: 0.5,
-          stagger: 0.06,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: wrapRef.current, start: 'top 90%', once: true },
-        })
-        requestAnimationFrame(() => ScrollTrigger.refresh())
-      }
-    }, wrapRef.current || undefined)
-
-    return () => ctx.revert()
-  }, [])
   return (
-    <section id={sectionId} className="rooftop-features-block">
-      <div className="rooftop-features__inner" ref={wrapRef}>
-        <h3 className="rooftop-features__heading" ref={headingRef}>
-          {heading}
-        </h3>
-
-        <div className="rooftop-features__grid">
-          {features.map((f, i) => (
-            <div className="rf-item" key={i}>
-              <h3 className="rf-title">{f.title}</h3>
-              {f.description && <p className="rf-desc">{f.description}</p>}
+    <section
+      className="rooftop rooftop--features"
+      aria-label={heading || 'Rooftop features'}
+      {...(sectionId ? { id: sectionId } : {})}
+    >
+      {heading ? <h3 className="sr-only">{heading}</h3> : null}
+      <div className="rooftop-features">
+      {features.map((f, i) => {
+        const src = getOptimizedImageUrl(f.media as Parameters<typeof getOptimizedImageUrl>[0], { widthHint: 900 })
+        const reverse = f.reverseLayout ?? i % 2 === 1
+        return (
+          <article key={f.title} className={`rooftop-feature${reverse ? ' reverse' : ''}`}>
+            <div className="curtain rooftop-feat-image" data-reveal="curtain">
+              {src ? <div className="curtain-inner" style={{ backgroundImage: `url(${src})` }} /> : null}
+              {f.tag ? <span className="rooftop-feat-tag">{f.tag}</span> : null}
             </div>
-          ))}
-        </div>
+            <div className="rooftop-feat-copy">
+              {f.romanNumeral ? <span className="rooftop-feat-num">{f.romanNumeral}</span> : null}
+              <h3 data-reveal="lines">{renderBoutiqueHeroHeading(f.title)}</h3>
+              {f.description ? (
+                <p data-reveal="fade-up" data-delay="0.1">
+                  {f.description}
+                </p>
+              ) : null}
+            </div>
+          </article>
+        )
+        })}
       </div>
     </section>
   )

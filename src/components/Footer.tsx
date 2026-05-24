@@ -2,6 +2,10 @@ import React from 'react'
 import Link from 'next/link'
 import './Footer.scss'
 
+function replaceCopyrightYear(copyright: string): string {
+  return copyright.replace(/\d{4}/, new Date().getFullYear().toString())
+}
+
 interface FooterLink {
   text: string
   url: string
@@ -37,15 +41,14 @@ interface FooterRightContent {
 interface FooterBottomContent {
   copyright: string
   links?: FooterLink[] | null | undefined
-  madeBy: string
+  madeBy?: string | null
 }
 
 interface FooterProps {
-  // New structure
   leftContent?: FooterLeftContent
   rightContent?: FooterRightContent
   bottomContent?: FooterBottomContent
-  // Old structure (for backward compatibility)
+  variant?: 'default' | 'boutique'
   columns?: FooterColumn[]
   bottomSection?: {
     copyright?: string
@@ -63,52 +66,56 @@ interface SocialLink {
   url: string
 }
 
+function telHref(phone: string): string {
+  const digits = phone.replace(/[^\d+]/g, '')
+  return `tel:${digits}`
+}
+
 export const Footer: React.FC<FooterProps> = ({
   leftContent,
   rightContent,
   bottomContent,
+  variant = 'default',
   columns = [],
   bottomSection,
 }) => {
-  // If new structure is provided, use it; otherwise fall back to old structure
-  const hasNewStructure = leftContent && rightContent && bottomContent
+  const hasNewStructure = Boolean(leftContent && rightContent && bottomContent)
 
-  if (hasNewStructure) {
+  if (hasNewStructure && leftContent && rightContent && bottomContent) {
+    const madeByTrimmed = bottomContent.madeBy?.trim() ?? ''
+    const hasBottomRight = madeByTrimmed.length > 0
+
     return (
-      <footer className="footer">
+      <footer className={variant === 'boutique' ? 'footer footer--boutique' : 'footer'}>
         <div className="footer__container">
-          {/* Main Content */}
           <div className="footer__main">
-            {/* Left Content */}
             <div className="footer__left">
-              {leftContent?.heading && (
+              {leftContent?.heading ? (
                 <h2
                   className="footer__heading"
-                  dangerouslySetInnerHTML={{ __html: leftContent?.heading }}
+                  dangerouslySetInnerHTML={{ __html: leftContent.heading }}
                 />
-              )}
-              {leftContent.subheading && (
+              ) : null}
+              {leftContent.subheading?.trim() ? (
                 <p className="footer__subheading">{leftContent.subheading}</p>
-              )}
+              ) : null}
             </div>
 
-            {/* Right Content */}
             <div className="footer__right">
-              {/* Contact */}
               <div className="footer__contact">
                 <h3 className="footer__section-heading">{rightContent.contact.heading}</h3>
                 <div className="footer__contact-details">
                   <a href={`mailto:${rightContent.contact.email}`} className="footer__link">
                     {rightContent.contact.email}
                   </a>
-                  {rightContent.contact.phone && (
-                    <a href={`tel:${rightContent.contact.phone}`} className="footer__link">
+                  {rightContent.contact.phone ? (
+                    <a href={telHref(rightContent.contact.phone)} className="footer__link">
                       {rightContent.contact.phone}
                     </a>
-                  )}
-                  {rightContent.contact.instagram && (
+                  ) : null}
+                  {rightContent.contact.instagram ? (
                     <a
-                      href={`https://instagram.com/${rightContent.contact.instagram}`}
+                      href={`https://instagram.com/${rightContent.contact.instagram.replace(/^@/, '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="footer__instagram"
@@ -146,11 +153,10 @@ export const Footer: React.FC<FooterProps> = ({
                         />
                       </svg>
                     </a>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
-              {/* Address */}
               <div className="footer__address">
                 <h3 className="footer__section-heading">{rightContent.address.heading}</h3>
                 <div className="footer__address-details">
@@ -163,17 +169,14 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
           </div>
 
-          {/* Bottom Content */}
-          <div className="footer__bottom">
+          <div className={['footer__bottom', !hasBottomRight ? 'footer__bottom--no-tail' : null].filter(Boolean).join(' ')}>
             <div className="footer__bottom-left">
-              <p className="footer__copyright">
-                {bottomContent.copyright.replace(/\d{4}/, new Date().getFullYear().toString())}
-              </p>
-              {bottomContent.links && bottomContent.links.length > 0 && (
-                <div className="footer__links">
+              <p className="footer__copyright">{replaceCopyrightYear(bottomContent.copyright)}</p>
+              {bottomContent.links && bottomContent.links.length > 0 ? (
+                <nav className="footer__links" aria-label="Footer">
                   {bottomContent.links.map((link, index) => (
                     <a
-                      key={index}
+                      key={link.id ?? `${link.url}-${index}`}
                       href={link.url}
                       className="footer__bottom-link"
                       target={link.openInNewTab ? '_blank' : undefined}
@@ -182,23 +185,23 @@ export const Footer: React.FC<FooterProps> = ({
                       {link.text}
                     </a>
                   ))}
-                </div>
-              )}
+                </nav>
+              ) : null}
             </div>
-            <div className="footer__bottom-right">
-              <p className="footer__made-by">{bottomContent.madeBy}</p>
-            </div>
+            {hasBottomRight ? (
+              <div className="footer__bottom-right">
+                <p className="footer__made-by">{madeByTrimmed}</p>
+              </div>
+            ) : null}
           </div>
         </div>
       </footer>
     )
   }
 
-  // Fallback to old structure
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Main footer content */}
         {columns.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             {columns.map((column, index) => (
@@ -238,18 +241,15 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
         )}
 
-        {/* Bottom section */}
         {(bottomSection?.copyright || bottomSection?.socialLinks) && (
           <div className="border-t border-gray-800 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              {/* Copyright */}
               {bottomSection.copyright && (
                 <div className="text-gray-400 text-sm mb-4 md:mb-0">
                   {bottomSection.copyright.replace(/\d{4}/, new Date().getFullYear().toString())}
                 </div>
               )}
 
-              {/* Social links */}
               {bottomSection.socialLinks && bottomSection.socialLinks.length > 0 && (
                 <div className="flex space-x-4">
                   {bottomSection.socialLinks.map((social, index) => (

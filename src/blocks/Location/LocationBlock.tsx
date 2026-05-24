@@ -2,6 +2,8 @@
 
 import React, { useEffect, useRef } from 'react'
 import { getTranslation } from '@/utils/translations'
+import type { TenantVisualTheme } from '@/utils/tenantVisualTheme'
+import { MomentoLocation } from '@/components/momento-landing'
 
 // Google Maps types
 declare global {
@@ -38,9 +40,25 @@ type Props = {
   workingHours: WorkingHours[]
   sectionId?: string
   locale?: string
+  tenantVisualTheme?: TenantVisualTheme
 }
 
-export const LocationBlock: React.FC<Props> = ({
+export const LocationBlock: React.FC<Props> = (props) =>
+  props.tenantVisualTheme === 'momento' ? (
+    <MomentoLocation
+      title={props.title}
+      description={props.description}
+      address={props.address}
+      coordinates={props.coordinates}
+      workingHours={props.workingHours}
+      sectionId={props.sectionId}
+      locale={props.locale}
+    />
+  ) : (
+    <LocationBlockDefault {...props} />
+  )
+
+const LocationBlockDefault: React.FC<Props> = ({
   title,
   description,
   address,
